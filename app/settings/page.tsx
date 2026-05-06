@@ -1,0 +1,1 @@
+export default function Settings(){ const vars=['SLACK_BOT_TOKEN','SLACK_SIGNING_SECRET','SLACK_CHANNEL_ID']; return <div><h1>Settings</h1>{vars.map(v=><div key={v}>{v}: {process.env[v]?'Configured':'Missing'}</div>)}</div>}

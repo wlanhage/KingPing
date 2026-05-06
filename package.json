@@ -1,0 +1,12 @@
+{
+  "name": "rundpingisriket",
+  "version": "0.1.1",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Install dependencies in an environment with npm registry access first.'",
+    "build": "echo 'Install dependencies first.'",
+    "start": "echo 'Install dependencies first.'",
+    "test": "echo 'Install dependencies first.'",
+    "seed": "echo 'Install dependencies first.'"
+  }
+}
