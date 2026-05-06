@@ -1,50 +1,82 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql" url = env("DATABASE_URL") directUrl = env("DIRECT_URL") }
+generator client {
+  provider = "prisma-client-js"
+}
 
-enum EventType { NEW_KING SAME_KING_STREAK_2 SAME_KING_STREAK_3 SAME_KING_STREAK_4 SAME_KING_STREAK_5_PLUS STREAK_BREAK_SMALL STREAK_BREAK_MEDIUM STREAK_BREAK_MAJOR STREAK_BREAK_LEGENDARY FIRST_WIN COMEBACK FRIDAY_FINAL RECORD_BROKEN }
-enum NationState { STABLE_ERA TENSION INSTABILITY DYNASTY TYRANNY REVOLUTION }
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum EventType {
+  NEW_KING
+  SAME_KING_STREAK_2
+  SAME_KING_STREAK_3
+  SAME_KING_STREAK_4
+  SAME_KING_STREAK_5_PLUS
+  STREAK_BREAK_SMALL
+  STREAK_BREAK_MEDIUM
+  STREAK_BREAK_MAJOR
+  STREAK_BREAK_LEGENDARY
+  FIRST_WIN
+  COMEBACK
+  FRIDAY_FINAL
+  RECORD_BROKEN
+}
+
+enum NationState {
+  STABLE_ERA
+  TENSION
+  INSTABILITY
+  DYNASTY
+  TYRANNY
+  REVOLUTION
+}
 
 model Player {
-  id String @id @default(cuid())
-  name String @unique
+  id          String    @id @default(cuid())
+  name        String    @unique
   slackUserId String?
-  isActive Boolean @default(true)
-  createdAt DateTime @default(now())
-  wins WinEvent[] @relation("Winner")
-  reigns Reign[]
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  wins        WinEvent[] @relation("Winner")
+  reigns      Reign[]
 }
+
 model Reign {
-  id String @id @default(cuid())
-  playerId String
-  player Player @relation(fields:[playerId], references:[id])
-  startedAt DateTime
-  endedAt DateTime?
-  createdBy String?
+  id           String   @id @default(cuid())
+  playerId     String
+  player       Player   @relation(fields: [playerId], references: [id])
+  startedAt    DateTime
+  endedAt      DateTime?
+  createdBy    String?
   startEventId String?
 }
+
 model WinEvent {
-  id String @id @default(cuid())
-  winnerId String
-  winner Player @relation("Winner", fields:[winnerId], references:[id])
-  previousKingId String?
-  occurredAt DateTime @default(now())
-  eventType EventType
-  streakCount Int
+  id                  String        @id @default(cuid())
+  winnerId            String
+  winner              Player        @relation("Winner", fields: [winnerId], references: [id])
+  previousKingId      String?
+  occurredAt          DateTime      @default(now())
+  eventType           EventType
+  streakCount         Int
   previousStreakCount Int?
-  note String?
-  announcementText String
-  nationState NationState
-  isFridayFinal Boolean @default(false)
-  announcement Announcement?
+  note                String?
+  announcementText    String
+  nationState         NationState
+  isFridayFinal       Boolean       @default(false)
+  announcement        Announcement?
 }
+
 model Announcement {
-  id String @id @default(cuid())
-  winEventId String @unique
-  winEvent WinEvent @relation(fields:[winEventId], references:[id])
-  text String
-  layout String
-  persona String
-  postedToSlack Boolean @default(false)
-  slackTs String?
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  winEventId    String   @unique
+  winEvent      WinEvent @relation(fields: [winEventId], references: [id])
+  text          String
+  layout        String
+  persona       String
+  postedToSlack Boolean  @default(false)
+  slackTs       String?
+  createdAt     DateTime @default(now())
 }
