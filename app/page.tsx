@@ -1,10 +1,12 @@
 import { getKingdomStats } from '@/lib/domain/riket';
 import { RecordWinForm } from '@/components/RecordWinForm';
 import { BadgeGrid } from '@/components/badges/BadgeGrid';
+import { prisma } from '@/lib/prisma';
 
 export default async function Page() {
   const kingdom = await getKingdomStats();
   const king = kingdom.currentKing;
+  const players = await prisma.player.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true } });
 
   return (
     <main className='page-stack'>
@@ -23,7 +25,7 @@ export default async function Page() {
 
         <div className='card'>
           <h2 style={{ marginTop: 0 }}>Krön nästa vinnare</h2>
-          <RecordWinForm />
+          <RecordWinForm players={players} />
         </div>
       </section>
     </main>
