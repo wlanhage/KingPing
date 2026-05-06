@@ -1,0 +1,2 @@
+import { getCurrentKing, calculateLeaderboard } from '@/lib/domain/riket';
+export async function POST(req:Request){ const form=await req.formData(); const text=String(form.get('text')||'').trim(); if(text==='king'){const k=await getCurrentKing(); return new Response(`Nuvarande kung: ${k?.player.name??'Ingen'}`);} if(text==='leaderboard'){const lb=await calculateLeaderboard(); return new Response(lb.slice(0,10).map((p,i)=>`${i+1}. ${p.name} (${p.wins} vinster)`).join('\n'));} return new Response('/pingis king | /pingis win | /pingis leaderboard | /pingis state'); }
