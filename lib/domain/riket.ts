@@ -1,10 +1,10 @@
 import { EventType, NationState } from '@prisma/client';
-import { differenceInDays, isFriday } from 'date-fns';
+import { isFriday } from 'date-fns';
 import { prisma } from '../prisma';
 import { fridayIntros, nationIntros, streakTemplates } from '../copy/templates';
+import { calculateGlobalStats, calculatePlayerStats } from '../badges/player-stats';
+import { getPlayerBadges } from '../badges/badge-engine';
 
-const nowMs = () => new Date().getTime();
-const durationMs = (start: Date, end?: Date | null) => (end ?? new Date()).getTime() - start.getTime();
 
 export async function getCurrentKing() { return prisma.reign.findFirst({ where:{ endedAt:null }, include:{ player:true }, orderBy:{ startedAt:'desc' } }); }
 export function determineEventType(ctx:{isSameKing:boolean; streakCount:number; previousStreakCount?:number|null;}):EventType {
@@ -18,27 +18,18 @@ export async function recordWin(winnerId:string,note?:string){ const now=new Dat
  return prisma.$transaction(async(tx)=>{ if(current && !isSameKing){ await tx.reign.update({where:{id:current.id}, data:{endedAt:now}}); await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} if(!current){ await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} const win=await tx.winEvent.create({data:{winnerId,previousKingId:current?.playerId,occurredAt:now,eventType,streakCount,previousStreakCount,note,announcementText:ann.text,nationState,isFridayFinal:isFriday(now)}}); const a=await tx.announcement.create({data:{winEventId:win.id,text:ann.text,layout:ann.layout,persona:ann.persona}}); return {win,a}; }); }
 
 export function buildPlayerStats(player: any, currentKingId?: string | null) {
-  const totalWins = player.wins.length;
-  const totalReignMs = player.reigns.reduce((s: number, r: any) => s + durationMs(r.startedAt, r.endedAt), 0);
-  const longestReignMs = Math.max(0, ...player.reigns.map((r: any) => durationMs(r.startedAt, r.endedAt)));
-  const isCurrentKing = currentKingId === player.id;
-  const currentReign = isCurrentKing ? player.reigns.find((r: any) => !r.endedAt) : null;
-  const currentReignMs = currentReign ? durationMs(currentReign.startedAt) : 0;
-  const longestStreak = Math.max(0, ...player.wins.map((w: any) => w.streakCount));
-  const fridayWins = player.wins.filter((w: any) => w.isFridayFinal).length;
-  const takeoverWins = player.wins.filter((w: any) => w.previousKingId && w.previousKingId !== w.winnerId).length;
-  const lastWinAt = player.wins[0]?.occurredAt ?? null;
-  const daysSinceLastWin = lastWinAt ? differenceInDays(new Date(), lastWinAt) : null;
-  const averageReignMs = player.reigns.length ? totalReignMs / player.reigns.length : 0;
-  const crownEfficiencyMsPerWin = totalWins ? totalReignMs / totalWins : 0;
-  return { totalWins, totalReignMs, longestReignMs, currentReignMs, currentStreak: isCurrentKing ? (player.wins[0]?.streakCount ?? 0) : 0, longestStreak, fridayWins, takeoverWins, daysSinceLastWin, averageReignMs, crownEfficiencyMsPerWin, lastWinAt, isCurrentKing };
+  const base = calculatePlayerStats(player, currentKingId);
+  return { ...base, lastWinAt: player.wins?.[0]?.occurredAt ?? null };
 }
 
 export async function getLeaderboard() {
   const players = await prisma.player.findMany({ include: { wins: { orderBy: { occurredAt: 'desc' } }, reigns: true } });
   const current = await getCurrentKing();
-  const rows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId) })).sort((a,b)=>b.totalReignMs-a.totalReignMs);
-  return rows.map((row, i) => ({ ...row, rank: i + 1 }));
+  const rawRows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId) })).sort((a,b)=>b.totalReignMs-a.totalReignMs);
+  const ranked = rawRows.map((row, i) => ({ ...row, rank: i + 1 }));
+  const statMap = Object.fromEntries(ranked.map((r) => [r.id, r]));
+  const globalStats = calculateGlobalStats(Object.values(statMap) as any, current?.playerId ?? null);
+  return ranked.map((row) => ({ ...row, badges: getPlayerBadges(row.id, { playerStats: statMap as any, globalStats }) }));
 }
 
 export async function getKingdomStats() {
@@ -60,8 +51,11 @@ export async function getPlayerStats(playerId: string) {
   if (!player) return null;
   const stats = buildPlayerStats(player, current?.playerId);
   const board = await getLeaderboard();
+  const statMap = Object.fromEntries(board.map((r) => [r.id, r]));
+  const globalStats = calculateGlobalStats(board as any, current?.playerId ?? null);
   return {
     ...stats,
+    badges: getPlayerBadges(playerId, { playerStats: statMap as any, globalStats }),
     currentRankByThroneTime: board.findIndex((r) => r.id === playerId) + 1 || null,
     rankByWins: [...board].sort((a,b)=>b.totalWins-a.totalWins).findIndex((r)=>r.id===playerId)+1 || null,
     rankByLongestStreak: [...board].sort((a,b)=>b.longestStreak-a.longestStreak).findIndex((r)=>r.id===playerId)+1 || null,

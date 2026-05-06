@@ -1,0 +1,38 @@
+import type { BadgeDefinition } from './badge-types';
+
+export const BADGES = [
+  { id: 'current_king', name: 'Nuvarande kung', emoji: '👑', description: 'Sitter just nu på tronen.', rarity: 'rare', category: 'throne', tone: 'prestige' },
+  { id: 'emperor', name: 'Kejsaren', emoji: '👑', description: 'Mest total tid på tronen all-time.', rarity: 'legendary', category: 'throne', tone: 'prestige' },
+  { id: 'crown_collector', name: 'Kronsamlaren', emoji: '💎', description: 'Flest totala vinster.', rarity: 'epic', category: 'throne', tone: 'prestige' },
+  { id: 'efficient_monarch', name: 'Effektiv monark', emoji: '🎯', description: 'Högst tron-tid per vinst.', rarity: 'epic', category: 'meta', tone: 'prestige' },
+  { id: 'longest_reign', name: 'Historieboken', emoji: '📜', description: 'Har haft den längsta enskilda regeringstiden.', rarity: 'legendary', category: 'legacy', tone: 'prestige' },
+  { id: 'dynasty_founder', name: 'Dynastigrundaren', emoji: '🏛️', description: 'Har nått minst 3 raka vinster.', rarity: 'epic', category: 'streak', tone: 'dramatic' },
+  { id: 'hr_case', name: 'HR-ärende', emoji: '🚨', description: 'Har nått minst 4 raka vinster. Situationen är under uppsikt.', rarity: 'epic', category: 'streak', tone: 'meme' },
+  { id: 'tyrant', name: 'Tyrann', emoji: '☢️', description: 'Har nått minst 5 raka vinster.', rarity: 'legendary', category: 'streak', tone: 'dramatic' },
+  { id: 'state_owned', name: 'Statligt ägd', emoji: '🏴', description: 'Har gjort bordet till administrativ enhet under sitt styre.', rarity: 'legendary', category: 'streak', tone: 'meme' },
+  { id: 'defender_of_the_throne', name: 'Tronsförsvararen', emoji: '🛡️', description: 'Har vunnit medan de redan satt på tronen.', rarity: 'rare', category: 'streak', tone: 'prestige' },
+  { id: 'friday_champion', name: 'Fredagsmästaren', emoji: '🏟️', description: 'Flest fredagsvinster i riket.', rarity: 'epic', category: 'friday', tone: 'prestige' },
+  { id: 'prime_time_player', name: 'Prime Time Player', emoji: '📺', description: 'Har vunnit flera fredagsfinaler.', rarity: 'rare', category: 'friday', tone: 'prestige' },
+  { id: 'after_work_assassin', name: 'After Work Assassin', emoji: '🍻', description: 'Är oproportionerligt farlig på fredagar.', rarity: 'rare', category: 'friday', tone: 'meme' },
+  { id: 'recent_champion', name: 'Nylig mästare', emoji: '📈', description: 'Flest vinster senaste 30 dagarna.', rarity: 'epic', category: 'form', tone: 'prestige' },
+  { id: 'hot_right_now', name: 'Het just nu', emoji: '🔥', description: 'Har starkast form just nu.', rarity: 'rare', category: 'form', tone: 'prestige' },
+  { id: 'momentum', name: 'Momentum', emoji: '⚡', description: 'Har vunnit flera gånger den senaste veckan.', rarity: 'rare', category: 'form', tone: 'prestige' },
+  { id: 'cold', name: 'Kylig', emoji: '🧊', description: 'Har inte vunnit på 14+ dagar.', rarity: 'common', category: 'form', tone: 'roast' },
+  { id: 'frozen', name: 'Nedfryst', emoji: '❄️', description: 'Har inte vunnit på 30+ dagar.', rarity: 'rare', category: 'form', tone: 'roast' },
+  { id: 'lost_heir', name: 'Den förlorade arvingen', emoji: '🫥', description: 'Har historisk relevans men har varit borta från tronen länge.', rarity: 'epic', category: 'legacy', tone: 'roast' },
+  { id: 'historically_relevant', name: 'Historiskt relevant', emoji: '🪦', description: 'Toppspelare historiskt, men svag nutida form.', rarity: 'epic', category: 'legacy', tone: 'roast' },
+  { id: 'tyrant_slayer', name: 'Tyrannfällaren', emoji: '⚔️', description: 'Har brutit en streak på 5+ vinster.', rarity: 'legendary', category: 'combat', tone: 'dramatic' },
+  { id: 'regime_changer', name: 'Regimskiftare', emoji: '🩸', description: 'Har brutit flest streaks.', rarity: 'epic', category: 'combat', tone: 'dramatic' },
+  { id: 'king_slayer', name: 'Kungamördaren', emoji: '🪓', description: 'Flest takeover-vinster mot sittande kungar.', rarity: 'epic', category: 'combat', tone: 'dramatic' },
+  { id: 'revolutionary', name: 'Revolutionären', emoji: '🔥', description: 'Har avslutat en dynasti på 3+ raka vinster.', rarity: 'epic', category: 'combat', tone: 'dramatic' },
+  { id: 'chaos_agent', name: 'Kaosagenten', emoji: '🌀', description: 'Är ofta inblandad i tronskiften.', rarity: 'rare', category: 'chaos', tone: 'meme' },
+  { id: 'borrowed_crown', name: 'Kronan var lånad', emoji: '🤡', description: 'Har flera korta regeringstider.', rarity: 'common', category: 'shame', tone: 'roast' },
+  { id: 'short_reign_specialist', name: 'Kort mandatperiod', emoji: '🐌', description: 'Har ovanligt kort genomsnittlig regeringstid.', rarity: 'common', category: 'shame', tone: 'roast' },
+  { id: 'people_favorite', name: 'Folkets favorit', emoji: '🎭', description: 'Vinner ofta, men bygger sällan dynastier.', rarity: 'rare', category: 'meta', tone: 'meme' },
+  { id: 'statistically_unlikely', name: 'Statistiskt osannolik', emoji: '📊', description: 'Har lyckats vinna trots svag historik.', rarity: 'rare', category: 'meta', tone: 'meme' },
+  { id: 'time_traveler', name: 'Tidsresenären', emoji: '🕰️', description: 'Vann igen efter ett mycket långt uppehåll.', rarity: 'epic', category: 'legacy', tone: 'dramatic' },
+  { id: 'prophecy', name: 'Profetian', emoji: '📜', description: 'Återvände till tronen när riket minst anade det.', rarity: 'mythical', category: 'legacy', tone: 'dramatic' },
+  { id: 'eagle_has_landed', name: 'Örnen har landat', emoji: '🦅', description: 'Ingen vet exakt vad detta betyder. Men det har hänt.', rarity: 'mythical', category: 'chaos', tone: 'meme' },
+] as const satisfies readonly BadgeDefinition[];
+
+export const BADGE_BY_ID = Object.fromEntries(BADGES.map((b) => [b.id, b]));
