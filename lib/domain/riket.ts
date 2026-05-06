@@ -1,7 +1,7 @@
 import { EventType, NationState } from '@prisma/client';
 import { isFriday } from 'date-fns';
-import { prisma } from '@/lib/prisma';
-import { fridayIntros, nationIntros, streakTemplates } from '@/lib/copy/templates';
+import { prisma } from '../prisma';
+import { fridayIntros, nationIntros, streakTemplates } from '../copy/templates';
 
 export async function getCurrentKing() { return prisma.reign.findFirst({ where:{ endedAt:null }, include:{ player:true }, orderBy:{ startedAt:'desc' } }); }
 export function determineEventType(ctx:{isSameKing:boolean; streakCount:number; previousStreakCount?:number|null;}):EventType {
