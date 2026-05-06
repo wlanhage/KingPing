@@ -1,0 +1,3 @@
+'use client';
+import { useState } from 'react';
+export function RecordWinForm(){ const [winnerId,setWinnerId]=useState(''); const [note,setNote]=useState(''); return <form className='space-y-2' onSubmit={async(e)=>{e.preventDefault(); await fetch('/api/wins',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({winnerId,note})}); location.reload();}}><input className='text-black' placeholder='Winner ID' value={winnerId} onChange={e=>setWinnerId(e.target.value)}/><input className='text-black' placeholder='Note' value={note} onChange={e=>setNote(e.target.value)}/><button className='bg-amber-500 px-4 py-2 rounded'>Krön vinnaren</button></form>}
