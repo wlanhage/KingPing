@@ -3,6 +3,8 @@ import { RecordWinForm } from '@/components/RecordWinForm';
 import { prisma } from '@/lib/prisma';
 import { formatDuration } from '@/lib/format';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Page() {
   const kingdom = await getKingdomStats();
   const king = kingdom.currentKing;

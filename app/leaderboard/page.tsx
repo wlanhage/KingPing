@@ -2,6 +2,8 @@ import { LeaderboardSummaryCards } from '@/components/leaderboard/LeaderboardSum
 import { LeaderboardTable } from '@/components/leaderboard/LeaderboardTable';
 import { getKingdomStats, getLeaderboard } from '@/lib/domain/riket';
 
+export const dynamic = 'force-dynamic';
+
 export default async function LeaderboardPage() {
   const rows = await getLeaderboard();
   const summary = await getKingdomStats();

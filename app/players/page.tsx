@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { AddPlayerForm } from '@/components/AddPlayerForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Players() {
   const players = await prisma.player.findMany({ orderBy: { name: 'asc' } });
   return (
