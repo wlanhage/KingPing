@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PlayerHero } from '@/components/player/PlayerHero';
 import { PlayerRankComparison } from '@/components/player/PlayerRankComparison';
@@ -14,6 +15,7 @@ export default async function PlayerPage({ params }: { params: Promise<{ playerI
 
   return (
     <main className='page-stack'>
+      <Link href='/players' className='royal-back-link'>← Tillbaka till spelare</Link>
       <PlayerHero player={profile.player} stats={s} />
       <StatsGrid stats={[
         { label: 'Total tid på tronen', value: formatDuration(s.totalReignMs) },

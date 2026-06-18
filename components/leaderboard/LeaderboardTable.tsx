@@ -1,8 +1,39 @@
 import Link from 'next/link';
 import { formatDate, formatDuration } from '@/lib/format';
-import { BadgeGrid } from '@/components/badges/BadgeGrid';
+
+const headers = ['#', 'Spelare', 'Status', 'Trontid', 'Vinster', 'Längsta regering', 'Nuvarande streak', 'Längsta streak', 'Fredagsvinster', 'Senaste vinst'];
 
 export function LeaderboardTable({ rows }: { rows: any[] }) {
-  if (!rows.length) return <div className='rounded-2xl bg-zinc-900 p-6'>Inga spelare än.</div>;
-  return <div className='rounded-2xl overflow-hidden border border-zinc-800'><table className='w-full text-sm'><thead className='bg-zinc-900'><tr>{['#','Spelare','Badges','Status','Trontid','Vinster','Längsta regering','Nuvarande streak','Längsta streak','Fredagsvinster','Senaste vinst'].map(h=><th key={h} className='text-left p-3'>{h}</th>)}</tr></thead><tbody>{rows.map(r=>{const top=r.rank===1?'Kejsaren':r.rank===2?'Kronprinsen':r.rank===3?'Rikets tredje kraft':'';return <tr key={r.id} className={`border-t border-zinc-800 ${r.isCurrentKing?'bg-amber-950/30':''}`}><td className='p-3 font-semibold'>{r.rank}</td><td className='p-3'><Link href={`/players/${r.id}`} className='hover:underline'>{r.name}</Link><div className='text-xs text-zinc-400'>{top}</div></td><td className='p-3'><BadgeGrid badges={r.badges ?? []} limit={3} /></td><td className='p-3'>{r.isCurrentKing?'👑 Nuvarande kung':'Utmanare'}</td><td className='p-3'>{formatDuration(r.totalReignMs)}</td><td className='p-3'>{r.totalWins}</td><td className='p-3'>{formatDuration(r.longestReignMs)}</td><td className='p-3'>{r.currentStreak}</td><td className='p-3'>{r.longestStreak}</td><td className='p-3'>{r.fridayWins}</td><td className='p-3'>{formatDate(r.lastWinAt)}</td></tr>})}</tbody></table></div>;
+  if (!rows.length) return <div className='card'>Inga spelare än.</div>;
+  return (
+    <div className='lb-table-wrap'>
+      <table>
+        <thead>
+          <tr>{headers.map((h) => <th key={h}>{h}</th>)}</tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => {
+            const epithet = r.rank === 1 ? 'Kejsaren' : r.rank === 2 ? 'Kronprinsen' : r.rank === 3 ? 'Rikets tredje kraft' : '';
+            return (
+              <tr key={r.id} className={r.isCurrentKing ? 'lb-king-row' : ''}>
+                <td className='lb-rank'>{r.rank}</td>
+                <td>
+                  <Link href={`/players/${r.id}`} className='lb-name'>{r.name}</Link>
+                  {epithet && <div className='lb-epithet'>{epithet}</div>}
+                </td>
+                <td>{r.isCurrentKing ? '👑 Nuvarande kung' : 'Utmanare'}</td>
+                <td>{formatDuration(r.totalReignMs)}</td>
+                <td>{r.totalWins}</td>
+                <td>{formatDuration(r.longestReignMs)}</td>
+                <td>{r.currentStreak}</td>
+                <td>{r.longestStreak}</td>
+                <td>{r.fridayWins}</td>
+                <td>{formatDate(r.lastWinAt)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 }
