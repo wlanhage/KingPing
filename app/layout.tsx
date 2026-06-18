@@ -1,16 +1,25 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Cinzel, Cinzel_Decorative, EB_Garamond } from 'next/font/google';
+import { RealmLogo } from '@/components/RealmLogo';
 import './globals.css';
 
 const display = Cinzel({ subsets: ['latin'], weight: ['400', '600', '700', '900'], variable: '--font-display' });
 const titleFont = Cinzel_Decorative({ subsets: ['latin'], weight: ['700', '900'], variable: '--font-title' });
 const body = EB_Garamond({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-body' });
 
+export const metadata: Metadata = {
+  title: { default: 'Rundpingisriket', template: '%s · Rundpingisriket' },
+  description: 'Tronen, riddarna och kröningarna i kontorets pingisrike.',
+  applicationName: 'Rundpingisriket',
+};
+
 const nav = [
   ['Tronsalen', '/'],
   ['Rikets främsta', '/leaderboard'],
   ['Krönikan', '/history'],
   ['Riddare', '/players'],
+  ['Utmärkelser', '/badges'],
   ['Rådet', '/settings'],
 ];
 
@@ -21,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className='app-shell'>
           <header className='realm-banner'>
             <Link href='/' className='realm-crest'>
-              <span className='realm-crest-mark' aria-hidden>⚜</span>
+              <span className='realm-crest-mark' aria-hidden><RealmLogo /></span>
               <span className='realm-crest-name'>Rundpingisriket</span>
             </Link>
             <nav className='top-nav'>

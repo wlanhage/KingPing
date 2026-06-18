@@ -54,7 +54,6 @@ function OrbitBadge({ badge, position }: { badge: ComputedPlayerBadge; position:
       </div>
       <div className='royal-badge-caption'>
         <p>{badge.definition.name}</p>
-        <span>{badge.definition.rarity}</span>
       </div>
     </div>
   );

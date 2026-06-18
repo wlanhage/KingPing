@@ -8,6 +8,13 @@
   --accent-2: #8a2b22;      /* heraldiskt rött */
   --border: #4b3a1f;        /* brons */
   --gold: #e7c25c;
+
+  /* Rarity-färger */
+  --r-common: #9aa3ad;
+  --r-rare: #4ea1e0;
+  --r-epic: #b06fe6;
+  --r-legendary: #e7c25c;
+  --r-mythical: #ec5fae;
 }
 
 * { box-sizing: border-box; }
@@ -266,7 +273,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   width: 72px;
   height: 72px;
   place-items: center;
-  border: 2px solid rgba(247, 198, 90, .42);
+  border: 3px solid rgba(247, 198, 90, .42);
   border-radius: 999px;
   background: linear-gradient(145deg, rgba(39, 31, 21, .96), rgba(20, 14, 8, .94));
   box-shadow: 0 14px 34px rgba(0, 0, 0, .38), inset 0 1px 0 rgba(255, 255, 255, .08);
@@ -354,11 +361,11 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   text-transform: uppercase;
 }
 
-.rarity-common { border-color: rgba(148, 163, 184, .45); color: #e2e8f0; }
-.rarity-rare { border-color: rgba(125, 211, 252, .72); box-shadow: 0 0 24px rgba(56, 189, 248, .24), 0 14px 34px rgba(0, 0, 0, .38); }
-.rarity-epic { border-color: rgba(196, 181, 253, .76); box-shadow: 0 0 24px rgba(167, 139, 250, .28), 0 14px 34px rgba(0, 0, 0, .38); }
-.rarity-legendary { border-color: rgba(252, 211, 77, .84); box-shadow: 0 0 28px rgba(251, 191, 36, .34), 0 14px 34px rgba(0, 0, 0, .38); }
-.rarity-mythical { border-color: rgba(249, 168, 212, .84); box-shadow: 0 0 28px rgba(217, 70, 239, .3), 0 0 34px rgba(251, 191, 36, .22), 0 14px 34px rgba(0, 0, 0, .38); }
+.rarity-common { border-color: var(--r-common); box-shadow: 0 0 0 1px rgba(154, 163, 173, .25), 0 10px 24px rgba(0, 0, 0, .4); }
+.rarity-rare { border-color: var(--r-rare); box-shadow: 0 0 20px rgba(78, 161, 224, .55), 0 10px 26px rgba(0, 0, 0, .4); }
+.rarity-epic { border-color: var(--r-epic); box-shadow: 0 0 22px rgba(176, 111, 230, .6), 0 10px 26px rgba(0, 0, 0, .4); }
+.rarity-legendary { border-color: var(--r-legendary); box-shadow: 0 0 26px rgba(231, 194, 92, .6), 0 10px 26px rgba(0, 0, 0, .4); }
+.rarity-mythical { border-color: var(--r-mythical); box-shadow: 0 0 26px rgba(236, 95, 174, .6), 0 0 38px rgba(231, 194, 92, .25), 0 10px 26px rgba(0, 0, 0, .4); }
 
 .royal-player-identity {
   max-width: 680px;
@@ -1137,3 +1144,70 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   font-size: .75rem;
 }
 
+
+/* ===== Rarity textfärger ===== */
+.rarity-text-common { color: var(--r-common); }
+.rarity-text-rare { color: var(--r-rare); }
+.rarity-text-epic { color: var(--r-epic); }
+.rarity-text-legendary { color: var(--r-legendary); }
+.rarity-text-mythical { color: var(--r-mythical); }
+
+/* ===== Dubba ny riddare ===== */
+.add-knight-panel h2 { font-size: 1.3rem; }
+.add-knight-form { display: flex; flex-wrap: wrap; gap: .6rem; }
+.add-knight-form .crown-input { flex: 1 1 220px; }
+.add-knight-form .crown-btn { flex: 0 0 auto; margin-top: 0; }
+
+.knight-card { display: grid; justify-items: start; gap: .15rem; }
+.knight-initial {
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin-bottom: .4rem;
+  place-items: center;
+  border: 1px solid rgba(231, 194, 92, .45);
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 28%, rgba(231, 194, 92, .16), transparent 45%), #1a130b;
+  color: var(--gold);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.knight-card h3 { font-size: 1.15rem; }
+
+/* ===== Utmärkelser (badge-codex) ===== */
+.badge-codex-group { display: grid; gap: .8rem; }
+.badge-codex-title { margin: .6rem 0 0; font-size: 1.35rem; letter-spacing: .04em; }
+.badge-codex-title span { color: var(--muted); font-family: var(--font-body), serif; font-weight: 400; font-size: .9rem; }
+.badge-codex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: .8rem; }
+.badge-codex-card {
+  display: flex;
+  gap: .9rem;
+  align-items: flex-start;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(0, 0, 0, .16)), var(--panel);
+}
+.rarity-accent-common { border-left-color: var(--r-common); }
+.rarity-accent-rare { border-left-color: var(--r-rare); }
+.rarity-accent-epic { border-left-color: var(--r-epic); }
+.rarity-accent-legendary { border-left-color: var(--r-legendary); }
+.rarity-accent-mythical { border-left-color: var(--r-mythical); }
+
+.badge-codex-medallion {
+  display: grid;
+  flex: 0 0 auto;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border: 2px solid rgba(247, 198, 90, .4);
+  border-radius: 999px;
+  background: linear-gradient(145deg, rgba(39, 31, 21, .96), rgba(20, 14, 8, .94));
+  font-size: 1.4rem;
+}
+.badge-codex-body { min-width: 0; }
+.badge-codex-name { margin: 0; font-size: 1.05rem; }
+.badge-codex-rarity { font-size: .6rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.badge-codex-desc { margin: .35rem 0 0; color: var(--muted); font-size: .9rem; line-height: 1.4; }
