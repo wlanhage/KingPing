@@ -1211,3 +1211,80 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .badge-codex-name { margin: 0; font-size: 1.05rem; }
 .badge-codex-rarity { font-size: .6rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
 .badge-codex-desc { margin: .35rem 0 0; color: var(--muted); font-size: .9rem; line-height: 1.4; }
+
+/* ===== Profil topbar + "Alla utmärkelser" ===== */
+.profile-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+}
+
+.all-badges-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .5rem .9rem;
+  border: 1px solid rgba(231, 194, 92, .5);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(0, 0, 0, .14));
+  color: var(--gold);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease;
+}
+.all-badges-btn:hover { border-color: var(--gold); background: linear-gradient(180deg, rgba(231, 194, 92, .1), rgba(0, 0, 0, .14)); }
+.all-badges-btn span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.45rem;
+  height: 1.45rem;
+  padding: 0 .35rem;
+  border-radius: 999px;
+  background: rgba(231, 194, 92, .2);
+  color: var(--gold);
+  font-family: var(--font-body), serif;
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.modal-badges { max-width: 560px; }
+.modal-badges-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.modal-close {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: .9rem;
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease;
+}
+.modal-close:hover { color: var(--gold); border-color: rgba(231, 194, 92, .6); }
+.modal-badges-list {
+  display: grid;
+  gap: .6rem;
+  max-height: min(60vh, 520px);
+  overflow-y: auto;
+  padding-right: .25rem;
+}
+.badge-codex-reason {
+  margin: .3rem 0 0;
+  color: var(--muted);
+  font-size: .78rem;
+  font-style: italic;
+}

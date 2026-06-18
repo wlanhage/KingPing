@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PlayerHero } from '@/components/player/PlayerHero';
+import { AllBadgesButton } from '@/components/player/AllBadgesButton';
 import { PlayerRankComparison } from '@/components/player/PlayerRankComparison';
 import { PlayerTimeline } from '@/components/player/PlayerTimeline';
 import { StatsGrid } from '@/components/stats/StatsGrid';
@@ -15,7 +16,10 @@ export default async function PlayerPage({ params }: { params: Promise<{ playerI
 
   return (
     <main className='page-stack'>
-      <Link href='/players' className='royal-back-link'>← Tillbaka till spelare</Link>
+      <div className='profile-topbar'>
+        <Link href='/players' className='royal-back-link'>← Tillbaka till spelare</Link>
+        <AllBadgesButton badges={s.badges ?? []} />
+      </div>
       <PlayerHero player={profile.player} stats={s} />
       <StatsGrid stats={[
         { label: 'Total tid på tronen', value: formatDuration(s.totalReignMs) },
