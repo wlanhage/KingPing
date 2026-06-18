@@ -13,8 +13,8 @@ export default async function Page() {
   return (
     <main className='dash'>
       <header className='dash-header'>
-        <h1>Rundpingisriket</h1>
-        <p>Överblick över tronen och de senaste utmanarna.</p>
+        <h1>Tronsalen</h1>
+        <p>Vem härskar över riket — och vem vågar utmana?</p>
       </header>
 
       <section className='dash-throne'>

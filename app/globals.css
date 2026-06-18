@@ -1,31 +1,101 @@
 :root {
-  --bg: #090b12;
-  --panel: #11162a;
-  --panel-soft: #171d35;
-  --text: #e8edff;
-  --muted: #98a4d2;
-  --accent: #7c9bff;
-  --accent-2: #49d7d0;
-  --border: #242d4f;
-  --gold: #f7c65a;
+  --bg: #120d08;            /* mörk, varm sten */
+  --panel: #1e1810;         /* stenpanel */
+  --panel-soft: #271f15;
+  --text: #f1e3c6;          /* pergament */
+  --muted: #b29a72;         /* åldrat guld */
+  --accent: #c9a227;        /* kungligt guld */
+  --accent-2: #8a2b22;      /* heraldiskt rött */
+  --border: #4b3a1f;        /* brons */
+  --gold: #e7c25c;
 }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body {
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-family: var(--font-body), Georgia, 'Times New Roman', serif;
   color: var(--text);
-  background: radial-gradient(circle at 20% 0%, #1c2140 0%, var(--bg) 45%);
+  background:
+    radial-gradient(900px 520px at 50% -8%, rgba(201, 162, 39, .12), transparent 60%),
+    radial-gradient(760px 700px at 100% 0%, rgba(138, 43, 34, .10), transparent 55%),
+    linear-gradient(180deg, #1c140b 0%, var(--bg) 42%);
+  background-attachment: fixed;
+}
+
+/* Facklebelyst vinjett över hela riket */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(125% 85% at 50% -5%, transparent 52%, rgba(0, 0, 0, .5) 100%);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: .01em;
 }
 
 a { color: inherit; text-decoration: none; }
-.app-shell { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem 4rem; }
-.top-nav { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:2rem; }
-.nav-pill { padding:.55rem .9rem; border:1px solid var(--border); border-radius:999px; color:var(--muted); background:rgba(255,255,255,.02); }
-.nav-pill:hover { color:var(--text); border-color:var(--accent); }
+.app-shell { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+/* Heraldisk banner överst */
+.realm-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.realm-crest {
+  display: inline-flex;
+  align-items: center;
+  gap: .65rem;
+}
+
+.realm-crest-mark {
+  display: grid;
+  width: 2.3rem;
+  height: 2.3rem;
+  place-items: center;
+  border: 1px solid rgba(231, 194, 92, .55);
+  border-radius: 8px;
+  background: radial-gradient(circle at 35% 28%, rgba(231, 194, 92, .28), rgba(138, 43, 34, .18));
+  color: var(--gold);
+  font-size: 1.25rem;
+}
+
+.realm-crest-name {
+  font-family: var(--font-title), Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+  color: var(--text);
+}
+
+.top-nav { display: flex; gap: .4rem; flex-wrap: wrap; }
+.nav-pill {
+  padding: .5rem .85rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(0, 0, 0, .14));
+  font-family: var(--font-display), Georgia, serif;
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  transition: color .15s ease, border-color .15s ease;
+}
+.nav-pill:hover { color: var(--gold); border-color: rgba(231, 194, 92, .6); }
 .page-stack { display:grid; gap:1rem; }
-.card { background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--border); border-radius:16px; padding:1rem; }
-.title-xl { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 0; }
+.card { background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(0,0,0,.18)), var(--panel); border:1px solid var(--border); border-radius:10px; padding:1rem; box-shadow: inset 0 1px 0 rgba(231,194,92,.06), 0 12px 30px rgba(0,0,0,.32); }
+.title-xl { font-family: var(--font-title), Georgia, serif; font-size: clamp(1.9rem, 4vw, 2.8rem); margin: 0; letter-spacing:.02em; }
 .subtitle { color: var(--muted); margin-top:.4rem; }
 .grid { display:grid; gap:1rem; }
 .grid.cols-2 { grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); }
@@ -38,9 +108,9 @@ th, td { padding:.75rem; border-top:1px solid var(--border); text-align:left; ve
 thead th { border-top:none; color:var(--muted); font-weight:600; background: rgba(255,255,255,.02); }
 .badge-row { display:flex; flex-wrap:wrap; gap:.4rem; }
 .hero { display:flex; gap:1rem; align-items:center; }
-.avatar { width:56px; height:56px; border-radius:50%; display:grid; place-content:center; background:linear-gradient(145deg, #2b3361, #1a2040); font-weight:700; }
-.input, .btn { border-radius:12px; border:1px solid var(--border); padding:.7rem .8rem; background:var(--panel-soft); color:var(--text); }
-.btn { cursor:pointer; background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#071026; font-weight:700; border:none; }
+.avatar { width:56px; height:56px; border-radius:50%; display:grid; place-content:center; background:radial-gradient(circle at 35% 28%, rgba(231,194,92,.18), transparent 45%), #1a130b; border:1px solid rgba(231,194,92,.4); color:var(--gold); font-weight:700; }
+.input, .btn { border-radius:8px; border:1px solid var(--border); padding:.7rem .8rem; background:rgba(0,0,0,.25); color:var(--text); font-family:inherit; }
+.btn { cursor:pointer; background:linear-gradient(180deg, #e7c25c, #b8901f); color:#2a1d00; font-family:var(--font-display), Georgia, serif; font-weight:700; letter-spacing:.03em; border:1px solid rgba(231,194,92,.5); }
 .form-row { display:flex; gap:.6rem; flex-wrap:wrap; }
 .timeline-item { border-left:2px solid var(--border); padding-left:.8rem; margin:.75rem 0; }
 .muted { color:var(--muted); }
@@ -73,9 +143,9 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   border-radius: 24px;
   padding: clamp(1.4rem, 3vw, 2.6rem);
   background:
-    linear-gradient(180deg, rgba(7, 10, 22, .94), rgba(9, 12, 25, .88)),
+    linear-gradient(180deg, rgba(20, 14, 8, .94), rgba(26, 19, 11, .88)),
     radial-gradient(circle at 50% 24%, rgba(247, 198, 90, .16), transparent 32%),
-    radial-gradient(circle at 50% 70%, rgba(43, 73, 145, .2), transparent 45%);
+    radial-gradient(circle at 50% 70%, rgba(138, 43, 34, .18), transparent 45%);
   box-shadow: 0 28px 90px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .04);
 }
 
@@ -98,7 +168,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   inset: 0;
   background:
     linear-gradient(90deg, transparent, rgba(247, 198, 90, .04), transparent),
-    radial-gradient(circle at 15% 20%, rgba(124, 155, 255, .12), transparent 28%),
+    radial-gradient(circle at 15% 20%, rgba(138, 43, 34, .14), transparent 28%),
     radial-gradient(circle at 86% 34%, rgba(247, 198, 90, .08), transparent 24%);
 }
 
@@ -111,7 +181,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   top: 7%;
   transform: translateX(-50%);
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(247, 198, 90, .18), rgba(79, 70, 229, .08) 42%, transparent 70%);
+  background: radial-gradient(circle, rgba(231, 194, 92, .2), rgba(138, 43, 34, .1) 42%, transparent 70%);
   filter: blur(6px);
 }
 
@@ -165,7 +235,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   border-radius: 999px;
   background:
     radial-gradient(circle at 35% 22%, rgba(255, 255, 255, .14), transparent 28%),
-    linear-gradient(145deg, #171d35, #090b12);
+    linear-gradient(145deg, #271f15, #140e08);
   color: #ffe7a3;
   font-size: clamp(4.7rem, 9vw, 7rem);
   font-weight: 800;
@@ -191,15 +261,68 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 }
 
 .royal-badge-medallion {
+  position: relative;
   display: grid;
   width: 72px;
   height: 72px;
   place-items: center;
   border: 2px solid rgba(247, 198, 90, .42);
   border-radius: 999px;
-  background: linear-gradient(145deg, rgba(29, 36, 66, .96), rgba(11, 15, 31, .94));
+  background: linear-gradient(145deg, rgba(39, 31, 21, .96), rgba(20, 14, 8, .94));
   box-shadow: 0 14px 34px rgba(0, 0, 0, .38), inset 0 1px 0 rgba(255, 255, 255, .08);
+  cursor: help;
 }
+
+.royal-badge-medallion:focus-visible {
+  outline: none;
+  border-color: var(--gold);
+}
+
+/* ===== Badge hover-tooltip ===== */
+.badge-tooltip {
+  position: absolute;
+  left: 50%;
+  z-index: 6;
+  display: grid;
+  gap: .22rem;
+  width: max-content;
+  max-width: 220px;
+  padding: .6rem .7rem;
+  border: 1px solid rgba(231, 194, 92, .45);
+  border-radius: 10px;
+  background: rgba(18, 12, 6, .98);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, .6);
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .14s ease, transform .14s ease;
+}
+
+.badge-tooltip.above { bottom: calc(100% + 10px); transform: translateX(-50%) translateY(4px); }
+.badge-tooltip.below { top: calc(100% + 10px); transform: translateX(-50%) translateY(-4px); }
+
+.royal-orbit-badge:hover,
+.royal-orbit-badge:focus-within { z-index: 12; }
+
+.royal-badge-medallion:hover .badge-tooltip,
+.royal-badge-medallion:focus .badge-tooltip,
+.royal-badge-medallion:focus-visible .badge-tooltip,
+.royal-mobile-badge:hover .badge-tooltip,
+.royal-mobile-badge:focus .badge-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.badge-tt-head { display: flex; align-items: center; gap: .4rem; }
+.badge-tt-emoji { font-size: 1rem; line-height: 1; }
+.badge-tt-name { color: #f5ead0; font-family: var(--font-display), Georgia, serif; font-size: .9rem; font-weight: 700; }
+.badge-tt-rarity { color: var(--gold); font-size: .6rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.badge-tt-desc { color: #ddcaa4; font-size: .82rem; line-height: 1.38; }
+.badge-tt-reason { margin-top: .1rem; color: var(--muted); font-size: .76rem; font-style: italic; }
 
 .royal-badge-icon {
   font-size: 1.7rem;
@@ -208,7 +331,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 
 .royal-badge-caption {
   margin-top: .45rem;
-  color: #eef2ff;
+  color: #f1e3c6;
   text-align: center;
   text-shadow: 0 2px 12px rgba(0, 0, 0, .65);
 }
@@ -244,7 +367,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 
 .royal-player-identity h1 {
   margin: 0;
-  color: #f6f7ff;
+  color: #f5ead0;
   font-size: clamp(2.55rem, 5vw, 4.4rem);
   line-height: 1;
   letter-spacing: 0;
@@ -259,13 +382,13 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 
 .royal-player-reign {
   margin: .35rem 0 0;
-  color: #c8d0ef;
+  color: #cbb793;
 }
 
 .royal-player-quote {
   max-width: 620px;
   margin: .9rem auto 0;
-  color: #e5e9fb;
+  color: #e7d9ba;
   font-size: 1.02rem;
   font-style: italic;
 }
@@ -286,7 +409,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   border: 1px solid rgba(247, 198, 90, .2);
   border-radius: 24px;
   padding: clamp(1rem, 2vw, 1.5rem);
-  background: linear-gradient(180deg, rgba(9, 12, 25, .92), rgba(13, 18, 36, .86));
+  background: linear-gradient(180deg, rgba(26, 19, 11, .92), rgba(20, 15, 9, .86));
   box-shadow: 0 24px 70px rgba(0, 0, 0, .36), inset 0 1px 0 rgba(255, 255, 255, .035);
 }
 
@@ -309,7 +432,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   padding: 1rem;
   background:
     radial-gradient(circle at 82% 0%, rgba(247, 198, 90, .09), transparent 34%),
-    linear-gradient(180deg, rgba(23, 29, 53, .88), rgba(11, 15, 31, .92));
+    linear-gradient(180deg, rgba(39, 31, 21, .88), rgba(20, 14, 8, .92));
   box-shadow: 0 14px 34px rgba(0, 0, 0, .24);
 }
 
@@ -326,7 +449,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 
 .royal-stat-label {
   margin: .85rem 0 0;
-  color: #aeb9e8;
+  color: #b8a47c;
   font-size: .72rem;
   font-weight: 700;
   letter-spacing: .08em;
@@ -336,7 +459,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 
 .royal-stat-value {
   margin: .42rem 0 0;
-  color: #f6f7ff;
+  color: #f5ead0;
   font-size: clamp(1.35rem, 2.1vw, 1.75rem);
   font-weight: 800;
   line-height: 1.12;
@@ -393,6 +516,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   }
 
   .royal-mobile-badge {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: .35rem;
@@ -400,10 +524,11 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
     border: 1px solid rgba(247, 198, 90, .22);
     border-radius: 999px;
     padding: .42rem .65rem;
-    background: rgba(11, 15, 31, .78);
-    color: #eef2ff;
+    background: rgba(20, 14, 8, .8);
+    color: #f1e3c6;
     font-size: .8rem;
     font-weight: 700;
+    cursor: help;
   }
 
   .royal-player-identity {
@@ -491,7 +616,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   border: 1px solid rgba(247, 198, 90, .2);
   border-radius: 24px;
   padding: clamp(1rem, 2vw, 1.5rem);
-  background: linear-gradient(180deg, rgba(9, 12, 25, .92), rgba(13, 18, 36, .86));
+  background: linear-gradient(180deg, rgba(26, 19, 11, .92), rgba(20, 15, 9, .86));
   box-shadow: 0 24px 70px rgba(0, 0, 0, .36), inset 0 1px 0 rgba(255, 255, 255, .035);
 }
 
@@ -518,7 +643,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   text-align: center;
   background:
     radial-gradient(circle at 50% -10%, rgba(247, 198, 90, .08), transparent 45%),
-    linear-gradient(180deg, rgba(23, 29, 53, .88), rgba(11, 15, 31, .92));
+    linear-gradient(180deg, rgba(39, 31, 21, .88), rgba(20, 14, 8, .92));
   box-shadow: 0 14px 34px rgba(0, 0, 0, .24);
 }
 
@@ -553,7 +678,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 
 .royal-rank-label {
   margin: .85rem 0 0;
-  color: #aeb9e8;
+  color: #b8a47c;
   font-size: .72rem;
   font-weight: 700;
   letter-spacing: .08em;
@@ -562,7 +687,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 
 .royal-rank-value {
   margin: .3rem 0 0;
-  color: #f6f7ff;
+  color: #f5ead0;
   font-size: clamp(1.7rem, 2.6vw, 2.2rem);
   font-weight: 800;
   line-height: 1.05;
@@ -626,7 +751,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   place-items: center;
   border: 1px solid rgba(247, 198, 90, .35);
   border-radius: 999px;
-  background: linear-gradient(145deg, rgba(29, 36, 66, .96), rgba(11, 15, 31, .94));
+  background: linear-gradient(145deg, rgba(39, 31, 21, .96), rgba(20, 14, 8, .94));
   font-size: 1.3rem;
   box-shadow: 0 10px 24px rgba(0, 0, 0, .35);
 }
@@ -651,7 +776,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   border: 1px solid rgba(247, 198, 90, .14);
   border-radius: 16px;
   padding: .8rem 1rem;
-  background: linear-gradient(180deg, rgba(23, 29, 53, .55), rgba(11, 15, 31, .5));
+  background: linear-gradient(180deg, rgba(39, 31, 21, .55), rgba(20, 14, 8, .5));
 }
 
 .royal-chronicle-head {
@@ -663,7 +788,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 }
 
 .royal-chronicle-event {
-  color: #f6f7ff;
+  color: #f5ead0;
   font-weight: 700;
 }
 
@@ -675,7 +800,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 
 .royal-chronicle-text {
   margin: .45rem 0 0;
-  color: #c8d0ef;
+  color: #cbb793;
   font-size: .92rem;
   line-height: 1.5;
   white-space: pre-line;
@@ -754,12 +879,14 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   height: 132px;
   margin-top: .7rem;
   place-items: center;
-  border: 2px solid rgba(247, 198, 90, .5);
+  border: 2px solid rgba(231, 194, 92, .55);
   border-radius: 999px;
-  background: #0d1122;
+  background: radial-gradient(circle at 35% 26%, rgba(231, 194, 92, .16), transparent 45%), #1a130b;
   color: var(--gold);
+  font-family: var(--font-display), Georgia, serif;
   font-size: 3.4rem;
   font-weight: 800;
+  box-shadow: 0 0 0 6px rgba(231, 194, 92, .06), inset 0 0 26px rgba(231, 194, 92, .08);
 }
 
 .dash-king-name {
@@ -847,27 +974,30 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   width: 100%;
   padding: .75rem .85rem;
   border: 1px solid var(--border);
-  border-radius: 12px;
-  background: #0d1122;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, .28);
   color: var(--text);
+  font-family: inherit;
   font-size: 1rem;
 }
 
 .crown-select:focus,
 .crown-input:focus {
   outline: none;
-  border-color: rgba(247, 198, 90, .6);
+  border-color: rgba(231, 194, 92, .65);
 }
 
 .crown-btn {
   margin-top: .25rem;
   padding: .85rem 1rem;
-  border: none;
-  border-radius: 12px;
-  background: var(--gold);
+  border: 1px solid rgba(231, 194, 92, .5);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #e7c25c, #b8901f);
   color: #2a1d00;
+  font-family: var(--font-display), Georgia, serif;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: .03em;
   cursor: pointer;
   transition: filter .15s ease, transform .1s ease;
 }

@@ -29,12 +29,28 @@ function sortBadges(badges: ComputedPlayerBadge[]) {
   return [...badges].sort((a, b) => rarityPriority[b.definition.rarity as Rarity] - rarityPriority[a.definition.rarity as Rarity]);
 }
 
+function BadgeTooltip({ badge, placement }: { badge: ComputedPlayerBadge; placement: 'above' | 'below' }) {
+  return (
+    <span className={`badge-tooltip ${placement}`} role='tooltip'>
+      <span className='badge-tt-head'>
+        <span className='badge-tt-emoji' aria-hidden>{badge.definition.emoji}</span>
+        <span className='badge-tt-name'>{badge.definition.name}</span>
+      </span>
+      <span className='badge-tt-rarity'>{badge.definition.rarity}</span>
+      <span className='badge-tt-desc'>{badge.definition.description}</span>
+      {badge.reason && <span className='badge-tt-reason'>{badge.reason}</span>}
+    </span>
+  );
+}
+
 function OrbitBadge({ badge, position }: { badge: ComputedPlayerBadge; position: { top: string; left: string } }) {
   const rarity = badge.definition.rarity as Rarity;
+  const placement: 'above' | 'below' = parseFloat(position.top) < 50 ? 'below' : 'above';
   return (
-    <div className='royal-orbit-badge' style={position} title={`${badge.definition.name} — ${badge.reason}`}>
-      <div className={`royal-badge-medallion rarity-${rarity}`}>
+    <div className='royal-orbit-badge' style={position}>
+      <div className={`royal-badge-medallion rarity-${rarity}`} tabIndex={0} aria-label={`${badge.definition.name}, ${badge.definition.rarity}: ${badge.definition.description}`}>
         <span className='royal-badge-icon'>{badge.definition.emoji}</span>
+        <BadgeTooltip badge={badge} placement={placement} />
       </div>
       <div className='royal-badge-caption'>
         <p>{badge.definition.name}</p>
@@ -92,9 +108,15 @@ export function PlayerHero({ player, stats }: { player: any; stats: any }) {
 
         <div className='royal-mobile-badges'>
           {topBadges.map((badge) => (
-            <span key={badge.id} className={`royal-mobile-badge rarity-${badge.definition.rarity as Rarity}`}>
-              <span>{badge.definition.emoji}</span>
+            <span
+              key={badge.id}
+              className={`royal-mobile-badge rarity-${badge.definition.rarity as Rarity}`}
+              tabIndex={0}
+              aria-label={`${badge.definition.name}, ${badge.definition.rarity}: ${badge.definition.description}`}
+            >
+              <span aria-hidden>{badge.definition.emoji}</span>
               <span>{badge.definition.name}</span>
+              <BadgeTooltip badge={badge} placement='above' />
             </span>
           ))}
         </div>
