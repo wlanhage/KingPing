@@ -1,0 +1,12 @@
+html, body {
+  cursor: url('/cursors/gauntlet.svg') 10 2, auto;
+}
+
+:where(
+  a, button, [role='button'], summary, select,
+  label[for], .nav-pill, .btn, .crown-btn, .btn-ghost,
+  .all-badges-btn, .modal-close, .realm-crest,
+  .orbit-badge, .royal-badge-medallion, .royal-back-link
+) {
+  cursor: url('/cursors/gauntlet.svg') 10 2, pointer;
+}

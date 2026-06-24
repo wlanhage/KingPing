@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Cinzel, Cinzel_Decorative, EB_Garamond } from 'next/font/google';
 import { RealmLogo } from '@/components/RealmLogo';
 import './globals.css';
+import './cursor.css';
 
 const display = Cinzel({ subsets: ['latin'], weight: ['400', '600', '700', '900'], variable: '--font-display' });
 const titleFont = Cinzel_Decorative({ subsets: ['latin'], weight: ['700', '900'], variable: '--font-title' });
