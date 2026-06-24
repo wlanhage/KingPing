@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="34" height="44" viewBox="0 0 34 44">
+  <!-- Index finger -->
+  <rect x="1" y="5" width="7" height="14" rx="3.5" fill="#e7c25c" stroke="#2a1800" stroke-width="1.3"/>
+  <line x1="2.5" y1="11" x2="7" y2="11" stroke="#2a1800" stroke-width="0.9" stroke-linecap="round"/>
+  <line x1="2.5" y1="15" x2="7" y2="15" stroke="#2a1800" stroke-width="0.9" stroke-linecap="round"/>
+  <!-- Middle finger (tallest) -->
+  <rect x="9.5" y="3" width="7" height="16" rx="3.5" fill="#e7c25c" stroke="#2a1800" stroke-width="1.3"/>
+  <line x1="11" y1="9" x2="15.5" y2="9" stroke="#2a1800" stroke-width="0.9" stroke-linecap="round"/>
+  <line x1="11" y1="13" x2="15.5" y2="13" stroke="#2a1800" stroke-width="0.9" stroke-linecap="round"/>
+  <!-- Ring finger -->
+  <rect x="18" y="4" width="7" height="15" rx="3.5" fill="#e7c25c" stroke="#2a1800" stroke-width="1.3"/>
+  <line x1="19.5" y1="10" x2="24" y2="10" stroke="#2a1800" stroke-width="0.9" stroke-linecap="round"/>
+  <line x1="19.5" y1="14" x2="24" y2="14" stroke="#2a1800" stroke-width="0.9" stroke-linecap="round"/>
+  <!-- Pinky -->
+  <rect x="26.5" y="7" width="6" height="12" rx="3" fill="#e7c25c" stroke="#2a1800" stroke-width="1.3"/>
+  <line x1="28" y1="12" x2="31.5" y2="12" stroke="#2a1800" stroke-width="0.9" stroke-linecap="round"/>
+  <!-- Thumb (right side) -->
+  <path d="M31 22 Q35 23 35 26 Q35 29 31 29" fill="#e7c25c" stroke="#2a1800" stroke-width="1.2" stroke-linejoin="round"/>
+  <!-- Palm -->
+  <rect x="1" y="18" width="30" height="13" rx="3" fill="#e7c25c" stroke="#2a1800" stroke-width="1.3"/>
+  <!-- Chevron armor on palm -->
+  <polyline points="5,28 16,22.5 27,28" fill="none" stroke="#2a1800" stroke-width="1.2" stroke-linejoin="round"/>
+  <line x1="16" y1="22.5" x2="16" y2="29.5" stroke="#2a1800" stroke-width="1"/>
+  <!-- Cuff -->
+  <rect x="0" y="30" width="32" height="14" rx="3" fill="#e7c25c" stroke="#2a1800" stroke-width="1.3"/>
+  <line x1="1" y1="35" x2="31" y2="35" stroke="#2a1800" stroke-width="1"/>
+  <line x1="1" y1="39.5" x2="31" y2="39.5" stroke="#2a1800" stroke-width="1"/>
+  <circle cx="5.5" cy="37.5" r="1.3" fill="#2a1800"/>
+  <circle cx="16" cy="37.5" r="1.3" fill="#2a1800"/>
+  <circle cx="26.5" cy="37.5" r="1.3" fill="#2a1800"/>
+</svg>

@@ -1,5 +1,5 @@
 html, body {
-  cursor: url('/cursors/gauntlet.svg') 12 1, auto;
+  cursor: url('/cursors/gauntlet-open.svg') 13 3, auto;
 }
 
 :where(
@@ -8,5 +8,5 @@ html, body {
   .all-badges-btn, .modal-close, .realm-crest,
   .orbit-badge, .royal-badge-medallion, .royal-back-link
 ) {
-  cursor: url('/cursors/gauntlet.svg') 12 1, pointer;
+  cursor: url('/cursors/gauntlet-point.svg') 6 1, pointer;
 }
