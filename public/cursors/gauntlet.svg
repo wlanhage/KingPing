@@ -1,33 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="34" viewBox="0 0 32 34">
-  <!-- Pointing finger -->
-  <rect x="8" y="1" width="7" height="11" rx="3.5" fill="#f7e3a0" stroke="#b8901f" stroke-width="1"/>
-  <!-- Finger knuckle lines -->
-  <line x1="9" y1="7" x2="14" y2="7" stroke="#b8901f" stroke-width="0.8" opacity="0.6"/>
-
-  <!-- Palm / back of gauntlet -->
-  <rect x="4" y="11" width="20" height="15" rx="3" fill="#e7c25c" stroke="#b8901f" stroke-width="1.2"/>
-
-  <!-- Armor plates on palm -->
-  <rect x="5" y="13" width="18" height="4" rx="1" fill="#f7e3a0" stroke="#b8901f" stroke-width="0.8"/>
-  <rect x="5" y="19" width="18" height="4" rx="1" fill="#f7e3a0" stroke="#b8901f" stroke-width="0.8"/>
-
-  <!-- Rivets -->
-  <circle cx="7" cy="15" r="1" fill="#2a1800"/>
-  <circle cx="21" cy="15" r="1" fill="#2a1800"/>
-  <circle cx="7" cy="21" r="1" fill="#2a1800"/>
-  <circle cx="21" cy="21" r="1" fill="#2a1800"/>
-
-  <!-- Cuff -->
-  <rect x="3" y="25" width="22" height="8" rx="2" fill="#e7c25c" stroke="#b8901f" stroke-width="1.2"/>
-  <rect x="4" y="26.5" width="20" height="5" rx="1" fill="#f7e3a0" stroke="#b8901f" stroke-width="0.7"/>
-
-  <!-- Cuff rivets -->
-  <circle cx="6" cy="29" r="1" fill="#2a1800"/>
-  <circle cx="22" cy="29" r="1" fill="#2a1800"/>
-  <circle cx="14" cy="29" r="1" fill="#2a1800"/>
-
-  <!-- Folded fingers (side) -->
-  <rect x="24" y="13" width="5" height="5" rx="2" fill="#e7c25c" stroke="#b8901f" stroke-width="0.9"/>
-  <rect x="24" y="19" width="5" height="4" rx="2" fill="#e7c25c" stroke="#b8901f" stroke-width="0.9"/>
-  <rect x="3" y="13" width="1" height="9" rx="0.5" fill="#b8901f"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="38" viewBox="0 0 24 38">
+  <rect x="8" y="0" width="8" height="16" rx="4" fill="#f7e3a0" stroke="#2a1800" stroke-width="1.2"/>
+  <line x1="9.5" y1="10" x2="14.5" y2="10" stroke="#b8901f" stroke-width="0.8" stroke-linecap="round"/>
+  <ellipse cx="12" cy="3.5" rx="2" ry="1.5" fill="#fffae6" opacity="0.55"/>
+  <ellipse cx="12" cy="15" rx="5.5" ry="2.5" fill="#f7e3a0" stroke="#2a1800" stroke-width="1"/>
+  <ellipse cx="6" cy="15" rx="3" ry="2" fill="#f7e3a0" stroke="#2a1800" stroke-width="1"/>
+  <ellipse cx="18" cy="15" rx="3" ry="2" fill="#f7e3a0" stroke="#2a1800" stroke-width="1"/>
+  <rect x="2" y="15" width="20" height="11" rx="3" fill="#e7c25c" stroke="#2a1800" stroke-width="1.2"/>
+  <line x1="3" y1="21" x2="21" y2="21" stroke="#b8901f" stroke-width="0.8" stroke-linecap="round"/>
+  <rect x="1" y="25" width="22" height="13" rx="3" fill="#e7c25c" stroke="#2a1800" stroke-width="1.2"/>
+  <rect x="3" y="27" width="18" height="8" rx="1.5" fill="#f7e3a0" stroke="#b8901f" stroke-width="0.7"/>
+  <circle cx="6.5" cy="31" r="1.1" fill="#2a1800"/>
+  <circle cx="12" cy="31" r="1.1" fill="#2a1800"/>
+  <circle cx="17.5" cy="31" r="1.1" fill="#2a1800"/>
 </svg>
