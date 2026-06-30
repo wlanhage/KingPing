@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { PlayerHero } from '@/components/player/PlayerHero';
 import { AllBadgesButton } from '@/components/player/AllBadgesButton';
 import { PlayerRankComparison } from '@/components/player/PlayerRankComparison';
+import { PlayerNemesis } from '@/components/player/PlayerNemesis';
 import { PlayerTimeline } from '@/components/player/PlayerTimeline';
 import { StatsGrid } from '@/components/stats/StatsGrid';
 import { getPlayerProfile } from '@/lib/domain/riket';
@@ -28,12 +29,12 @@ export default async function PlayerPage({ params }: { params: Promise<{ playerI
         { label: 'Nuvarande streak', value: s.currentStreak },
         { label: 'Längsta streak', value: s.longestStreak },
         { label: 'Fredagsvinster', value: s.fridayWins },
-        { label: 'Takeover vinster', value: s.takeoverWins },
         { label: 'Senaste vinst', value: formatRelativeDate(s.lastWinAt) },
         { label: 'Snittregering', value: formatShortDuration(s.averageReignMs) },
         { label: 'Crown efficiency', value: formatShortDuration(s.crownEfficiencyMsPerWin) },
       ]}
       />
+      <PlayerNemesis nemesis={profile.nemesis} playerName={profile.player.name} />
       <PlayerRankComparison stats={s} />
       <PlayerTimeline items={profile.timeline} />
     </main>

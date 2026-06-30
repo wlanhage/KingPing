@@ -93,12 +93,46 @@ export async function getPlayerStats(playerId: string) {
   };
 }
 
+// Ärkefiende: spelaren man bytt kronan med mest — summan av krona snott + krona snodd ifrån.
+// Returnerar null tills minst 2 sådana händelser finns med samma motståndare (annars för tunt underlag).
+export async function getPlayerNemesis(playerId: string) {
+  const events = await prisma.winEvent.findMany({
+    where: { OR: [{ winnerId: playerId }, { previousKingId: playerId }] },
+    select: { winnerId: true, previousKingId: true },
+  });
+  const tally = new Map<string, { stolenFrom: number; stolenBy: number }>();
+  const bump = (id: string, key: 'stolenFrom' | 'stolenBy') => {
+    const t = tally.get(id) ?? { stolenFrom: 0, stolenBy: 0 };
+    t[key] += 1;
+    tally.set(id, t);
+  };
+  for (const e of events) {
+    if (e.winnerId === playerId && e.previousKingId && e.previousKingId !== playerId) {
+      bump(e.previousKingId, 'stolenFrom'); // spelaren tog kronan från motståndaren
+    } else if (e.previousKingId === playerId && e.winnerId !== playerId) {
+      bump(e.winnerId, 'stolenBy'); // motståndaren tog kronan från spelaren
+    }
+  }
+  let bestId: string | null = null;
+  let best = { stolenFrom: 0, stolenBy: 0 };
+  let bestTotal = 0;
+  for (const [id, t] of tally) {
+    const total = t.stolenFrom + t.stolenBy;
+    if (total > bestTotal) { bestTotal = total; bestId = id; best = t; }
+  }
+  if (!bestId || bestTotal < 2) return null;
+  const rival = await prisma.player.findUnique({ where: { id: bestId }, select: { id: true, name: true } });
+  if (!rival) return null;
+  return { rival, stolenFrom: best.stolenFrom, stolenBy: best.stolenBy, total: bestTotal };
+}
+
 export async function getPlayerProfile(playerId: string) {
   const player = await prisma.player.findUnique({ where: { id: playerId } });
   if (!player) return null;
   const stats = await getPlayerStats(playerId);
   const timeline = await getPlayerTimeline(playerId);
-  return { player, stats, timeline };
+  const nemesis = await getPlayerNemesis(playerId);
+  return { player, stats, timeline, nemesis };
 }
 
 export async function calculateLeaderboard(){ return getLeaderboard(); }

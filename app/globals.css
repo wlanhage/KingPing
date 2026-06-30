@@ -715,6 +715,143 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   font-weight: 600;
 }
 
+/* ===== Ärkefiende / fejd ===== */
+.royal-feud-panel {
+  border: 1px solid rgba(138, 43, 34, .42);
+  border-radius: 24px;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  background:
+    radial-gradient(circle at 50% -10%, rgba(138, 43, 34, .16), transparent 50%),
+    linear-gradient(180deg, rgba(26, 19, 11, .92), rgba(20, 15, 9, .86));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .36), inset 0 1px 0 rgba(255, 255, 255, .035);
+}
+
+.royal-feud-panel h2 {
+  margin: 0 0 .35rem;
+  color: #ffcf9e;
+  font-size: clamp(1.45rem, 2.8vw, 2rem);
+}
+
+.royal-feud-panel.is-empty {
+  border-color: rgba(247, 198, 90, .16);
+  background: linear-gradient(180deg, rgba(26, 19, 11, .7), rgba(20, 15, 9, .66));
+}
+
+.royal-feud-arena {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.2rem 0;
+}
+
+.royal-feud-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .55rem;
+  min-width: 0;
+}
+
+.royal-feud-avatar {
+  display: grid;
+  width: 4.2rem;
+  height: 4.2rem;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #f5ead0;
+  text-decoration: none;
+}
+
+.royal-feud-avatar.is-self {
+  border: 2px solid rgba(247, 198, 90, .55);
+  background: radial-gradient(circle at 35% 30%, rgba(255, 235, 165, .28), rgba(247, 198, 90, .1));
+}
+
+.royal-feud-avatar.is-rival {
+  border: 2px solid rgba(200, 70, 58, .7);
+  background: radial-gradient(circle at 35% 30%, rgba(230, 110, 95, .3), rgba(138, 43, 34, .14));
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.royal-feud-avatar.is-rival:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 22px rgba(200, 70, 58, .5);
+}
+
+.royal-feud-name {
+  margin: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: #e9dcc0;
+  font-size: .95rem;
+  font-weight: 700;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.royal-feud-rival {
+  color: #f0a896;
+  text-decoration: none;
+}
+
+.royal-feud-rival:hover { color: #ff9d86; }
+
+.royal-feud-clash {
+  font-size: 1.9rem;
+  filter: drop-shadow(0 0 10px rgba(200, 70, 58, .5));
+}
+
+.royal-feud-tally {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .8rem;
+}
+
+.royal-feud-stat {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  padding: .9rem 1rem;
+  border: 1px solid rgba(247, 198, 90, .14);
+  border-radius: 16px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(39, 31, 21, .7), rgba(20, 14, 8, .8));
+}
+
+.royal-feud-stat.is-lead {
+  border-color: rgba(252, 211, 77, .6);
+  box-shadow: 0 0 22px rgba(251, 191, 36, .16);
+}
+
+.royal-feud-num {
+  color: #f5ead0;
+  font-size: clamp(1.6rem, 2.6vw, 2.1rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.royal-feud-stat.is-lead .royal-feud-num { color: #ffe7a3; }
+
+.royal-feud-label {
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.royal-feud-verdict {
+  margin: 1rem 0 0;
+  color: #d8b48a;
+  font-size: .92rem;
+  font-style: italic;
+  text-align: center;
+}
+
 /* ===== Kungakrönika ===== */
 .royal-chronicle {
   position: relative;
