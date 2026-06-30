@@ -2,11 +2,18 @@ html, body {
   cursor: url('/cursors/gauntlet-3d.png') 3 1, auto;
 }
 
-:where(
-  a, button, [role='button'], summary, select,
-  label[for], .nav-pill, .btn, .crown-btn, .btn-ghost,
-  .all-badges-btn, .modal-close, .realm-crest,
-  .orbit-badge, .royal-badge-medallion, .royal-back-link
-) {
-  cursor: url('/cursors/gauntlet-3d-point.png') 4 4, pointer;
+/* Pekande handske på allt klickbart. !important krävs för att slå
+   klass-reglernas egna `cursor: pointer` (t.ex. .crown-btn, .btn). */
+a, button, [role='button'], summary, select, label[for],
+.nav-pill, .btn, .crown-btn, .btn-ghost, .all-badges-btn,
+.modal-close, .realm-crest, .royal-back-link, .royal-feud-avatar.is-rival {
+  cursor: url('/cursors/gauntlet-3d-point.png') 4 4, pointer !important;
+}
+
+/* Avstängda knappar (t.ex. under win-cooldown) behåller not-allowed.
+   Högre specificitet än reglerna ovan, så den vinner för disabled. */
+button:disabled, button[disabled],
+.btn:disabled, .crown-btn:disabled, select:disabled,
+[role='button'][aria-disabled='true'] {
+  cursor: not-allowed !important;
 }
