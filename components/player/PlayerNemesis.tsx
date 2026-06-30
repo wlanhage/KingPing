@@ -16,10 +16,10 @@ function verdict(stolenFrom: number, stolenBy: number): string {
 export function PlayerNemesis({ nemesis, playerName }: { nemesis: Nemesis | null; playerName: string }) {
   if (!nemesis) {
     return (
-      <section className='royal-feud-panel is-empty'>
-        <h2>⚔️ Ärkefiende</h2>
-        <p className='royal-panel-sub'>Ingen rival ännu. Byt kronan fram och tillbaka med någon så uppstår en fejd.</p>
-      </section>
+      <article className='royal-feud-cell is-empty'>
+        <p className='royal-feud-title'>⚔️ Ärkefiende</p>
+        <p className='royal-feud-empty'>Ingen rival ännu. Byt kronan fram och tillbaka med någon så uppstår en fejd.</p>
+      </article>
     );
   }
 
@@ -28,9 +28,8 @@ export function PlayerNemesis({ nemesis, playerName }: { nemesis: Nemesis | null
   const leadFrom = stolenFrom >= stolenBy;
 
   return (
-    <section className='royal-feud-panel'>
-      <h2>⚔️ Ärkefiende</h2>
-      <p className='royal-panel-sub'>Den kronan bytt händer med flest gånger.</p>
+    <article className='royal-feud-cell'>
+      <p className='royal-feud-title'>⚔️ Ärkefiende</p>
 
       <div className='royal-feud-arena'>
         <div className='royal-feud-side'>
@@ -58,6 +57,6 @@ export function PlayerNemesis({ nemesis, playerName }: { nemesis: Nemesis | null
       </div>
 
       <p className='royal-feud-verdict'>{verdict(stolenFrom, stolenBy)}</p>
-    </section>
+    </article>
   );
 }

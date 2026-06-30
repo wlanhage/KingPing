@@ -31,10 +31,10 @@ export default async function PlayerPage({ params }: { params: Promise<{ playerI
         { label: 'Fredagsvinster', value: s.fridayWins },
         { label: 'Senaste vinst', value: formatRelativeDate(s.lastWinAt) },
         { label: 'Snittregering', value: formatShortDuration(s.averageReignMs) },
-        { label: 'Crown efficiency', value: formatShortDuration(s.crownEfficiencyMsPerWin) },
       ]}
-      />
-      <PlayerNemesis nemesis={profile.nemesis} playerName={profile.player.name} />
+      >
+        <PlayerNemesis nemesis={profile.nemesis} playerName={profile.player.name} />
+      </StatsGrid>
       <PlayerRankComparison stats={s} />
       <PlayerTimeline items={profile.timeline} />
     </main>
