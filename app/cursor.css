@@ -16,6 +16,11 @@ textarea:not(:disabled) {
   cursor: url('/cursors/gauntlet-3d.png') 3 1, text !important;
 }
 
+/* Etiketter (t.ex. "Spelare"/"Anteckning") har en egen default-markör. */
+label, .crown-field, .crown-label {
+  cursor: url('/cursors/gauntlet-3d.png') 3 1, auto !important;
+}
+
 /* Avstängda kontroller (t.ex. under win-cooldown) behåller not-allowed.
    Högre specificitet än reglerna ovan, så den vinner för disabled. */
 button:disabled, button[disabled],
