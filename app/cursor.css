@@ -10,10 +10,17 @@ a, button, [role='button'], summary, select, label[for],
   cursor: url('/cursors/gauntlet-3d-point.png') 4 4, pointer !important;
 }
 
-/* Avstängda knappar (t.ex. under win-cooldown) behåller not-allowed.
+/* Raka handsken även i textfält — annars visar webbläsaren sin text-markör. */
+input:not([type='button']):not([type='submit']):not([type='reset']):not([type='checkbox']):not([type='radio']):not(:disabled),
+textarea:not(:disabled) {
+  cursor: url('/cursors/gauntlet-3d.png') 3 1, text !important;
+}
+
+/* Avstängda kontroller (t.ex. under win-cooldown) behåller not-allowed.
    Högre specificitet än reglerna ovan, så den vinner för disabled. */
 button:disabled, button[disabled],
 .btn:disabled, .crown-btn:disabled, select:disabled,
+input:disabled, textarea:disabled,
 [role='button'][aria-disabled='true'] {
   cursor: not-allowed !important;
 }
