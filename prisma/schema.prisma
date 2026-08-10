@@ -31,6 +31,18 @@ enum NationState {
   REVOLUTION
 }
 
+/// En säsong avgränsas av ett datumintervall, inte av främmande nycklar på
+/// WinEvent/Reign. Skälet: en regering kan spänna över en säsongsgräns och måste då
+/// klampas mot intervallet — vilket en FK inte kan uttrycka.
+model Season {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  name      String
+  theme     String
+  startedAt DateTime
+  endedAt   DateTime?
+}
+
 model Player {
   id          String    @id @default(cuid())
   name        String    @unique

@@ -5,3 +5,6 @@ dist/
 coverage/
 *.tsbuildinfo
 .vercel
+
+# Databasbackuper (innehåller riktig data — ska inte checkas in)
+backups/
