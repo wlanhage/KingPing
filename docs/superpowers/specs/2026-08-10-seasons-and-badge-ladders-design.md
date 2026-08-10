@@ -66,6 +66,11 @@ fortsatt bara för sortering.
 
 ### Stegar
 
+Stegarna togs inte fram genom att ögna listan, utan genom att köra den riktiga
+`getPlayerBadges` över ~22 000 simulerade spelarprofiler och mäta vilka par som alltid
+tänds tillsammans (`A ⇒ B` i 100 % av fallen). Analysskriptet finns beskrivet under
+"Verifiering" nedan.
+
 Annoteras i `lib/badges/badge-definitions.ts`:
 
 | `ladder` | `tier` | Badge | Villkor (oförändrat) |
@@ -74,12 +79,35 @@ Annoteras i `lib/badges/badge-definitions.ts`:
 | `longest_streak` | 2 | `hr_case` | `longestStreak >= 4` |
 | `longest_streak` | 3 | `tyrant` | `longestStreak >= 5` |
 | `longest_streak` | 4 | `state_owned` | `longestStreak >= 7` |
+| `streaks_broken` | 1 | `revolutionary` | `biggestStreakBroken >= 3` |
+| `streaks_broken` | 2 | `tyrant_slayer` | `biggestStreakBroken >= 5` |
 | `recent_form` | 1 | `hot_right_now` | `winsLast7Days >= 2` |
 | `recent_form` | 2 | `momentum` | `winsLast7Days >= 3` |
 | `inactivity` | 1 | `cold` | `daysSinceLastWin >= 14` |
 | `inactivity` | 2 | `frozen` | `daysSinceLastWin >= 30` |
+| `inactivity` | 3 | `lost_heir` | `totalWins >= 5 && daysSinceLastWin >= 30` |
+| `inactivity` | 4 | `historically_relevant` | `totalReignMs >= max*0.6 && winsLast30Days === 0` |
+| `short_reign` | 1 | `short_reign_specialist` | `averageReignMs < 3h` |
+| `short_reign` | 2 | `borrowed_crown` | `averageReignMs < 2h && timesDethroned >= 3` |
 
-Alla övriga 24 badges får ingen `ladder`.
+Alla övriga 18 badges får ingen `ladder`.
+
+**Bedömningsfråga i `inactivity`:** `lost_heir` (tier 3) och `historically_relevant`
+(tier 4) är inte strikt nästlade i varandra — de använder olika mått (antal vinster
+respektive trontid). Båda implicerar dock `frozen`, och båda uttrycker samma sak: "var
+stor, är nu borta". Utan stege kan en spelare bära alla fyra samtidigt. De läggs därför i
+samma stege, ordnade efter prestige.
+
+### Implikationer som medvetet INTE blir stegar
+
+Analysen hittade fler implikationer som är strukturella men inte redundanta. De ska
+fortsätta kunna visas parallellt:
+
+| Implikation | Varför inte en stege |
+|---|---|
+| `defender_of_the_throne ⇒ current_king` | Att *vara* kung och att ha *försvarat* tronen är olika påståenden. (`currentStreak` sätts bara när `isCurrentKing`.) |
+| `prophecy ⇒ current_king` | Samma sak; `prophecy` beskriver en episk återkomst, inte en nivå av att vara kung. |
+| `statistically_unlikely ⇒ short_reign_specialist` | Olika mått: total trontid respektive genomsnittlig regeringstid. |
 
 ### Kollaps
 
@@ -103,20 +131,63 @@ function collapseLadders(badges: ComputedPlayerBadge[]): ComputedPlayerBadge[] {
 Villkoren i engine ändras inte — bara efterbehandlingen. Det gör ändringen liten och
 möjlig att verifiera isolerat.
 
+### Bugg: `time_traveler` kan aldrig tändas
+
+Villkoret på `badge-engine.ts:47` är:
+
+```ts
+if ((s.daysSinceLastWin ?? 0) >= 60 && s.winsLast30Days > 0) push(res, 'time_traveler', ...)
+```
+
+`daysSinceLastWin` mäts från spelarens **senaste** vinst (`wins[0].occurredAt`, sorterad
+fallande). Är den ≥ 60 dagar gammal finns per definition ingen vinst de senaste 30
+dagarna, så `winsLast30Days` är alltid 0. Villkoret är en motsägelse. Bekräftat empiriskt:
+0 träffar på ~22 000 profiler.
+
+Avsikten ("Vann igen efter ett mycket långt uppehåll") kräver gapet **före** den senaste
+vinsten. Fix:
+
+1. Nytt fält i `PlayerStats`: `daysSincePreviousWin: number | null` =
+   `differenceInDays(wins[0].occurredAt, wins[1].occurredAt)`, `null` vid färre än två
+   vinster.
+2. Nytt villkor: `daysSincePreviousWin >= 60 && daysSinceLastWin <= 30`
+   — alltså "vann nyligen, efter ett uppehåll på minst 60 dagar".
+
+`eagle_has_landed` tänds inte heller, men det är ett känt och dokumenterat TODO (kräver en
+manuell trigger) och lämnas orört.
+
+### Verifiering
+
+Stegarna och den döda badgen togs fram med ett analysskript som kör den riktiga
+`getPlayerBadges` över ~4 000 slumpade populationer (~22 000 spelarprofiler) och beräknar
+en implikationsmatris. Datumhärledda fält (`daysSinceLastWin`, `winsLast30Days`,
+`winsLast7Days`) simuleras från faktiska vinstdatum, inte oberoende av varandra — annars
+uppstår kombinationer som inte kan förekomma i verklig data, och `time_traveler`-buggen
+hade inte upptäckts.
+
+En första körning missade `borrowed_crown` för att simuleringen bara genererade långa
+regeringstider. Regeringslängder modelleras därför blandat (hälften "snabbväxlare"). Detta
+är värt att upprepa om fler badges läggs till: **en badge som aldrig tänds i simuleringen
+kan lika gärna vara ett simuleringsfel som en bugg** — verifiera analytiskt innan slutsats.
+
+Skriptet är ett engångsverktyg och checkas inte in. Stegarnas beteende låses i stället av
+enhetstesterna nedan.
+
 ### Acceptanskriterier
 
 - En spelare med `longestStreak = 7` har exakt **en** badge från `longest_streak`
   (`state_owned`), inte fyra.
 - En spelare med `longestStreak = 4` har `hr_case`, inte `dynasty_founder`.
-- `defender_of_the_throne` visas fortfarande parallellt med en stege-badge.
-- Spelare med `winsLast7Days = 3` har `momentum`, inte `hot_right_now`.
-- Spelare med `daysSinceLastWin = 30` har `frozen`, inte `cold`.
-
-### Känd kvarvarande överlappning
-
-`lost_heir` (`totalWins >= 5 && daysSinceLastWin >= 30`) samexisterar alltid med `frozen`.
-Bedöms som en egen axel (historisk relevans, inte bara inaktivitet) och lämnas utanför
-`inactivity`-stegen. Flaggat medvetet, inte förbisett.
+- En spelare med `biggestStreakBroken = 5` har `tyrant_slayer`, inte `revolutionary`.
+- En spelare med `winsLast7Days = 3` har `momentum`, inte `hot_right_now`.
+- En spelare som är inaktiv 30+ dagar med 5+ vinster har **en** `inactivity`-badge, inte
+  tre.
+- En spelare med `averageReignMs < 2h` och `timesDethroned >= 3` har `borrowed_crown`,
+  inte `short_reign_specialist`.
+- `defender_of_the_throne` visas fortfarande parallellt med `current_king`.
+- `statistically_unlikely` visas fortfarande parallellt med `short_reign_specialist`.
+- `time_traveler` går att tända: en spelare som vann igår efter 90 dagars uppehåll har den.
+- Ingen badge utan `ladder` påverkas av ändringen.
 
 ---
 
@@ -296,7 +367,7 @@ Medvetet utelämnat, inte förbisett:
   visning.
 - Adminyta i Rådet för säsongsbyte.
 - Omdöpning av CSS-klassnamn.
-- `lost_heir`/`frozen`-överlappningen (se Del 1).
+- `eagle_has_landed` (kräver en egen trigger i datamodellen — känt TODO sedan tidigare).
 
 ## Risker
 
