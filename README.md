@@ -27,3 +27,4 @@ MVP byggd med Next.js, Prisma och Slack-integration.
 - CSV export
 - Börja använda elo-system för rejting. [Elo rating system](https://en.wikipedia.org/wiki/Elo_rating_system)
 - Sammanställ vad användarna tänker om time on throne metric....
+- Ta bort write access för @rosendahlaxel
