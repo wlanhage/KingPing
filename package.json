@@ -9,7 +9,9 @@
     "test": "vitest run",
     "seed": "prisma db seed",
     "prisma:generate": "prisma generate",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "backup": "tsx --env-file=.env scripts/backup-db.ts",
+    "season": "tsx --env-file=.env scripts/season.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
