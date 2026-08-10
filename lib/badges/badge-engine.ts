@@ -6,6 +6,23 @@ const categoryOrder = ['throne', 'streak', 'combat', 'friday', 'form', 'legacy',
 const categoryRank = Object.fromEntries(categoryOrder.map((c, i) => [c, i]));
 const hasTop = (value: number, max: number) => value > 0 && value === max;
 
+/**
+ * Inom varje ladder behålls bara den högsta uppnådda nivån, så att t.ex. en spelare med
+ * 7 raka vinster bär "Statligt ägd" i stället för alla fyra streak-badges samtidigt.
+ * Badges utan ladder passerar orörda.
+ */
+function collapseLadders(badges: ComputedPlayerBadge[]): ComputedPlayerBadge[] {
+  const best = new Map<string, ComputedPlayerBadge>();
+  const passthrough: ComputedPlayerBadge[] = [];
+  for (const b of badges) {
+    const ladder = b.definition.ladder;
+    if (!ladder) { passthrough.push(b); continue; }
+    const prev = best.get(ladder);
+    if (!prev || (b.definition.tier ?? 0) > (prev.definition.tier ?? 0)) best.set(ladder, b);
+  }
+  return [...passthrough, ...best.values()];
+}
+
 export function getPlayerBadges(playerId: string, context: PlayerBadgeContext): ComputedPlayerBadge[] {
   const s = context.playerStats[playerId];
   if (!s) return [];
@@ -34,7 +51,9 @@ export function getPlayerBadges(playerId: string, context: PlayerBadgeContext): 
   if ((s.daysSinceLastWin ?? 0) >= 14) push(res, 'cold', '14+ dagar sedan senaste vinst.', s.daysSinceLastWin ?? undefined);
   if ((s.daysSinceLastWin ?? 0) >= 30) push(res, 'frozen', '30+ dagar sedan senaste vinst.', s.daysSinceLastWin ?? undefined);
   if (s.totalWins >= 5 && (s.daysSinceLastWin ?? 0) >= 30) push(res, 'lost_heir', 'Historisk profil med kall form.');
-  if (s.totalReignMs >= context.globalStats.maxTotalReignMs * 0.6 && s.winsLast30Days === 0) push(res, 'historically_relevant', 'Stor historik, svag nutid.');
+  // `totalReignMs > 0` krävs: utan den tänds badgen för spelare helt utan trontid
+  // (0 >= 0 * 0.6 är sant), vilket dessutom skulle tränga undan lägre steg i inactivity-stegen.
+  if (s.totalReignMs > 0 && s.totalReignMs >= context.globalStats.maxTotalReignMs * 0.6 && s.winsLast30Days === 0) push(res, 'historically_relevant', 'Stor historik, svag nutid.');
   if (s.biggestStreakBroken >= 5) push(res, 'tyrant_slayer', 'Har brutit streak 5+.');
   if (hasTop(s.streaksBroken, context.globalStats.maxStreaksBroken)) push(res, 'regime_changer', 'Har brutit flest streaks.', s.streaksBroken);
   if (hasTop(s.takeoverWins, Math.max(0, ...all.map((p) => p.takeoverWins)))) push(res, 'king_slayer', 'Flest takeover-vinster.', s.takeoverWins);
@@ -44,11 +63,14 @@ export function getPlayerBadges(playerId: string, context: PlayerBadgeContext): 
   if (s.averageReignMs > 0 && s.averageReignMs < 3 * 60 * 60 * 1000) push(res, 'short_reign_specialist', 'Kort snitt på regeringstid.');
   if (s.totalWins >= 6 && s.longestStreak <= 2) push(res, 'people_favorite', 'Många vinster utan dynasti.');
   if (s.totalWins >= 2 && s.totalReignMs < 2 * 60 * 60 * 1000) push(res, 'statistically_unlikely', 'Vinner trots svag historik.');
-  if ((s.daysSinceLastWin ?? 0) >= 60 && s.winsLast30Days > 0) push(res, 'time_traveler', 'Vunnit igen efter långt uppehåll.');
+  // Mäter uppehållet FÖRE den senaste vinsten. Tidigare villkor var en motsägelse
+  // (daysSinceLastWin >= 60 && winsLast30Days > 0 kan aldrig vara sant samtidigt),
+  // så badgen gick aldrig att få.
+  if ((s.daysSincePreviousWin ?? 0) >= 60 && (s.daysSinceLastWin ?? 999) <= 30) push(res, 'time_traveler', 'Vunnit igen efter långt uppehåll.', s.daysSincePreviousWin ?? undefined);
   if (s.isCurrentKing && (s.daysSinceLastWin ?? 999) <= 1 && s.winsLast30Days > 0 && s.totalWins >= 8) push(res, 'prophecy', 'Episk återkomst till tronen.');
   // TODO: eagle_has_landed kräver särskilt event/trigger i datamodell eller manuell/persisted tilldelning.
   // TODO: merge persisted earned badges here when historical badge table exists.
 
-  const unique = Array.from(new Map(res.map((b) => [b.id, b])).values());
+  const unique = collapseLadders(Array.from(new Map(res.map((b) => [b.id, b])).values()));
   return unique.sort((a, b) => (rarityRank[b.definition.rarity] - rarityRank[a.definition.rarity]) || ((categoryRank[a.definition.category] ?? 99) - (categoryRank[b.definition.category] ?? 99)) || a.definition.name.localeCompare(b.definition.name));
 }
