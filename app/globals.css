@@ -1439,3 +1439,153 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   font-size: .78rem;
   font-style: italic;
 }
+
+/* ─────────────────────────  THE ROYAL CORONATION SPECTACULAR™  ───────────────────────── */
+
+.coro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 30%, rgba(231, 194, 92, .12), rgba(5, 4, 2, .86) 60%);
+  backdrop-filter: blur(3px);
+  animation: coro-fade .4s ease both;
+}
+
+.coro-confetti { position: absolute; inset: 0; pointer-events: none; }
+
+/* Skärmläsartext, dold visuellt */
+.coro-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.coro-stage {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 560px;
+  text-align: center;
+  padding: 1.5rem 1.25rem 1.25rem;
+}
+
+.coro-crown {
+  font-size: clamp(4rem, 14vw, 7rem);
+  line-height: 1;
+  filter: drop-shadow(0 0 22px rgba(231, 194, 92, .7));
+  animation: coro-descend 1.1s cubic-bezier(.2, .8, .25, 1) both;
+}
+.coro-crown-hold { animation: coro-crown-pulse 1.4s ease-in-out infinite; }
+
+.coro-crier {
+  margin: .8rem 0 0;
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-size: .8rem;
+  animation: coro-rise .5s ease .35s both;
+}
+
+.coro-name {
+  margin: .2rem 0 .3rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2.2rem, 8vw, 3.6rem);
+  color: var(--gold);
+  text-shadow: 0 0 30px rgba(231, 194, 92, .55), 0 2px 0 rgba(0, 0, 0, .4);
+  animation: coro-rise .55s ease .45s both;
+}
+
+.coro-decree {
+  margin: 0 auto;
+  max-width: 30ch;
+  color: var(--text);
+  line-height: 1.5;
+  animation: coro-rise .55s ease .55s both;
+}
+
+.coro-jester {
+  margin: 1.1rem auto 0;
+  max-width: 34ch;
+  padding: .7rem 1rem;
+  border: 1px solid var(--border);
+  border-top: 2px solid rgba(138, 43, 34, .6);
+  border-radius: 14px;
+  background: rgba(30, 24, 16, .7);
+  animation: coro-pop .5s cubic-bezier(.2, 1.3, .4, 1) .9s both;
+}
+.coro-jester-face { font-size: 1.6rem; }
+.coro-roast { margin: .3rem 0; font-style: italic; color: var(--text); }
+.coro-tear { display: inline-block; animation: coro-tear 1.8s ease-in-out .6s infinite; }
+
+.coro-actions { margin-top: 1.4rem; display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+.coro-mute, .coro-skip {
+  cursor: pointer;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 700;
+  letter-spacing: .03em;
+  padding: .5rem .9rem;
+  border-radius: 10px;
+}
+.coro-mute { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.coro-mute:hover { color: var(--gold); border-color: rgba(231, 194, 92, .6); }
+.coro-skip { background: linear-gradient(180deg, #e7c25c, #b8901f); color: #2a1d00; border: 1px solid rgba(231, 194, 92, .5); }
+.coro-skip:hover { filter: brightness(1.06); }
+
+/* Drakar (streak ≥ 3) */
+.coro-dragons { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.coro-dragon {
+  position: absolute;
+  left: -12%;
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  filter: drop-shadow(0 0 12px rgba(231, 100, 40, .55));
+  animation: coro-fly 4.2s linear infinite;
+}
+
+/* Hemligt "hold the door" — nästan osynligt tills man håller in det */
+.coro-door {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  z-index: 3;
+  font-size: 1.1rem;
+  opacity: .06;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity .2s;
+}
+.coro-door:hover { opacity: .16; }
+.coro-door-held {
+  opacity: 1;
+  font-family: var(--font-display), Georgia, serif;
+  color: var(--muted);
+  letter-spacing: .08em;
+}
+
+@keyframes coro-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes coro-descend {
+  0% { transform: translateY(-120vh) scale(.6); opacity: 0; }
+  70% { transform: translateY(6px) scale(1.04); opacity: 1; }
+  85% { transform: translateY(-4px) scale(1); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes coro-crown-pulse { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-6px) scale(1.05); } }
+@keyframes coro-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes coro-pop { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: scale(1); } }
+@keyframes coro-tear { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(10px); opacity: 0; } }
+@keyframes coro-fly {
+  0% { transform: translateX(0) translateY(0) rotate(-3deg); }
+  25% { transform: translateX(30vw) translateY(-14px) rotate(2deg); }
+  50% { transform: translateX(60vw) translateY(8px) rotate(-2deg); }
+  75% { transform: translateX(90vw) translateY(-10px) rotate(3deg); }
+  100% { transform: translateX(124vw) translateY(0) rotate(-3deg); }
+}
+
+/* Även drakar måste vara tillgängliga: lugnt, statiskt läge utan rörelse. 🐉➡️😴 */
+@media (prefers-reduced-motion: reduce) {
+  .coro-overlay, .coro-overlay * { animation: none !important; }
+  .coro-dragons { display: none; }
+  .coro-door { opacity: .2; }
+}
+.coro-reduced .coro-dragons { display: none; }
+

@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
+import { Coronation, type CoronationEvent } from './Coronation';
 
 function formatCountdown(ms: number) {
   const total = Math.ceil(ms / 1000);
@@ -14,6 +15,7 @@ export function RecordWinForm({ players, lastWinAt, cooldownMs }: { players: { i
   const [confirming, setConfirming] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [coronation, setCoronation] = useState<CoronationEvent | null>(null);
   // null fram till mount → identisk render på server och klient (ingen hydration-mismatch).
   const [now, setNow] = useState<number | null>(null);
 
@@ -52,7 +54,18 @@ export function RecordWinForm({ players, lastWinAt, cooldownMs }: { players: { i
         setSubmitting(false);
         return;
       }
-      location.reload();
+      // Läs ut kröningen ur svaret och avfyra THE ROYAL CORONATION SPECTACULAR™.
+      const data = await res.json().catch(() => null);
+      const win = data?.win;
+      const previousKingId: string | null = win?.previousKingId ?? null;
+      const isNewRuler = previousKingId !== winnerId; // samma kung som försvarar → previousKingId === winnerId
+      setConfirming(false);
+      setCoronation({
+        winnerName: selected?.name ?? players.find((p) => p.id === winnerId)?.name ?? 'Den nya regenten',
+        deposedName: previousKingId ? players.find((p) => p.id === previousKingId)?.name ?? null : null,
+        streakCount: win?.streakCount ?? 1,
+        isNewRuler,
+      });
     } catch {
       setError('Kunde inte nå servern. Försök igen.');
       setConfirming(false);
@@ -116,6 +129,8 @@ export function RecordWinForm({ players, lastWinAt, cooldownMs }: { players: { i
           </div>
         </div>
       )}
+
+      {coronation && <Coronation event={coronation} onDone={() => location.reload()} />}
     </>
   );
 }
