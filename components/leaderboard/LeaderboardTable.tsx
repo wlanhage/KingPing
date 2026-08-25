@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { formatDate, formatDuration } from '@/lib/format';
+import type { Theme } from '@/lib/theme';
 
 const headers = ['#', 'Spelare', 'Status', 'Trontid', 'Vinster', 'Längsta regering', 'Nuvarande streak', 'Längsta streak', 'Fredagsvinster', 'Senaste vinst'];
 
-export function LeaderboardTable({ rows }: { rows: any[] }) {
+export function LeaderboardTable({ rows, theme }: { rows: any[]; theme: Theme }) {
   if (!rows.length) return <div className='card'>Inga spelare än.</div>;
   return (
     <div className='lb-table-wrap'>
@@ -13,7 +14,7 @@ export function LeaderboardTable({ rows }: { rows: any[] }) {
         </thead>
         <tbody>
           {rows.map((r) => {
-            const epithet = r.rank === 1 ? 'Kejsaren' : r.rank === 2 ? 'Kronprinsen' : r.rank === 3 ? 'Rikets tredje kraft' : '';
+            const epithet = r.rank === 1 ? theme.epithets.rank1 : r.rank === 2 ? theme.epithets.rank2 : r.rank === 3 ? theme.epithets.rank3 : '';
             return (
               <tr key={r.id} className={r.isCurrentKing ? 'lb-king-row' : ''}>
                 <td className='lb-rank'>{r.rank}</td>
@@ -21,7 +22,7 @@ export function LeaderboardTable({ rows }: { rows: any[] }) {
                   <Link href={`/players/${r.id}`} className='lb-name'>{r.name}</Link>
                   {epithet && <div className='lb-epithet'>{epithet}</div>}
                 </td>
-                <td>{r.isCurrentKing ? '👑 Nuvarande kung' : 'Utmanare'}</td>
+                <td>{r.isCurrentKing ? `👑 Nuvarande ${theme.roles.monarchLower}` : theme.roles.challenger}</td>
                 <td>{formatDuration(r.totalReignMs)}</td>
                 <td>{r.totalWins}</td>
                 <td>{formatDuration(r.longestReignMs)}</td>

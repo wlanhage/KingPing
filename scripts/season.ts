@@ -94,12 +94,27 @@ async function newSeason() {
   return list();
 }
 
+/** Byter tema på en säsong utan att starta om den. Rör bara Season-raden. */
+async function setTheme() {
+  const slug = arg('slug');
+  const theme = arg('theme');
+  if (!theme) throw new Error('Kräver --theme (och --slug om det inte är den pågående säsongen).');
+  const season = slug
+    ? await prisma.season.findUnique({ where: { slug } })
+    : await prisma.season.findFirst({ where: { endedAt: null }, orderBy: { startedAt: 'desc' } });
+  if (!season) throw new Error('Hittade ingen säsong att uppdatera.');
+  await prisma.season.update({ where: { id: season.id }, data: { theme } });
+  console.log(`${season.slug}: tema ${season.theme} → ${theme}`);
+  return list();
+}
+
 async function main() {
   const cmd = process.argv[2];
   if (cmd === 'list') return list();
+  if (cmd === 'set-theme') return setTheme();
   if (cmd === 'bootstrap') return bootstrap();
   if (cmd === 'new') return newSeason();
-  console.log('Användning: season.ts <list|bootstrap|new>');
+  console.log('Användning: season.ts <list|bootstrap|new|set-theme>');
   process.exitCode = 1;
 }
 

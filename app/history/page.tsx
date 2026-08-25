@@ -1,9 +1,11 @@
 import { prisma } from '@/lib/prisma';
 import { formatDate } from '@/lib/format';
+import { getActiveTheme } from '@/lib/theme/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function History() {
+  const { theme } = await getActiveTheme();
   const events = await prisma.winEvent.findMany({
     orderBy: { occurredAt: 'desc' },
     take: 50,
@@ -13,8 +15,8 @@ export default async function History() {
   return (
     <main className='page-stack'>
       <section>
-        <h1 className='title-xl'>Historik</h1>
-        <p className='subtitle'>De senaste 50 händelserna i riket.</p>
+        <h1 className='title-xl'>{theme.pages.history.title}</h1>
+        <p className='subtitle'>{theme.pages.history.subtitle}</p>
       </section>
       <section className='card'>
         {events.map((event) => (

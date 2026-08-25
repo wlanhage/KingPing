@@ -8,12 +8,16 @@ import { PlayerTimeline } from '@/components/player/PlayerTimeline';
 import { StatsGrid } from '@/components/stats/StatsGrid';
 import { getPlayerProfile } from '@/lib/domain/riket';
 import { formatDuration, formatShortDuration, formatRelativeDate } from '@/lib/format';
+import { getActiveTheme } from '@/lib/theme/server';
+import { themedBadge } from '@/lib/theme';
 
 export default async function PlayerPage({ params }: { params: Promise<{ playerId: string }> }) {
   const { playerId } = await params;
   const profile = await getPlayerProfile(playerId);
   if (!profile || !profile.stats) notFound();
-  const s = profile.stats;
+  const { theme } = await getActiveTheme();
+  // Badge-namnen döps om av temat på ett ställe; orbiten och modalen ärver det.
+  const s = { ...profile.stats, badges: (profile.stats.badges ?? []).map((b) => ({ ...b, definition: themedBadge(b.definition, theme) })) };
 
   return (
     <main className='page-stack'>
@@ -21,7 +25,7 @@ export default async function PlayerPage({ params }: { params: Promise<{ playerI
         <Link href='/players' className='royal-back-link'>← Tillbaka till spelare</Link>
         <AllBadgesButton badges={s.badges ?? []} />
       </div>
-      <PlayerHero player={profile.player} stats={s} />
+      <PlayerHero player={profile.player} stats={s} theme={theme} />
       <StatsGrid stats={[
         { label: 'Total tid på tronen', value: formatDuration(s.totalReignMs) },
         { label: 'Totala vinster', value: s.totalWins },

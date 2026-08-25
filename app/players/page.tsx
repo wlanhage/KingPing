@@ -1,16 +1,18 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { AddPlayerForm } from '@/components/AddPlayerForm';
+import { getActiveTheme } from '@/lib/theme/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Players() {
+  const { theme } = await getActiveTheme();
   const players = await prisma.player.findMany({ orderBy: { name: 'asc' } });
   return (
     <main className='page-stack'>
       <section>
-        <h1 className='title-xl'>Riddare</h1>
-        <p className='subtitle'>Rikets utmanare. Klicka in på en riddare för full profil.</p>
+        <h1 className='title-xl'>{theme.pages.players.title}</h1>
+        <p className='subtitle'>{theme.pages.players.subtitle}</p>
       </section>
 
       <section className='card add-knight-panel'>

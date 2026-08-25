@@ -2,10 +2,12 @@ import { getKingdomStats, WIN_COOLDOWN_MS } from '@/lib/domain/riket';
 import { RecordWinForm } from '@/components/RecordWinForm';
 import { prisma } from '@/lib/prisma';
 import { formatDuration } from '@/lib/format';
+import { getActiveTheme } from '@/lib/theme/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {
+  const { theme } = await getActiveTheme();
   const kingdom = await getKingdomStats();
   const king = kingdom.currentKing;
   const players = await prisma.player.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true } });
@@ -15,15 +17,15 @@ export default async function Page() {
   return (
     <main className='dash'>
       <header className='dash-header'>
-        <h1>Tronsalen</h1>
-        <p>Vem härskar över riket — och vem vågar utmana?</p>
+        <h1>{theme.pages.home.title}</h1>
+        <p>{theme.pages.home.subtitle}</p>
       </header>
 
       <section className='dash-throne'>
-        <span className='dash-eyebrow'>Nuvarande kung</span>
+        <span className='dash-eyebrow'>Nuvarande {theme.roles.monarchLower}</span>
         <div className='dash-crown' aria-hidden>👑</div>
         <div className='dash-king-avatar'><span>{initial}</span></div>
-        <h2 className='dash-king-name'>{king?.name ?? 'Ingen krönt ännu'}</h2>
+        <h2 className='dash-king-name'>{king?.name ?? `Ingen ${theme.verbs.crowning} ännu`}</h2>
 
         {king ? (
           <dl className='dash-king-stats'>
@@ -41,12 +43,12 @@ export default async function Page() {
             </div>
           </dl>
         ) : (
-          <p className='dash-empty'>Kröna den första vinnaren nedan för att starta riket.</p>
+          <p className='dash-empty'>{`${theme.verbs.crown} den första vinnaren nedan för att starta riket.`}</p>
         )}
       </section>
 
       <section className='dash-crown-panel'>
-        <h2>Kröna ny vinnare</h2>
+        <h2>{theme.verbs.crown} ny vinnare</h2>
         <p className='dash-crown-sub'>Välj spelaren som tog hem rundan.</p>
         <RecordWinForm players={players} lastWinAt={lastEvent?.occurredAt.toISOString() ?? null} cooldownMs={WIN_COOLDOWN_MS} />
       </section>

@@ -2,7 +2,13 @@
 
 **Datum:** 2026-08-10
 **Branch:** `seasonhandler`
-**Status:** Godkänd design, redo för implementationsplan
+**Status:** Genomförd. Del 1–3 implementerade och verifierade mot skarp data.
+
+| Del | Status |
+|---|---|
+| 1 — Badge-stegar | Klar. Fem stegar, plus två buggar som analysen avslöjade. |
+| 2 — Säsonger | Klar. `Season`-tabell, klampning, streak-nollställning, `scripts/season.ts`. |
+| 3 — Temalager | Klar. `lib/theme/` med `realm` och `star-wars`, knutet till `season.theme`. |
 
 ## Bakgrund
 
@@ -365,8 +371,9 @@ Medvetet utelämnat, inte förbisett:
 - Kröningens ljud och jester-roasts i `Coronation.tsx`.
 - Prisma-enumvärden (`TYRANNY`, `SAME_KING_STREAK_3` …) — interna, temat mappar dem vid
   visning.
-- Adminyta i Rådet för säsongsbyte.
+- Adminyta i Rådet för säsongsbyte (scripts/season.ts täcker behovet).
 - Omdöpning av CSS-klassnamn.
+- Säsongsväljare i UI:t (`?season=`-stödet finns i domänmodulen men exponeras inte ännu).
 - `eagle_has_landed` (kräver en egen trigger i datamodellen — känt TODO sedan tidigare).
 
 ## Risker
@@ -378,3 +385,15 @@ Medvetet utelämnat, inte förbisett:
 - **Prestanda.** `getPlayerStats` anropar `getLeaderboard()` internt, som hämtar alla
   spelare. Säsongsfilter gör inte detta värre, men det finns inget cache-lager. Vid
   kontorsskala (8 spelare) är det oproblematiskt.
+
+
+---
+
+## Efterlämnat vid genomförandet
+
+`scripts/season.ts` fick ett fjärde kommando, `set-theme`, som byter tema på en säsong utan
+att starta om den. Det behövdes för att kunna verifiera temalagret mot skarp data utan att
+nollställa någons statistik, och är användbart i sig.
+
+Domänmodulen tar emot `?season=`-slug hela vägen, men ingen säsongsväljare är byggd i UI:t
+ännu — den blir naturlig först när det finns mer än en säsong.

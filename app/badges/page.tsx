@@ -1,4 +1,6 @@
 import { BADGES } from '@/lib/badges/badge-definitions';
+import { getActiveTheme } from '@/lib/theme/server';
+import { themedBadge } from '@/lib/theme';
 
 const RARITY_ORDER = ['mythical', 'legendary', 'epic', 'rare', 'common'] as const;
 const RARITY_LABEL: Record<string, string> = {
@@ -16,18 +18,26 @@ const RARITY_TAG: Record<string, string> = {
   common: 'Vanlig',
 };
 
-export const metadata = { title: 'Utmärkelser' };
+export const dynamic = 'force-dynamic';
 
-export default function BadgesPage() {
+export async function generateMetadata() {
+  const { theme } = await getActiveTheme();
+  return { title: theme.pages.badges.title };
+}
+
+export default async function BadgesPage() {
+  const { theme } = await getActiveTheme();
+  // Namnen kommer från temat; vilka badges som finns är oförändrat.
+  const badges = BADGES.map((b) => themedBadge(b, theme));
   return (
     <main className='page-stack'>
       <section>
-        <h1 className='title-xl'>Utmärkelser</h1>
-        <p className='subtitle'>Alla {BADGES.length} bragder en riddare kan förtjäna i riket.</p>
+        <h1 className='title-xl'>{theme.pages.badges.title}</h1>
+        <p className='subtitle'>{theme.pages.badges.subtitle.replace('{count}', String(badges.length))}</p>
       </section>
 
       {RARITY_ORDER.map((rarity) => {
-        const items = BADGES.filter((b) => b.rarity === rarity);
+        const items = badges.filter((b) => b.rarity === rarity);
         if (!items.length) return null;
         return (
           <section key={rarity} className='badge-codex-group'>
