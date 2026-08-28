@@ -2,7 +2,18 @@
 
 **Datum:** 2026-08-28
 **Branch:** `seasonhandler` (bygger på säsongs- och temalagret)
-**Status:** Design godkänd i samtal, väntar på granskning av detta dokument
+**Status:** Genomförd (v1) på `seasonhandler`. Akt 1, 3, 5 och 6 byggda, verifierade mot
+skarp data (35 kröningar, 21 tronskiften, 7 spelare).
+
+Avvikelser och fynd under bygget:
+- Fyra buggar hittades av granskningen och rättades: dubbelflippat bågtecken i
+  vävgeometrin, räknare som visade 0 under reduced motion, `{ once: true }` som avväpnade
+  cinema-lägets stopptangent, och en temacrossfade vars selektorsträng aldrig kunde träffa
+  sin target (`gsap.context` scopar till ättlingar; wrappern är förfader).
+- `.numbers-dragon` stänger av arvet av `coro-fly`: en CSS-animation slår inline-styles och
+  hade tagit över GSAP:s inflygning.
+- Musikfilerna saknas ännu (Williams Audacity-export återstår) — finalen kör tyst, som
+  designat.
 
 ## Vad det är
 
