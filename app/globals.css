@@ -1600,3 +1600,12 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .finale-rewatch { text-align: center; }
 .finale-rewatch a { color: var(--muted); }
 .finale-rewatch a:hover { color: var(--gold); }
+
+/* Finalens grundlayout */
+.finale { position: relative; }
+.finale-act { min-height: 100vh; display: grid; place-items: center; padding: 2rem 1rem; text-align: center; }
+.finale-cover { position: fixed; inset: 0; z-index: 120; display: grid; place-content: center; gap: 1rem; text-align: center; background: radial-gradient(circle at 50% 30%, rgba(231, 194, 92, .1), rgba(3, 4, 8, .97) 65%); }
+.finale-cover-title { margin: 0; font-family: var(--font-title), Georgia, serif; font-size: clamp(2.2rem, 8vw, 4.4rem); color: var(--gold); text-shadow: 0 0 34px rgba(231, 194, 92, .5); }
+.finale-cover-hint { color: var(--muted); font-size: .85rem; }
+.finale-mute { position: fixed; right: 14px; bottom: 14px; z-index: 110; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--panel); color: var(--text); cursor: pointer; font-size: 1.1rem; }
+.finale-mute:hover { border-color: rgba(231, 194, 92, .6); }
