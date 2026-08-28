@@ -1,14 +1,19 @@
+import Link from 'next/link';
 import { getKingdomStats, WIN_COOLDOWN_MS } from '@/lib/domain/riket';
 import { RecordWinForm } from '@/components/RecordWinForm';
 import { prisma } from '@/lib/prisma';
 import { formatDuration } from '@/lib/format';
 import { getActiveTheme } from '@/lib/theme/server';
+import { listSeasons } from '@/lib/domain/season';
+import { FinaleDoor } from '@/components/finale/FinaleDoor';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {
   const { theme } = await getActiveTheme();
   const kingdom = await getKingdomStats();
+  const seasons = await listSeasons();
+  const endedSeason = seasons.filter((s) => s.endedAt).sort((a, b) => b.endedAt!.getTime() - a.endedAt!.getTime())[0] ?? null;
   const king = kingdom.currentKing;
   const players = await prisma.player.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true } });
   const lastEvent = await prisma.winEvent.findFirst({ orderBy: { occurredAt: 'desc' }, select: { occurredAt: true } });
@@ -52,6 +57,15 @@ export default async function Page() {
         <p className='dash-crown-sub'>Välj spelaren som tog hem rundan.</p>
         <RecordWinForm players={players} lastWinAt={lastEvent?.occurredAt.toISOString() ?? null} cooldownMs={WIN_COOLDOWN_MS} />
       </section>
+
+      {endedSeason && (
+        <>
+          <p className='finale-rewatch'>
+            <Link href={`/seasons/${endedSeason.slug}/final`}>📜 Återse krönikan · {endedSeason.name}</Link>
+          </p>
+          <FinaleDoor slug={endedSeason.slug} name={endedSeason.name} />
+        </>
+      )}
     </main>
   );
 }
