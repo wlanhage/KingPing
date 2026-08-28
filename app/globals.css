@@ -1615,3 +1615,13 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .coldopen-dates { color: var(--muted); letter-spacing: .18em; }
 .coldopen-line { font-family: var(--font-display), Georgia, serif; font-size: clamp(1.2rem, 3.4vw, 1.9rem); margin: .5rem 0; }
 .coldopen-throne { color: var(--gold); }
+
+/* Akt 3: resan i siffror */
+.numbers-panel { position: relative; overflow: hidden; }
+.numbers-dragon { position: absolute; left: 8%; font-size: clamp(2rem, 5vw, 3rem); filter: drop-shadow(0 0 12px rgba(231, 100, 40, .55)); }
+.numbers-big { font-family: var(--font-display), Georgia, serif; font-size: clamp(1.6rem, 5vw, 2.6rem); color: var(--gold); }
+.numbers-quote { max-width: 34ch; margin: .6rem auto; font-style: italic; font-size: clamp(1.1rem, 3vw, 1.5rem); line-height: 1.5; }
+.numbers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; max-width: 640px; margin: 1.2rem auto; }
+.numbers-grid dt { color: var(--muted); font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; }
+.numbers-grid dd { margin: .2rem 0 0; font-size: 1.6rem; font-weight: 700; color: var(--gold); }
+.numbers-note { color: var(--muted); font-style: italic; }
