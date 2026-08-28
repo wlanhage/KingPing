@@ -158,14 +158,18 @@ function splitSides(players: WeavePlayer[], transfers: WeaveTransfer[]): { left:
   return { left, right };
 }
 
-function curvePath(x1: number, y1: number, x2: number, y2: number, pairIndex: number, sign: 1 | -1): string {
+function curvePath(x1: number, y1: number, x2: number, y2: number, pairIndex: number): string {
   const mx = (x1 + x2) / 2; const my = (y1 + y2) / 2;
   const dx = x2 - x1; const dy = y2 - y1;
   const len = Math.hypot(dx, dy) || 1;
-  const mag = (36 + pairIndex * 30) * sign;
+  // Normalen (-dy, dx) vänder redan när färdriktningen vänder — därför INGET extra
+  // riktningstecken här. Ett sådant skulle ge en andra flip som tar ut den första,
+  // så båda riktningarna bågnade åt samma håll.
+  const mag = 36 + pairIndex * 30;
   const cx = mx + (-dy / len) * mag; const cy = my + (dx / len) * mag;
   const r = (n: number) => Math.round(n * 10) / 10;
-  return `M${r(x1)} ${r(y1)} Q ${r(cx)} ${r(cy)} ${r(x2)} ${r(y2)}`;
+  // Mellanslag efter M: testets parser läser M som eget token.
+  return `M ${r(x1)} ${r(y1)} Q ${r(cx)} ${r(cy)} ${r(x2)} ${r(y2)}`;
 }
 
 export function buildWeave(players: WeavePlayer[], transfers: WeaveTransfer[], defences: Record<string, number>): WeaveLayout {
@@ -193,8 +197,7 @@ export function buildWeave(players: WeavePlayer[], transfers: WeaveTransfer[], d
     const pairIndex = pairSeen.get(key) ?? 0;
     pairSeen.set(key, pairIndex + 1);
     const from = anchor(t.fromId); const to = anchor(t.toId);
-    const sign: 1 | -1 = t.fromId === null ? -1 : (t.fromId < t.toId ? -1 : 1);
-    return { d: curvePath(from.x, from.y, to.x, to.y, pairIndex, sign), fromId: t.fromId, toId: t.toId, order, pairIndex };
+    return { d: curvePath(from.x, from.y, to.x, to.y, pairIndex), fromId: t.fromId, toId: t.toId, order, pairIndex };
   });
   const maxSlots = Math.max(left.length, right.length, 1);
   const height = Math.max(600, slotY(maxSlots - 1) + WEAVE.CARD_H + 140);
