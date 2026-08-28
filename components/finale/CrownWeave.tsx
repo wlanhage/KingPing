@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import type { FinaleSummary } from '@/lib/domain/finale';
 import { buildWeave, WEAVE } from '@/lib/domain/weave';
+import { Coronation } from '@/components/Coronation';
 
 export function CrownWeave({ summary, reduced }: { summary: FinaleSummary; reduced: boolean }) {
   const rootRef = useRef<HTMLElement | null>(null);
@@ -12,7 +13,8 @@ export function CrownWeave({ summary, reduced }: { summary: FinaleSummary; reduc
     summary.defences,
   ), [summary]);
   const winner = summary.standings[0] ?? null;
-  const [, setCoronate] = useState(false); // används i Task 12
+  const [coronate, setCoronate] = useState(false);
+  const firedRef = useRef(false);
 
   useEffect(() => {
     if (reduced || !rootRef.current) return;
@@ -54,8 +56,29 @@ export function CrownWeave({ summary, reduced }: { summary: FinaleSummary; reduc
             .set(svg.querySelector(`.weave-wins[data-player="${ev.playerId}"]`), { textContent: String(winsSoFar.get(ev.playerId)) }, '<');
         }
       }
-      tl.addLabel('winnerSeq'); // Task 12 hänger på här
-      tl.to({}, { duration: 3 }); // luft för vinnarsekvensen
+      tl.addLabel('winnerSeq');
+      if (winner) {
+        const winnerCard = card(winner.id)!;
+        const winnerLayout = layout.cards.find((c) => c.id === winner.id)!;
+        tl.to(svg.querySelectorAll('.weave-curve'), { opacity: 0.1, duration: 0.6 }, 'winnerSeq')
+          .to('#weave-crown', { opacity: 0, duration: 0.3 }, '<')
+          .to(svg.querySelectorAll('.weave-card[data-side="left"]:not(.is-winner)'), { x: -340, opacity: 0.15, duration: 1 }, '>')
+          .to(svg.querySelectorAll('.weave-card[data-side="right"]:not(.is-winner)'), { x: 340, opacity: 0.15, duration: 1 }, '<')
+          .to(winnerCard, {
+            duration: 1.2, transformOrigin: 'center',
+            x: layout.width / 2 - (winnerLayout.x + WEAVE.CARD_W / 2),
+            y: layout.height / 2 - (winnerLayout.y + WEAVE.CARD_H / 2),
+            scale: 1.9,
+          }, '>')
+          .fromTo('.weave-winner-panel', { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.8 }, '>');
+        // Kröningen får bara fyras en gång per passage; backar man förbi tröskeln
+        // laddas den om.
+        tl.eventCallback('onUpdate', () => {
+          const pr = tl.scrollTrigger?.progress ?? 0;
+          if (pr > 0.97 && !firedRef.current) { firedRef.current = true; setCoronate(true); }
+          if (pr < 0.85 && firedRef.current) firedRef.current = false;
+        });
+      }
       // Startläge för räknarna: noll tills uppspelningen fyller dem.
       svg.querySelectorAll('.weave-wins').forEach((el) => { el.textContent = '0'; });
       svg.querySelectorAll('.weave-shield').forEach((el) => { el.textContent = '0'; });
@@ -88,6 +111,24 @@ export function CrownWeave({ summary, reduced }: { summary: FinaleSummary; reduc
           <g id='weave-crown' aria-hidden><text textAnchor='middle' dominantBaseline='central'>♛</text></g>
         </svg>
       </div>
+      {winner && (
+        <div className='weave-winner-panel'>
+          <p className='coldopen-dates'>Säsongens härskare</p>
+          <h2 className='finale-cover-title'>{winner.name}</h2>
+          <p className='weave-winner-stats'>{winner.totalWins} vinster · längsta streak {winner.longestStreak}</p>
+          <div className='weave-winner-badges'>
+            {winner.badges.slice(0, 6).map((b: { id: string; definition: { emoji: string; name: string; rarity: string } }) => (
+              <span key={b.id} className={`badge-codex-medallion rarity-${b.definition.rarity}`} title={b.definition.name}>{b.definition.emoji}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {coronate && winner && (
+        <Coronation
+          event={{ winnerName: winner.name, deposedName: summary.standings[1]?.name ?? null, streakCount: winner.longestStreak, isNewRuler: true }}
+          onDone={() => setCoronate(false)}
+        />
+      )}
     </section>
   );
 }
