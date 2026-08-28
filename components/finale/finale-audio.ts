@@ -9,11 +9,20 @@
 
 const MUTE_KEY = 'kp-finale-muted';
 
+/**
+ * Kandidater i fallande prioritet: säsongsvariant före standard, och WAV före MP3.
+ * WAV först eftersom MP3-kodning lägger till tystnad i början och slutet
+ * (encoder delay/padding) som följer med in i den avkodade bufferten och ger ett
+ * hörbart glapp vid varje looprunda — precis det loopen inte får ha.
+ */
 export function resolveFinaleAudioSources(slug: string) {
-  return {
-    intro: [`/audio/finale-intro-${slug}.mp3`, '/audio/finale-intro.mp3'],
-    loop: [`/audio/finale-loop-${slug}.mp3`, '/audio/finale-loop.mp3'],
-  };
+  const candidates = (part: 'intro' | 'loop') => [
+    `/audio/finale-${part}-${slug}.wav`,
+    `/audio/finale-${part}-${slug}.mp3`,
+    `/audio/finale-${part}.wav`,
+    `/audio/finale-${part}.mp3`,
+  ];
+  return { intro: candidates('intro'), loop: candidates('loop') };
 }
 
 export type FinaleAudio = {

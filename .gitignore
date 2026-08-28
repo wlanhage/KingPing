@@ -8,3 +8,9 @@ coverage/
 
 # Databasbackuper (innehåller riktig data — ska inte checkas in)
 backups/
+
+# Audacity-projekt är källfiler, inte webbresurser — de exporteras till wav i public/audio.
+*.aup3
+*.aup3-shm
+*.aup3-wal
+.DS_Store

@@ -12,8 +12,8 @@ Avvikelser och fynd under bygget:
   sin target (`gsap.context` scopar till ättlingar; wrappern är förfader).
 - `.numbers-dragon` stänger av arvet av `coro-fly`: en CSS-animation slår inline-styles och
   hade tagit över GSAP:s inflygning.
-- Musikfilerna saknas ännu (Williams Audacity-export återstår) — finalen kör tyst, som
-  designat.
+- Musiken ligger på plats som WAV (48 kHz stereo), extraherad ur Audacity-projekten.
+  Saknas filerna kör finalen fortfarande tyst, som designat.
 
 ## Vad det är
 
@@ -123,12 +123,15 @@ automatisk Slack-post vid säsongsslut.
 Musiken är tvådelad, komponerad av William: ett **intro** som spelas en gång och en
 **loop** som därefter upprepas sömlöst tills finalen stängs.
 
-- **Filer:** `public/audio/finale-intro.mp3` + `public/audio/finale-loop.mp3`
-  (per-säsong-varianter `finale-intro-<slug>.mp3` osv. har företräde om de finns).
-- **Källor:** Audacity-projekten ligger i `~/Documents/KingPingMusic/`
-  (`season_end_start.aup3`, `season_end_loop.aup3`). Webbläsare kan inte spela
-  `.aup3` — William exporterar dem från Audacity (Arkiv → Exportera ljud) när de är
-  klara. WAV går bra som leverans; optimerad kopia läggs i `public/audio/`.
+- **Filer:** `public/audio/finale-intro.wav` + `public/audio/finale-loop.wav`
+  (per-säsong-varianter `finale-intro-<slug>.wav` osv. har företräde; `.mp3` accepteras
+  som fallback). **WAV, inte MP3:** MP3-kodning lägger till tystnad i början och slutet
+  (encoder delay/padding) som följer med in i den avkodade bufferten och ger ett hörbart
+  glapp vid varje looprunda.
+- **Källor:** Audacity-projekten (`season_end_start.aup3`, `season_end_loop.aup3`).
+  Webbläsare kan inte spela `.aup3` — de är SQLite-databaser. Ljudet extraherades ur
+  projekten (float32-sampelblock, 48 kHz stereo) och skrevs till WAV: intro 9,82 s,
+  loop 6,49 s. `.aup3` är gitignorerad och hör inte hemma i `public/`.
 - **Sömlös loop kräver Web Audio, inte `<audio loop>`:** `<audio>`-elementets loop har
   hörbara glapp. I stället: hämta + `decodeAudioData` på båda filerna, spela introt som
   `AudioBufferSourceNode`, schemalägg loop-noden att starta **exakt** vid introts slut
