@@ -52,7 +52,7 @@ export type FinaleSummary = {
 export async function buildFinaleSummary(season: SeasonWindow): Promise<FinaleSummary> {
   const [standings, events, reigns, seasons] = await Promise.all([
     getLeaderboard(season),
-    prisma.winEvent.findMany({ where: { occurredAt: winOccurredAtFilter(season) }, orderBy: { occurredAt: 'asc' } }) as Promise<FinaleEventRow[]>,
+    prisma.winEvent.findMany({ where: { occurredAt: winOccurredAtFilter(season) }, orderBy: { occurredAt: 'asc' } }),
     prisma.reign.findMany(),
     listSeasons(),
   ]);
