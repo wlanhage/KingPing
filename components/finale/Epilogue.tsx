@@ -17,7 +17,11 @@ export function Epilogue({ summary, reduced }: { summary: FinaleSummary; reduced
         // Crossfadea wrapperns tema-vars (inte <html>): wrappern bär säsongens tema
         // och dess vars vinner över layoutens — se SeasonFinale.
         const vars = themeCssVars(getTheme(next!.theme).colors);
-        gsap.to('.finale', { ...vars, duration: 1.6, scrollTrigger: { trigger: '.epilogue-reveal', start: 'top 70%' } });
+        // closest() i stället för selektorsträngen '.finale': gsap.context scopar
+        // strängar till ättlingar av ref, och wrappern är epilogens FÖRFADER — som
+        // sträng ger den noll targets och crossfaden hade tyst uteblivit.
+        const wrapper = ref.current!.closest('.finale');
+        if (wrapper) gsap.to(wrapper, { ...vars, duration: 1.6, scrollTrigger: { trigger: '.epilogue-reveal', start: 'top 70%' } });
       }
       gsap.from('.epilogue-credit', { autoAlpha: 0, y: 26, stagger: 0.25, scrollTrigger: { trigger: '.epilogue-credits', start: 'top 75%', end: 'bottom bottom', scrub: 0.5 } });
     }, ref);
