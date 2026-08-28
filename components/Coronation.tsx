@@ -20,7 +20,7 @@ const MUTE_KEY = 'kp-coronation-muted';
 const GOLD = ['#e7c25c', '#f3d98a', '#c9a227', '#b8901f', '#fbeec2'];
 
 // Hovnarrens rostar av den störtade regenten. Minst 10 så det aldrig blir gammalt.
-const JESTER_ROASTS = [
+export const JESTER_ROASTS = [
   'Du vet ingenting, {name}.',
   '{name} spelade tronspelet och förlorade. Man vinner eller dör. 🏓💀',
   'En Lannister betalar alltid sina skulder. {name} betalade med kronan.',
