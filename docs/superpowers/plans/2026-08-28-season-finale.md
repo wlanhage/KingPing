@@ -801,10 +801,14 @@ export function SeasonFinale({ summary, cinema }: { summary: FinaleSummary; cine
           y: max, duration: secs, ease: 'none',
           onUpdate: () => lenisRef.current?.scrollTo(proxy.y, { immediate: true }),
         });
-        const stop = () => { cinemaTween.current?.kill(); cinemaTween.current = null; };
-        window.addEventListener('wheel', stop, { once: true });
-        window.addEventListener('pointerdown', stop, { once: true });
-        window.addEventListener('keydown', (e) => { if (e.key === ' ') stop(); }, { once: true });
+        // AbortController i stället för { once: true }: det senare plockas bort av
+        // FÖRSTA tangenttrycket oavsett tangent, så en piltangent avväpnade stoppet.
+        const ac = new AbortController();
+        const stop = () => { cinemaTween.current?.kill(); cinemaTween.current = null; ac.abort(); cinemaStop.current = null; };
+        cinemaStop.current = stop;
+        window.addEventListener('wheel', stop, { signal: ac.signal });
+        window.addEventListener('pointerdown', stop, { signal: ac.signal });
+        window.addEventListener('keydown', (e) => { if (e.key === ' ') stop(); }, { signal: ac.signal });
       }, 800);
     }
   }
