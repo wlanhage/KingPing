@@ -1609,3 +1609,9 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .finale-cover-hint { color: var(--muted); font-size: .85rem; }
 .finale-mute { position: fixed; right: 14px; bottom: 14px; z-index: 110; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--panel); color: var(--text); cursor: pointer; font-size: 1.1rem; }
 .finale-mute:hover { border-color: rgba(231, 194, 92, .6); }
+
+/* Akt 1: kallöppningen */
+.finale-coldopen { background: #030407; }
+.coldopen-dates { color: var(--muted); letter-spacing: .18em; }
+.coldopen-line { font-family: var(--font-display), Georgia, serif; font-size: clamp(1.2rem, 3.4vw, 1.9rem); margin: .5rem 0; }
+.coldopen-throne { color: var(--gold); }
