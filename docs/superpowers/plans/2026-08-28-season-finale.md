@@ -1018,9 +1018,11 @@ export function NumbersAct({ summary, reduced }: { summary: FinaleSummary; reduc
         panel.querySelectorAll<HTMLElement>('.numbers-counter').forEach((el) => {
           const target = Number(el.dataset.target ?? '0');
           const obj = { v: 0 };
+          el.textContent = '0'; // markup bär rätt värde för reduced motion
           tl.to(obj, { v: target, duration: 1, snap: { v: 1 }, onUpdate: () => { el.textContent = String(Math.round(obj.v)); } }, '<');
         });
-        tl.from(panel.querySelectorAll('.coro-dragon'), { x: '-20vw', autoAlpha: 0, stagger: 0.2, duration: 0.8 }, '<');
+        const dragons = panel.querySelectorAll('.coro-dragon');
+        if (dragons.length) tl.from(dragons, { x: '-20vw', autoAlpha: 0, stagger: 0.2, duration: 0.8 }, '<');
         tl.to({}, { duration: 0.5 });
       });
     }, ref);
@@ -1035,7 +1037,7 @@ export function NumbersAct({ summary, reduced }: { summary: FinaleSummary; reduc
             {[0, 1, 2].map((i) => <span key={i} className='coro-dragon numbers-dragon' style={{ top: `${14 + i * 12}%` }} aria-hidden>🐉</span>)}
             <p className='numbers-reveal coldopen-dates'>Säsongens längsta välde</p>
             <h2 className='numbers-reveal finale-cover-title'>{peaks.longestStreak.name}</h2>
-            <p className='numbers-reveal numbers-big'><span className='numbers-counter' data-target={peaks.longestStreak.streak}>0</span> raka vinster</p>
+            <p className='numbers-reveal numbers-big'><span className='numbers-counter' data-target={peaks.longestStreak.streak}>{peaks.longestStreak.streak}</span> raka vinster</p>
           </div>
         </div>
       )}
@@ -1044,7 +1046,7 @@ export function NumbersAct({ summary, reduced }: { summary: FinaleSummary; reduc
           <div>
             <p className='numbers-reveal coldopen-dates'>Det stora störtandet</p>
             <p className='numbers-reveal numbers-quote'>&ldquo;{peaks.biggestBreak.announcementText.split('\n').pop()}&rdquo;</p>
-            <p className='numbers-reveal'>En dynasti på <span className='numbers-counter numbers-big' data-target={peaks.biggestBreak.brokenStreak}>0</span> föll för {peaks.biggestBreak.byName}.</p>
+            <p className='numbers-reveal'>En dynasti på <span className='numbers-counter numbers-big' data-target={peaks.biggestBreak.brokenStreak}>{peaks.biggestBreak.brokenStreak}</span> föll för {peaks.biggestBreak.byName}.</p>
           </div>
         </div>
       )}
@@ -1052,8 +1054,8 @@ export function NumbersAct({ summary, reduced }: { summary: FinaleSummary; reduc
         <div>
           <p className='numbers-reveal coldopen-dates'>Säsongen i siffror</p>
           <dl className='numbers-grid'>
-            <div className='numbers-reveal'><dt>Tronskiften</dt><dd><span className='numbers-counter' data-target={wrapped.transfers}>0</span></dd></div>
-            <div className='numbers-reveal'><dt>Försvar</dt><dd><span className='numbers-counter' data-target={wrapped.defences}>0</span></dd></div>
+            <div className='numbers-reveal'><dt>Tronskiften</dt><dd><span className='numbers-counter' data-target={wrapped.transfers}>{wrapped.transfers}</span></dd></div>
+            <div className='numbers-reveal'><dt>Försvar</dt><dd><span className='numbers-counter' data-target={wrapped.defences}>{wrapped.defences}</span></dd></div>
             {wrapped.shortestReignMs !== null && <div className='numbers-reveal'><dt>Kortaste regering</dt><dd>{formatDuration(wrapped.shortestReignMs)} 💀</dd></div>}
             {wrapped.averageReignMs !== null && <div className='numbers-reveal'><dt>Snittregering</dt><dd>{formatDuration(wrapped.averageReignMs)}</dd></div>}
           </dl>
@@ -1071,7 +1073,7 @@ export function NumbersAct({ summary, reduced }: { summary: FinaleSummary; reduc
 
 ```css
 .numbers-panel { position: relative; overflow: hidden; }
-.numbers-dragon { position: absolute; left: 8%; font-size: clamp(2rem, 5vw, 3rem); filter: drop-shadow(0 0 12px rgba(231, 100, 40, .55)); }
+.numbers-dragon { position: absolute; left: 8%; font-size: clamp(2rem, 5vw, 3rem); filter: drop-shadow(0 0 12px rgba(231, 100, 40, .55)); animation: none; }
 .numbers-big { font-family: var(--font-display), Georgia, serif; font-size: clamp(1.6rem, 5vw, 2.6rem); color: var(--gold); }
 .numbers-quote { max-width: 34ch; margin: .6rem auto; font-style: italic; font-size: clamp(1.1rem, 3vw, 1.5rem); line-height: 1.5; }
 .numbers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; max-width: 640px; margin: 1.2rem auto; }
