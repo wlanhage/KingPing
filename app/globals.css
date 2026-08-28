@@ -1655,3 +1655,11 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .epilogue-name { margin: 0; font-family: var(--font-display), Georgia, serif; font-size: 1.5rem; }
 .epilogue-role { margin: .2rem 0 0; color: var(--muted); }
 .epilogue-roast { margin: .5rem 0 0; font-style: italic; color: var(--muted); max-width: 40ch; margin-inline: auto; }
+
+/* Akt 4b: Kronans vandring i 3D */
+.finale-weave3d { position: relative; padding: 0; display: block; }
+.weave3d-stage { position: absolute; inset: 0; }
+.weave3d-stage canvas { display: block; width: 100% !important; height: 100% !important; }
+.weave3d-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); }
+.weave3d-caption { position: absolute; left: 0; right: 0; bottom: 6vh; text-align: center; pointer-events: none; }
+.weave3d-hint { margin: .2rem 0 0; color: var(--muted); font-size: .85rem; }

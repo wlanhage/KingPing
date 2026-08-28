@@ -10,11 +10,12 @@ import { createFinaleAudio } from './finale-audio';
 import { ColdOpen } from './ColdOpen';
 import { NumbersAct } from './NumbersAct';
 import { CrownWeave } from './CrownWeave';
+import { CrownWeave3DAct } from './CrownWeave3DAct';
 import { Epilogue } from './Epilogue';
 
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 
-export function SeasonFinale({ summary, cinema }: { summary: FinaleSummary; cinema: boolean }) {
+export function SeasonFinale({ summary, cinema, weave3d = false }: { summary: FinaleSummary; cinema: boolean; weave3d?: boolean }) {
   const [started, setStarted] = useState(false);
   const [muted, setMuted] = useState(false);
   const [reduced, setReduced] = useState(false);
@@ -109,6 +110,7 @@ export function SeasonFinale({ summary, cinema }: { summary: FinaleSummary; cine
         <>
           <ColdOpen {...acts} />
           <NumbersAct {...acts} />
+          {weave3d && <CrownWeave3DAct {...acts} />}
           <CrownWeave {...acts} />
           <Epilogue {...acts} />
           <button type='button' className='finale-mute' onClick={toggleMute} aria-pressed={muted}>

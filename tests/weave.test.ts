@@ -60,3 +60,14 @@ describe('buildWeave', () => {
     expect(w.cards.find((c) => c.id === 'axel')!.defences).toBe(4);
   });
 });
+
+describe('råa kurvpunkter för 3D', () => {
+  it('from/ctrl/to matchar SVG-pathen', () => {
+    const w = buildWeave(players, [T('axel', 'lanhage', 0)], {});
+    const c = w.curves[0];
+    const nums = c.d.replace(/[MQ]/g, ' ').trim().split(/[\s,]+/).map(Number);
+    expect([c.from.x, c.from.y]).toEqual([nums[0], nums[1]]);
+    expect([Math.round(c.ctrl.x * 10) / 10, Math.round(c.ctrl.y * 10) / 10]).toEqual([nums[2], nums[3]]);
+    expect([c.to.x, c.to.y]).toEqual([nums[4], nums[5]]);
+  });
+});

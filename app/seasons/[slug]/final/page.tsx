@@ -37,5 +37,5 @@ export default async function FinalePage({ params, searchParams }: {
   }
 
   const summary = await buildFinaleSummary(season);
-  return <SeasonFinale summary={summary} cinema={sp.cinema === '1'} />;
+  return <SeasonFinale summary={summary} cinema={sp.cinema === '1'} weave3d={sp['3d'] === '1'} />;
 }

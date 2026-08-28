@@ -7,7 +7,10 @@
 export type WeavePlayer = { id: string; name: string; wins: number };
 export type WeaveTransfer = { fromId: string | null; toId: string; eventType: string; occurredAt: string; announcementText: string };
 export type WeaveCard = WeavePlayer & { side: 'left' | 'right'; slot: number; x: number; y: number; defences: number };
-export type WeaveCurve = { d: string; fromId: string | null; toId: string; order: number; pairIndex: number };
+export type Point = { x: number; y: number };
+/** `d` är SVG-pathen för 2D-vyn; `from`/`ctrl`/`to` är samma kurva som råa punkter,
+ *  så 3D-vyn kan bygga en Bézier utan att parsa strängen. */
+export type WeaveCurve = { d: string; from: Point; ctrl: Point; to: Point; fromId: string | null; toId: string; order: number; pairIndex: number };
 export type WeaveLayout = { width: number; height: number; throne: { x: number; y: number }; cards: WeaveCard[]; curves: WeaveCurve[] };
 
 export const WEAVE = { W: 1000, CARD_W: 200, CARD_H: 64, GAP: 32, TOP: 150, LX: 40, RX: 760, THRONE: { x: 500, y: 96 } } as const;
@@ -36,14 +39,15 @@ function splitSides(players: WeavePlayer[], transfers: WeaveTransfer[]): { left:
  * så ett byte tillbaka bågnar åt motsatt håll av sig självt — lägg inte till ett extra
  * riktningstecken här, det tar ut normalen och båda bågarna hamnar på samma sida.
  */
-function curvePath(x1: number, y1: number, x2: number, y2: number, pairIndex: number): string {
+function curveGeometry(x1: number, y1: number, x2: number, y2: number, pairIndex: number): { d: string; ctrl: Point } {
   const mx = (x1 + x2) / 2; const my = (y1 + y2) / 2;
   const dx = x2 - x1; const dy = y2 - y1;
   const len = Math.hypot(dx, dy) || 1;
   const mag = 36 + pairIndex * 30;
   const cx = mx + (-dy / len) * mag; const cy = my + (dx / len) * mag;
   const r = (n: number) => Math.round(n * 10) / 10;
-  return `M ${r(x1)} ${r(y1)} Q ${r(cx)} ${r(cy)} ${r(x2)} ${r(y2)}`;
+  // Mellanslag efter M: testets parser läser M som eget token.
+  return { d: `M ${r(x1)} ${r(y1)} Q ${r(cx)} ${r(cy)} ${r(x2)} ${r(y2)}`, ctrl: { x: cx, y: cy } };
 }
 
 export function buildWeave(players: WeavePlayer[], transfers: WeaveTransfer[], defences: Record<string, number>): WeaveLayout {
@@ -71,7 +75,8 @@ export function buildWeave(players: WeavePlayer[], transfers: WeaveTransfer[], d
     const pairIndex = pairSeen.get(key) ?? 0;
     pairSeen.set(key, pairIndex + 1);
     const from = anchor(t.fromId); const to = anchor(t.toId);
-    return { d: curvePath(from.x, from.y, to.x, to.y, pairIndex), fromId: t.fromId, toId: t.toId, order, pairIndex };
+    const { d, ctrl } = curveGeometry(from.x, from.y, to.x, to.y, pairIndex);
+    return { d, from, ctrl, to, fromId: t.fromId, toId: t.toId, order, pairIndex };
   });
   const maxSlots = Math.max(left.length, right.length, 1);
   const height = Math.max(600, slotY(maxSlots - 1) + WEAVE.CARD_H + 140);
