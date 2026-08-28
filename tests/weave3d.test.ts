@@ -69,17 +69,24 @@ describe('buildWeave3D', () => {
 describe('cameraAt', () => {
   it('ger ändliga positioner över hela resan', () => {
     for (let t = 0; t <= 1.0001; t += 0.1) {
-      const { position, lookAt } = cameraAt(t, 30);
-      for (const v of [position.x, position.y, position.z, lookAt.x, lookAt.y, lookAt.z]) {
+      const { position, lookAt, roll } = cameraAt(t, 30);
+      for (const v of [position.x, position.y, position.z, lookAt.x, lookAt.y, lookAt.z, roll]) {
         expect(Number.isFinite(v)).toBe(true);
       }
     }
   });
 
-  it('kameran kommer närmare väven på mitten än i början', () => {
+  it('kameran kastas in: mycket närmare redan efter inflygningen', () => {
     const start = cameraAt(0, 30).position.length();
-    const mid = cameraAt(0.5, 30).position.length();
-    expect(mid).toBeLessThan(start);
+    const afterApproach = cameraAt(0.2, 30).position.length();
+    expect(afterApproach).toBeLessThan(start * 0.5);
+  });
+
+  it('rollen är noll i början och i finalen, men lutar under genomflygningen', () => {
+    expect(Math.abs(cameraAt(0, 30).roll)).toBeLessThan(0.001);
+    expect(Math.abs(cameraAt(1, 30).roll)).toBeLessThan(0.001);
+    const mid = Math.abs(cameraAt(0.35, 30).roll);
+    expect(mid).toBeGreaterThan(0.02);
   });
 
   it('klampar utanför 0–1 i stället för att spåra ur', () => {

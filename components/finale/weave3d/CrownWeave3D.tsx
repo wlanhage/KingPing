@@ -6,6 +6,7 @@ import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import type { FinaleSummary } from '@/lib/domain/finale';
 import { buildWeave3D, cameraAt, curveProgress, type Weave3DCard, type Weave3DCurve, type Weave3DScene } from './scene';
+import { FlyThroughTitle, Title3D } from './Title3D';
 
 /**
  * Kronans vandring i 3D. Samma data och samma kurvmatte som SVG-versionen —
@@ -77,9 +78,16 @@ function PlayerCard({ card, isWinner, progressRef }: { card: Weave3DCard; isWinn
             roughness={0.6}
           />
         </mesh>
-        <Text position={[0, 0.2, 0.01]} fontSize={0.34} color={isWinner ? GOLD : '#f1e3c6'} anchorX='center' anchorY='middle'>
+        <Title3D
+          position={[0, 0.22, 0.02]}
+          size={0.44}
+          layers={7}
+          depth={0.022}
+          color={isWinner ? '#fff2c0' : '#f1e3c6'}
+          sideColor={isWinner ? '#8a6a1f' : '#3a3348'}
+        >
           {card.name}
-        </Text>
+        </Title3D>
         <Text position={[0, -0.22, 0.01]} fontSize={0.18} color={GOLD_DIM} anchorX='center' anchorY='middle'>
           {`${card.wins} vinster${card.defences > 0 ? ` · ${card.defences} försvar` : ''}`}
         </Text>
@@ -114,12 +122,37 @@ function TravellingCrown({ scene, progressRef }: { scene: Weave3DScene; progress
   );
 }
 
+function WinnerTitle({ name, progressRef }: { name: string; progressRef: ProgressRef }) {
+  const group = useRef<THREE.Group>(null);
+  useFrame(() => {
+    if (!group.current) return;
+    // Reser sig ur väven under de sista 18 procenten och blir enorm.
+    const t = Math.min(1, Math.max(0, (progressRef.current - 0.82) / 0.18));
+    group.current.visible = t > 0.001;
+    group.current.position.y = 1.5 + t * 3.2;
+    group.current.scale.setScalar(0.4 + t * 1.5);
+    group.current.traverse((o) => {
+      const mat = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
+      if (mat && 'opacity' in mat) { mat.transparent = true; mat.opacity = t; }
+    });
+  });
+  return (
+    <group ref={group} visible={false}>
+      <Title3D size={2.6} layers={20} depth={0.09}>{name.toUpperCase()}</Title3D>
+      <Title3D position={[0, -1.9, 0]} size={0.5} layers={6} depth={0.03} color='#e7c25c' sideColor='#5a4512'>
+        SÄSONGENS HÄRSKARE
+      </Title3D>
+    </group>
+  );
+}
+
 function Rig({ scene, progressRef }: { scene: Weave3DScene; progressRef: ProgressRef }) {
   useFrame((state) => {
-    const { position, lookAt } = cameraAt(progressRef.current, scene.radius);
+    const { position, lookAt, roll } = cameraAt(progressRef.current, scene.radius);
     // Lerp i stället för hård sättning: gör skrubbning mjuk utan att tappa kontroll.
     state.camera.position.lerp(position, 0.08);
     state.camera.lookAt(lookAt);
+    state.camera.rotation.z += (roll - state.camera.rotation.z) * 0.1;
   });
   return null;
 }
@@ -173,6 +206,7 @@ export function CrownWeave3D({
     [summary],
   );
   const winnerId = summary.standings[0]?.id ?? null;
+  const winnerName = summary.standings[0]?.name ?? 'Ingen';
 
   return (
     <Canvas
@@ -201,6 +235,13 @@ export function CrownWeave3D({
       {scene.cards.map((c) => (
         <PlayerCard key={c.id} card={c} isWinner={c.id === winnerId} progressRef={progressRef} />
       ))}
+      <FlyThroughTitle progressRef={progressRef} start={0.0} end={0.16} size={2.2} y={0.5}>
+        KRONANS VANDRING
+      </FlyThroughTitle>
+      <FlyThroughTitle progressRef={progressRef} start={0.34} end={0.5} size={1.6} y={-2.4}>
+        VEM TOG VAD FRÅN VEM
+      </FlyThroughTitle>
+      <WinnerTitle name={winnerName} progressRef={progressRef} />
       <TravellingCrown scene={scene} progressRef={progressRef} />
       <Rig scene={scene} progressRef={progressRef} />
 

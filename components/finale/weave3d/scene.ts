@@ -106,22 +106,39 @@ export function buildWeave3D(
  * Kamerabana: sveper från en vid överblick, in genom väven, och ut till en
  * frontal vy där vinnaren presenteras. `t` är 0–1 över hela vävakten.
  */
-export function cameraAt(t: number, radius: number): { position: THREE.Vector3; lookAt: THREE.Vector3 } {
-  const clamped = Math.min(1, Math.max(0, t));
-  // Tre faser: överblick (0–0.25), genomflygning (0.25–0.8), frontal final (0.8–1).
-  const orbit = clamped * Math.PI * 1.15;
-  const dive = Math.sin(Math.min(1, clamped / 0.8) * Math.PI) * (DEPTH * 0.9);
-  const dist = radius * (2.4 - 1.5 * Math.sin(Math.min(1, clamped / 0.85) * Math.PI));
-  const height = 3.5 - 6 * Math.sin(clamped * Math.PI);
+export function cameraAt(t: number, radius: number): { position: THREE.Vector3; lookAt: THREE.Vector3; roll: number } {
+  const c = Math.min(1, Math.max(0, t));
+
+  // Fyra stationer, inte en jämn sväng: etablering på avstånd, en hård dykning IN i
+  // väven, en svepande passage genom nätet, och till sist en tät åkning mot vinnaren.
+  // Avståndet faller brant i början — det är det som ger känslan av att kastas in.
+  const approach = Math.min(1, c / 0.18);            // 0–0.18: rusar inåt
+  const through = Math.min(1, Math.max(0, (c - 0.18) / 0.62)); // 0.18–0.8: genom väven
+  const finale = Math.min(1, Math.max(0, (c - 0.8) / 0.2));    // 0.8–1: mot vinnaren
+
+  const far = radius * 1.9;
+  const near = radius * 0.22;
+  const dist = far + (near - far) * easeOutCubic(approach);
+
+  // Sveper ett helt varv genom väven, med höjden som dyker under nätet på mitten.
+  const orbit = through * Math.PI * 1.8;
+  const height = 4.2 - 9 * Math.sin(through * Math.PI);
 
   const position = new THREE.Vector3(
-    Math.sin(orbit) * dist * 0.55,
-    height,
-    Math.cos(orbit) * dist + dive * 0.5,
+    Math.sin(orbit) * dist * (0.35 + through * 0.5),
+    height - finale * 1.2,
+    Math.cos(orbit) * dist * (1 - finale * 0.55),
   );
-  // Blicken glider mot mitten när finalen närmar sig.
-  const lookAt = new THREE.Vector3(0, -clamped * 1.5, 0);
-  return { position, lookAt };
+
+  // Blicken glider mot mitten, och i finalen upp mot vinnartiteln.
+  const lookAt = new THREE.Vector3(0, -1.2 * through + finale * 2.2, 0);
+  // Lite roll i genomflygningen gör att horisonten lutar — billig men effektiv drama.
+  const roll = Math.sin(through * Math.PI * 2) * 0.16 * (1 - finale);
+  return { position, lookAt, roll };
+}
+
+function easeOutCubic(x: number): number {
+  return 1 - Math.pow(1 - x, 3);
 }
 
 /** Hur mycket av kurva `order` som ska vara ritad vid progress `t`. 0–1. */
