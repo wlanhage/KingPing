@@ -18,7 +18,7 @@ avslutad säsong och blir därmed också det första arkiv-UI:t.
 | Väven (kronans vandring) | Exklusiv för finalen — ingen live-vy under pågående säsong |
 | Visning | Auto-visas EN gång (localStorage-flagga), kan alltid återses via länk |
 | Placering | Väven är den avslutande akten i skrollresan |
-| Musik | Egen låt som William levererar (fil), synth-stingers ovanpå |
+| Musik | Williams egen låt: intro en gång → loop tills stängning, synth-stingers ovanpå |
 | Bibliotek | GSAP (ScrollTrigger + MotionPath) + Lenis |
 | Cinema-läge | Med i v1 (`?cinema=1`, autoskroll för kontors-TV:n) |
 | Omfång v1 | Akt 1, 3, 5, 6 — prologen och prisgalan väntar till v2 |
@@ -109,11 +109,24 @@ automatisk Slack-post vid säsongsslut.
 
 ## Ljud
 
-- **Bastrack:** en fil William levererar, läggs som `public/audio/finale.mp3`
-  (per-säsong-variant `finale-<slug>.mp3` har företräde om den finns). Saknas filen körs
-  finalen tyst — ingen krasch, ingen väntan.
+Musiken är tvådelad, komponerad av William: ett **intro** som spelas en gång och en
+**loop** som därefter upprepas sömlöst tills finalen stängs.
+
+- **Filer:** `public/audio/finale-intro.mp3` + `public/audio/finale-loop.mp3`
+  (per-säsong-varianter `finale-intro-<slug>.mp3` osv. har företräde om de finns).
+- **Källor:** Audacity-projekten ligger i `~/Documents/KingPingMusic/`
+  (`season_end_start.aup3`, `season_end_loop.aup3`). Webbläsare kan inte spela
+  `.aup3` — William exporterar dem från Audacity (Arkiv → Exportera ljud) när de är
+  klara. WAV går bra som leverans; optimerad kopia läggs i `public/audio/`.
+- **Sömlös loop kräver Web Audio, inte `<audio loop>`:** `<audio>`-elementets loop har
+  hörbara glapp. I stället: hämta + `decodeAudioData` på båda filerna, spela introt som
+  `AudioBufferSourceNode`, schemalägg loop-noden att starta **exakt** vid introts slut
+  (sample-exakt via `AudioContext`-klockan) med `loop = true`. Stoppas vid unmount/mute.
+  Detta bygger på samma AudioContext-mönster som Coronation redan använder.
+- **Saknas filerna körs finalen tyst** — ingen krasch, ingen väntan. Bygget är inte
+  blockerat av att musiken inte är exporterad ännu.
 - **Stingers:** befintliga WebAudio-ljud från Coronation (fanfar, sad trombone)
-  återanvänds vid vinnarsekvensen och 💀-momenten, lagda ovanpå bastracken.
+  återanvänds vid vinnarsekvensen och 💀-momenten, lagda ovanpå musiken.
 - **Mute-toggle** med localStorage, samma mönster som `kp-coronation-muted`.
 - Volymen duckas när fliken är dold (`visibilitychange`).
 
@@ -149,7 +162,9 @@ kontors-TV:n.
 - Skrubbning fram/tillbaka fungerar; vinnarsekvens + Coronation triggas exakt en gång
   per passage.
 - Cinema-läget spelar hela resan utan interaktion och pausar vid klick/space.
-- Ljud startar aldrig utan användargest; saknad musikfil ger tyst finale utan fel.
+- Ljud startar aldrig utan användargest; saknade musikfiler ger tyst finale utan fel.
+- Övergången intro → loop är sömlös (sample-exakt schemaläggning), och loopen upprepas
+  utan hörbart glapp tills finalen stängs eller mutas.
 - Reduced motion ger en komplett, läsbar, stillsam version.
 - Fungerar för godtycklig avslutad säsong och följer säsongens tema (inte det aktiva).
 - Pågående säsong på finale-URL:en ger "pågår ännu"-vyn, aldrig en halv finale.
