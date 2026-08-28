@@ -1627,3 +1627,19 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .numbers-grid dt { color: var(--muted); font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; }
 .numbers-grid dd { margin: .2rem 0 0; font-size: 1.6rem; font-weight: 700; color: var(--gold); }
 .numbers-note { color: var(--muted); font-style: italic; }
+
+/* Akt 4: Kronans vandring */
+.finale-weave { align-items: start; }
+.weave-stage { width: min(1100px, 96vw); margin: 0 auto; }
+.weave-heading { margin-bottom: .6rem; }
+.weave-svg { width: 100%; height: auto; overflow: visible; }
+.weave-throne rect { fill: none; stroke: var(--border); stroke-dasharray: 5 4; }
+.weave-throne text { fill: var(--muted); font-family: var(--font-display), Georgia, serif; font-size: 15px; letter-spacing: .12em; }
+.weave-curve { fill: none; stroke: var(--gold); stroke-width: 1.6; opacity: .8; }
+.weave-card rect { fill: var(--panel); stroke: var(--border); }
+.weave-card.is-winner rect { stroke: var(--gold); }
+.weave-name { fill: var(--text); font-family: var(--font-display), Georgia, serif; font-size: 18px; font-weight: 700; }
+.weave-meta { fill: var(--muted); font-size: 13px; }
+#weave-crown text { font-size: 26px; fill: var(--gold); filter: drop-shadow(0 0 8px rgba(231, 194, 92, .8)); }
+#weave-crown { opacity: 0; }
+.finale[data-reduced] #weave-crown { opacity: 0; }
