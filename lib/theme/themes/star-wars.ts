@@ -44,7 +44,7 @@ export const starWars: Theme = {
   },
   badgeOverrides: {
     current_king: { name: 'Nuvarande mästare', emoji: '🌟', description: 'Sitter just nu på tronen.' },
-    emperor: { name: 'Darth Vader', emoji: '🖤', description: 'Mest total tid på tronen. Galaxen lyder.' },
+    emperor: { name: 'Darth Vader', emoji: '🖤', icon: '/badges/darth-vader.png', description: 'Mest total tid på tronen. Galaxen lyder.' },
     crown_collector: { name: 'Kristallsamlaren', emoji: '💠', description: 'Flest totala vinster.' },
     dynasty_founder: { name: 'Ordensgrundaren', emoji: '🏛️', description: 'Har nått minst 3 raka vinster.' },
     hr_case: { name: 'Rådet är oroat', emoji: '🚨', description: 'Har nått minst 4 raka vinster. Situationen övervakas.' },
