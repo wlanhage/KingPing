@@ -1,4 +1,4 @@
-import { galaxyFridayIntros, galaxyNationIntros, galaxySeasonEchoes, galaxyStreakTemplates } from '../../copy/galaxy';
+import { galaxyFridayIntros, galaxyJesterRoasts, galaxyNationIntros, galaxySeasonEchoes, galaxyStreakTemplates } from '../../copy/galaxy';
 import { withNeutral } from '../../copy/neutral';
 import type { Theme } from '../theme-types';
 
@@ -31,10 +31,20 @@ export const starWars: Theme = {
   notFound: { title: 'Det här är inte sidan du letar efter', subtitle: 'Koordinaterna leder rakt ut i tomrummet. Hyperrymden har inga rum med det namnet.', back: 'Tillbaka till Tronrummet' },
   epithets: { rank1: 'Kejsaren', rank2: 'Lärlingen', rank3: 'Galaxens tredje kraft' },
   roles: { monarch: 'Mästare', monarchLower: 'mästare', challenger: 'Utmanare', player: 'jedi', players: 'Jediriddare' },
-  verbs: { crown: 'Upphöj', crowning: 'upphöjelse' },
+  verbs: { crown: 'Upphöj', crowning: 'upphöjelse', crowningNow: 'Upphöjer…' },
+  coronation: {
+    crier: 'Kraften har talat ✨',
+    decree: 'har tagit tronrummet — med racket och ljussabel ⚔️✨',
+    holdCrier: 'Sköldarna håller 🛡️🛰️',
+    holdDecree: 'försvarar tronrummet — {streak} i rad. Kraften är stark i denna. ✨🏓',
+    dismiss: 'Må kraften vara med er →',
+    jester: '🤖',
+    streakCreature: '🛸',
+    roasts: galaxyJesterRoasts,
+  },
   badgeOverrides: {
     current_king: { name: 'Nuvarande mästare', emoji: '🌟', description: 'Sitter just nu på tronen.' },
-    emperor: { name: 'Kejsaren', emoji: '⚡', description: 'Mest total tid på tronen.' },
+    emperor: { name: 'Darth Vader', emoji: '🖤', description: 'Mest total tid på tronen. Galaxen lyder.' },
     crown_collector: { name: 'Kristallsamlaren', emoji: '💠', description: 'Flest totala vinster.' },
     dynasty_founder: { name: 'Ordensgrundaren', emoji: '🏛️', description: 'Har nått minst 3 raka vinster.' },
     hr_case: { name: 'Rådet är oroat', emoji: '🚨', description: 'Har nått minst 4 raka vinster. Situationen övervakas.' },

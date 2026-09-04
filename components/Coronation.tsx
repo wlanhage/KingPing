@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import type { Theme } from '@/lib/theme';
 
 /**
  * THE ROYAL CORONATION SPECTACULAR™
@@ -19,23 +20,7 @@ export type CoronationEvent = {
 const MUTE_KEY = 'kp-coronation-muted';
 const GOLD = ['#e7c25c', '#f3d98a', '#c9a227', '#b8901f', '#fbeec2'];
 
-// Hovnarrens rostar av den störtade regenten. Minst 10 så det aldrig blir gammalt.
-export const JESTER_ROASTS = [
-  'Du vet ingenting, {name}.',
-  '{name} spelade tronspelet och förlorade. Man vinner eller dör. 🏓💀',
-  'En Lannister betalar alltid sina skulder. {name} betalade med kronan.',
-  'Tronen var kall ändå, {name} — precis som din backhand. ❄️',
-  '{name}, natten är mörk och full av dubbelfel. 🌑',
-  'Kronan satt löst på ett huvud fullt av ursäkter, {name}.',
-  '{name} föll snabbare än en usel serv.',
-  'Dina sista ord på tronen, {name}? "Oj."',
-  'Kaos är en stege, {name}. Du ramlade av. 🪜',
-  '{name}, en krona väger tungt — tydligen alldeles för tungt.',
-  'Valar morghulis, {name}. Alla rackethänder måste vila.',
-  'Historieböckerna minns {name}: fotnot, minsta stilen.',
-  'Vad säger man till dödens gud, {name}? Idag: "tack för lånet av tronen".',
-  'Sås till den fallne kungen {name}: mer sur än söt. 🍋',
-];
+export type CoronationCopy = Theme['coronation'];
 
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -122,7 +107,7 @@ function playSadTrombone(ctx: AudioContext, master: GainNode, at: number) {
   });
 }
 
-export function Coronation({ event, onDone }: { event: CoronationEvent; onDone: () => void }) {
+export function Coronation({ event, copy, onDone }: { event: CoronationEvent; copy: CoronationCopy; onDone: () => void }) {
   const [muted, setMuted] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [doorHeld, setDoorHeld] = useState(false);
@@ -130,7 +115,8 @@ export function Coronation({ event, onDone }: { event: CoronationEvent; onDone: 
   const skipRef = useRef<HTMLButtonElement | null>(null);
   const audioRef = useRef<AudioContext | null>(null);
   const doorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const roast = useRef(pick(JESTER_ROASTS)).current;
+  const roast = useRef(pick(copy.roasts)).current;
+  const holdDecree = copy.holdDecree.replaceAll('{streak}', String(event.streakCount));
 
   const dragonCount = event.streakCount >= 3 ? Math.min(event.streakCount, 7) : 0;
   const showDeposed = event.isNewRuler && !!event.deposedName;
@@ -247,22 +233,20 @@ export function Coronation({ event, onDone }: { event: CoronationEvent; onDone: 
       className={`coro-overlay${reduced ? ' coro-reduced' : ''}`}
       role='dialog'
       aria-modal='true'
-      aria-label='Kröning'
+      aria-label={copy.crier}
       onClick={onDone}
     >
       {!reduced && <canvas ref={canvasRef} className='coro-confetti' aria-hidden='true' />}
 
       {/* Skärmläsar-utrop */}
       <p className='coro-sr' aria-live='assertive'>
-        {event.isNewRuler
-          ? `Hör upp! ${bannerName} har tagit tronen.`
-          : `${bannerName} försvarar tronen. Streak ${event.streakCount}.`}
+        {event.isNewRuler ? `${copy.crier} ${bannerName} ${copy.decree}` : `${bannerName} ${holdDecree}`}
       </p>
 
       {dragonCount > 0 && (
         <div className='coro-dragons' aria-hidden='true'>
           {Array.from({ length: dragonCount }).map((_, i) => (
-            <span key={i} className='coro-dragon' style={{ top: `${12 + i * 11}%`, animationDelay: `${i * 0.35}s` }}>🐉</span>
+            <span key={i} className='coro-dragon' style={{ top: `${12 + i * 11}%`, animationDelay: `${i * 0.35}s` }}>{copy.streakCreature}</span>
           ))}
         </div>
       )}
@@ -271,13 +255,13 @@ export function Coronation({ event, onDone }: { event: CoronationEvent; onDone: 
         {event.isNewRuler ? (
           <>
             <div className='coro-crown' aria-hidden='true'>👑</div>
-            <p className='coro-crier'>Hör upp! 🔔</p>
+            <p className='coro-crier'>{copy.crier}</p>
             <h2 className='coro-name'>{bannerName}</h2>
-            <p className='coro-decree'>har tagit det som är deras — med racket och eld 🗡️🔥</p>
+            <p className='coro-decree'>{copy.decree}</p>
 
             {showDeposed && (
               <div className='coro-jester'>
-                <span className='coro-jester-face' aria-hidden='true'>🃏</span>
+                <span className='coro-jester-face' aria-hidden='true'>{copy.jester}</span>
                 <p className='coro-roast'>“{roast.replaceAll('{name}', event.deposedName!)}”</p>
                 <span className='coro-tear' aria-hidden='true'>💧</span>
               </div>
@@ -286,9 +270,9 @@ export function Coronation({ event, onDone }: { event: CoronationEvent; onDone: 
         ) : (
           <>
             <div className='coro-crown coro-crown-hold' aria-hidden='true'>👑</div>
-            <p className='coro-crier'>Tronen håller stånd ❄️🐉</p>
+            <p className='coro-crier'>{copy.holdCrier}</p>
             <h2 className='coro-name'>{bannerName}</h2>
-            <p className='coro-decree'>försvarar tronen — {event.streakCount} i rad. Mother of Aces. 🥚🔥🏓</p>
+            <p className='coro-decree'>{holdDecree}</p>
           </>
         )}
 
@@ -297,7 +281,7 @@ export function Coronation({ event, onDone }: { event: CoronationEvent; onDone: 
             {muted ? '🔇 Ljud av' : '🔊 Ljud på'}
           </button>
           <button type='button' ref={skipRef} className='coro-skip' onClick={onDone}>
-            Länge leve regenten →
+            {copy.dismiss}
           </button>
         </div>
       </div>

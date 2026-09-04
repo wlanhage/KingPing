@@ -3,7 +3,7 @@ import type { EventType, NationState } from '@prisma/client';
 export type PageKey = 'home' | 'leaderboard' | 'history' | 'players' | 'badges' | 'archive' | 'settings';
 
 /** Delvis omdöpning av en badge. Utelämnade fält faller tillbaka på basdefinitionen. */
-export type BadgeOverride = { name?: string; description?: string; emoji?: string };
+export type BadgeOverride = { name?: string; description?: string; emoji?: string; icon?: string };
 
 export type ThemeColors = {
   bg: string;
@@ -34,7 +34,18 @@ export type Theme = {
   epithets: { rank1: string; rank2: string; rank3: string };
   roles: { monarch: string; monarchLower: string; challenger: string; player: string; players: string };
   /** Ord för händelsen "att utse en vinnare" — t.ex. kröna/upphöja. */
-  verbs: { crown: string; crowning: string };
+  verbs: { crown: string; crowning: string; crowningNow: string };
+  /** Kröningsceremonins texter. {streak} i holdDecree ersätts med antal raka. */
+  coronation: {
+    crier: string;
+    decree: string;
+    holdCrier: string;
+    holdDecree: string;
+    dismiss: string;
+    jester: string;
+    streakCreature: string;
+    roasts: string[];
+  };
   badgeOverrides: Record<string, BadgeOverride>;
   announcements: {
     streakTemplates: Record<string, string[]>;

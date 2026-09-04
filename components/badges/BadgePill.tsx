@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { ComputedPlayerBadge } from '@/lib/badges/badge-types';
+import { BadgeIcon } from './BadgeIcon';
 
 const rarityStyle: Record<string, CSSProperties> = {
   common: { background: '#2b335a', color: '#d9e3ff' },
@@ -22,7 +23,7 @@ export function BadgePill({ badge }: { badge: ComputedPlayerBadge }) {
       }}
       title={`${badge.definition.description} • ${badge.reason}`}
     >
-      <span>{badge.definition.emoji}</span>
+      <BadgeIcon badge={badge.definition} />
       <span>{badge.definition.name}</span>
       <span style={{ opacity: 0.75 }}>{badge.definition.rarity}</span>
     </div>

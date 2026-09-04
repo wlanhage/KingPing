@@ -1,5 +1,6 @@
 import type { BadgeProgress } from '@/lib/badges/badge-progress';
 import { themedBadge, type Theme } from '@/lib/theme';
+import { BadgeIcon } from '@/components/badges/BadgeIcon';
 
 export function PlayerNextBadges({ items, theme }: { items: BadgeProgress[]; theme: Theme }) {
   if (!items.length) return null;
@@ -11,7 +12,7 @@ export function PlayerNextBadges({ items, theme }: { items: BadgeProgress[]; the
           const b = themedBadge(p.definition, theme);
           return (
             <article key={b.id} className={`next-badge rarity-accent-${b.rarity}`}>
-              <span className={`next-badge-medallion rarity-${b.rarity}`} aria-hidden>{b.emoji}</span>
+              <span className={`next-badge-medallion rarity-${b.rarity}`} aria-hidden><BadgeIcon badge={b} /></span>
               <div className='next-badge-body'>
                 <strong className='next-badge-name'>{b.name}</strong>
                 <span className='next-badge-count'>{p.current} av {p.target} {p.unit}</span>

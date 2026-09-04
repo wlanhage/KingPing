@@ -6,7 +6,8 @@ export type BadgeTone = 'prestige' | 'dramatic' | 'roast' | 'meme' | 'neutral';
 // som bara styr sorteringsordning och är för grov för att avgöra exklusivitet (t.ex. ligger
 // både längsta-streak-trappan och Tronsförsvararen i kategorin 'streak', men de mäter
 // olika saker).
-export type BadgeDefinition = { id: string; name: string; emoji: string; description: string; rarity: BadgeRarity; category: BadgeCategory; tone: BadgeTone; ladder?: string; tier?: number };
+/** `icon` är en bild-URL som ersätter emojin där badgen visas. */
+export type BadgeDefinition = { id: string; name: string; emoji: string; icon?: string; description: string; rarity: BadgeRarity; category: BadgeCategory; tone: BadgeTone; ladder?: string; tier?: number };
 export type BadgeId = string;
 export type PlayerStats = { playerId: string; totalWins: number; totalReignMs: number; longestReignMs: number; currentReignMs: number; currentStreak: number; longestStreak: number; fridayWins: number; winsLast30Days: number; winsLast7Days: number; daysSinceLastWin: number | null; daysSincePreviousWin: number | null; streaksBroken: number; biggestStreakBroken: number; takeoverWins: number; timesDethroned: number; averageReignMs: number; crownEfficiencyMsPerWin: number; isCurrentKing: boolean;
   /** Måndag = 0 … söndag = 6, i svensk tid. */

@@ -1,4 +1,5 @@
 'use client';
+import { BadgeIcon } from '@/components/badges/BadgeIcon';
 import { useEffect, useState } from 'react';
 import type { ComputedPlayerBadge } from '@/lib/badges/badge-types';
 
@@ -38,7 +39,7 @@ export function AllBadgesButton({ badges }: { badges: ComputedPlayerBadge[] }) {
               <div className='modal-badges-list'>
                 {badges.map((b) => (
                   <article key={b.id} className={`badge-codex-card rarity-accent-${b.definition.rarity}`}>
-                    <div className={`badge-codex-medallion rarity-${b.definition.rarity}`} aria-hidden>{b.definition.emoji}</div>
+                    <div className={`badge-codex-medallion rarity-${b.definition.rarity}`} aria-hidden><BadgeIcon badge={b.definition} /></div>
                     <div className='badge-codex-body'>
                       <h4 className='badge-codex-name'>{b.definition.name}</h4>
                       <span className={`badge-codex-rarity rarity-text-${b.definition.rarity}`}>{RARITY_TAG[b.definition.rarity] ?? b.definition.rarity}</span>

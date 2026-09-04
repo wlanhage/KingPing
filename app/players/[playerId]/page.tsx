@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { PlayerHero } from '@/components/player/PlayerHero';
 import { AllBadgesButton } from '@/components/player/AllBadgesButton';
@@ -15,6 +16,12 @@ import { nextBadges } from '@/lib/badges/badge-progress';
 import { formatDuration, formatShortDuration, formatRelativeDate } from '@/lib/format';
 import { getActiveTheme } from '@/lib/theme/server';
 import { themedBadge } from '@/lib/theme';
+
+export async function generateMetadata({ params }: { params: Promise<{ playerId: string }> }) {
+  const { playerId } = await params;
+  const player = await prisma.player.findUnique({ where: { id: playerId }, select: { name: true } });
+  return { title: player?.name ?? 'Spelare' };
+}
 
 export default async function PlayerPage({ params, searchParams }: { params: Promise<{ playerId: string }>; searchParams: Promise<{ season?: string }> }) {
   const { playerId } = await params;

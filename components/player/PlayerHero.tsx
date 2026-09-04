@@ -1,6 +1,7 @@
 import type { ComputedPlayerBadge } from '@/lib/badges/badge-types';
 import { formatDuration } from '@/lib/format';
 import type { Theme } from '@/lib/theme';
+import { BadgeIcon } from '@/components/badges/BadgeIcon';
 
 type Rarity = 'common' | 'rare' | 'epic' | 'legendary' | 'mythical';
 
@@ -34,7 +35,7 @@ function BadgeTooltip({ badge, placement }: { badge: ComputedPlayerBadge; placem
   return (
     <span className={`badge-tooltip ${placement}`} role='tooltip'>
       <span className='badge-tt-head'>
-        <span className='badge-tt-emoji' aria-hidden>{badge.definition.emoji}</span>
+        <span className='badge-tt-emoji' aria-hidden><BadgeIcon badge={badge.definition} /></span>
         <span className='badge-tt-name'>{badge.definition.name}</span>
       </span>
       <span className='badge-tt-rarity'>{badge.definition.rarity}</span>
@@ -50,7 +51,7 @@ function OrbitBadge({ badge, position }: { badge: ComputedPlayerBadge; position:
   return (
     <div className='royal-orbit-badge' style={position}>
       <div className={`royal-badge-medallion rarity-${rarity}`} tabIndex={0} aria-label={`${badge.definition.name}, ${badge.definition.rarity}: ${badge.definition.description}`}>
-        <span className='royal-badge-icon'>{badge.definition.emoji}</span>
+        <span className='royal-badge-icon'><BadgeIcon badge={badge.definition} /></span>
         <BadgeTooltip badge={badge} placement={placement} />
       </div>
       <div className='royal-badge-caption'>
@@ -114,7 +115,7 @@ export function PlayerHero({ player, stats, theme }: { player: any; stats: any; 
               tabIndex={0}
               aria-label={`${badge.definition.name}, ${badge.definition.rarity}: ${badge.definition.description}`}
             >
-              <span aria-hidden>{badge.definition.emoji}</span>
+              <span aria-hidden><BadgeIcon badge={badge.definition} /></span>
               <span>{badge.definition.name}</span>
               <BadgeTooltip badge={badge} placement='above' />
             </span>

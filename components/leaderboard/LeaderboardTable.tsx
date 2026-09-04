@@ -30,19 +30,19 @@ export function LeaderboardTable({ rows, theme, trend, seasonSlug }: { rows: any
             const epithet = r.rank === 1 ? theme.epithets.rank1 : r.rank === 2 ? theme.epithets.rank2 : r.rank === 3 ? theme.epithets.rank3 : '';
             return (
               <tr key={r.id} className={r.isCurrentKing ? 'lb-king-row' : ''}>
-                <td className='lb-rank'>{r.rank}<Trend delta={trend?.[r.id]} /></td>
-                <td>
+                <td className='lb-rank' data-label='#'>{r.rank}<Trend delta={trend?.[r.id]} /></td>
+                <td className='lb-player' data-label='Spelare'>
                   <Link href={playerHref(r.id)} className='lb-name'>{r.name}</Link>
                   {epithet && <div className='lb-epithet'>{epithet}</div>}
                 </td>
-                <td>{r.isCurrentKing ? `👑 Nuvarande ${theme.roles.monarchLower}` : theme.roles.challenger}</td>
-                <td>{formatDuration(r.totalReignMs)}</td>
-                <td>{r.totalWins}</td>
-                <td>{formatDuration(r.longestReignMs)}</td>
-                <td>{r.currentStreak}</td>
-                <td>{r.longestStreak}</td>
-                <td>{r.fridayWins}</td>
-                <td>{formatDate(r.lastWinAt)}</td>
+                <td data-label='Status'>{r.isCurrentKing ? `👑 Nuvarande ${theme.roles.monarchLower}` : theme.roles.challenger}</td>
+                <td data-label='Trontid'>{formatDuration(r.totalReignMs)}</td>
+                <td data-label='Vinster'>{r.totalWins}</td>
+                <td data-label='Längsta regering'>{formatDuration(r.longestReignMs)}</td>
+                <td data-label='Nuvarande streak'>{r.currentStreak}</td>
+                <td data-label='Längsta streak'>{r.longestStreak}</td>
+                <td data-label='Fredagsvinster'>{r.fridayWins}</td>
+                <td data-label='Senaste vinst'>{formatDate(r.lastWinAt)}</td>
               </tr>
             );
           })}

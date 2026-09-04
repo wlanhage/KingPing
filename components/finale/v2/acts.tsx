@@ -5,7 +5,6 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type { FinaleSummary } from '@/lib/domain/finale';
 import { formatDuration } from '@/lib/format';
-import { JESTER_ROASTS } from '@/components/Coronation';
 import { getTheme } from '@/lib/theme';
 import { superlatives, topRivalry, verdictFor, winless } from './verdicts';
 
@@ -274,6 +273,7 @@ export function CoronationV2({ summary, reduced }: { summary: FinaleSummary; red
 }
 
 export function EpilogueV2({ summary, reduced }: { summary: FinaleSummary; reduced: boolean }) {
+  const roasts = getTheme(summary.season.theme).coronation.roasts;
   const ref = useRef<HTMLElement | null>(null);
   useReveal(ref, reduced);
   return (
@@ -284,7 +284,7 @@ export function EpilogueV2({ summary, reduced }: { summary: FinaleSummary; reduc
           <div key={row.id} className='hud-credit' data-reveal>
             <p className='hud-credit-name'>{row.name}</p>
             <p className='hud-credit-role'>#{row.rank} · {row.totalWins} vinster</p>
-            {i % 3 === 2 && <p className='hud-credit-roast'>&ldquo;{JESTER_ROASTS[i % JESTER_ROASTS.length].replaceAll('{name}', row.name)}&rdquo;</p>}
+            {i % 3 === 2 && <p className='hud-credit-roast'>&ldquo;{roasts[i % roasts.length].replaceAll('{name}', row.name)}&rdquo;</p>}
           </div>
         ))}
         <div className='hud-credit' data-reveal>

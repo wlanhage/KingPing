@@ -58,7 +58,12 @@ export default async function Page() {
       <section className='dash-crown-panel'>
         <h2>{theme.verbs.crown} ny vinnare</h2>
         <p className='dash-crown-sub'>Välj spelaren som tog hem rundan.</p>
-        <RecordWinForm players={players} lastWinAt={lastEvent?.occurredAt.toISOString() ?? null} cooldownMs={WIN_COOLDOWN_MS} />
+        <RecordWinForm
+          players={players}
+          lastWinAt={lastEvent?.occurredAt.toISOString() ?? null}
+          cooldownMs={WIN_COOLDOWN_MS}
+          copy={{ crown: theme.verbs.crown, crowning: theme.verbs.crowning, crowningNow: theme.verbs.crowningNow, coronation: theme.coronation }}
+        />
       </section>
 
       {endedSeason && (

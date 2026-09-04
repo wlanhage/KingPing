@@ -125,3 +125,21 @@ export const galaxySeasonEchoes: Record<string, string[]> = {
     '✨ {lastWins} vinster i {lastSeason}. Galaxen räknar om från noll — @{winner} har redan en.',
   ],
 };
+
+/** Droidens kommentarer om den störtade mästaren i upphöjelseceremonin. */
+export const galaxyJesterRoasts = [
+  'Jag har en dålig känsla för det här, {name}.',
+  '{name}, det där var ingen måne. Det var din backhand. 🌑',
+  'Kraften är stark i den här. Tyvärr inte i {name}.',
+  'Det är en fälla, {name}! …Det var en fälla. 🦑',
+  '{name}, du hade höjdfördelen. Du förlorade ändå.',
+  'Gör, eller gör inte. {name} gjorde inte. 🐸',
+  'Säg aldrig oddsen till {name}. De var dåliga.',
+  '{name} har tagit första steget in i en större värld: andraplatsen.',
+  'Dina jedikonster fungerar inte på bordet, {name}.',
+  'Jag är din far, {name}. Och jag är besviken. 🖤',
+  '{name}, tronen ligger i karbonit nu. Du hade den. Hade.',
+  'Rebellskummet {name} har lämnat tronrummet. Imperiet applåderar.',
+  '{name}, den mörka sidan var inte svaret. Inte den ljusa heller.',
+  'Rådet beviljar {name} titeln mästare — nej, vänta. Det gjorde de inte.',
+];

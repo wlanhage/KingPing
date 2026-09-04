@@ -1976,3 +1976,39 @@ html:has(.crawl-track) { overflow-x: clip; }
   -webkit-text-stroke: .035em var(--gold); paint-order: stroke fill; }
 .crawl-item { margin: 0 0 1.5em; white-space: pre-line; }
 .crawl-item-meta { display: block; margin-bottom: .25em; font-size: .52em; letter-spacing: .24em; text-transform: uppercase; text-align: center; opacity: .72; white-space: normal; -webkit-text-stroke: 0; }
+
+/* ===== Mobilpass ===== */
+/* Menyn: en skrollbar rad i stället för sju pills som radbryter. Kanterna tonas så man ser att den fortsätter. */
+@media (max-width: 760px) {
+  .realm-banner { gap: .7rem; margin-bottom: 1.3rem; padding-bottom: .8rem; }
+  .realm-crest-name { font-size: 1.2rem; }
+  .top-nav { flex-wrap: nowrap; width: 100%; margin: 0 -1rem; padding: .1rem 1rem .35rem; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 .8rem, #000 calc(100% - 2.2rem), transparent); mask-image: linear-gradient(90deg, transparent, #000 .8rem, #000 calc(100% - 2.2rem), transparent); }
+  .top-nav::-webkit-scrollbar { display: none; }
+  .nav-pill { flex: 0 0 auto; scroll-snap-align: start; white-space: nowrap; }
+  .dash-throne { padding: 1.6rem 1rem; }
+  .season-strip { font-size: .7rem; gap: .45rem; }
+  .crawl-head { padding: .8rem .8rem 1rem; }
+}
+/* Tabellen blir kort: placering och namn överst, resten som rader med etikett till vänster och värde till höger. */
+@media (max-width: 640px) {
+  .lb-table-wrap { overflow: visible; border: 0; background: transparent; }
+  .lb-table-wrap table { display: block; min-width: 0; }
+  .lb-table-wrap thead { display: none; }
+  .lb-table-wrap tbody { display: grid; gap: .6rem; }
+  .lb-table-wrap tr { display: grid; grid-template-columns: auto 1fr; column-gap: .8rem; padding: .8rem .95rem; border: 1px solid var(--border); border-radius: 12px; background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(0,0,0,.18)), var(--panel); }
+  .lb-table-wrap tr.lb-king-row { border-color: rgba(231, 194, 92, .5); }
+  .lb-table-wrap td { display: block; padding: 0; border: 0; }
+  .lb-table-wrap td.lb-rank { grid-row: 1; align-self: center; font-family: var(--font-title), Georgia, serif; font-size: 1.35rem; }
+  .lb-table-wrap td.lb-player { grid-row: 1; align-self: center; }
+  .lb-table-wrap td.lb-player .lb-name { font-size: 1.05rem; }
+  .lb-table-wrap td[data-label]:not(.lb-rank):not(.lb-player) { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 1rem; padding-top: .35rem; font-size: .92rem; }
+  .lb-table-wrap td[data-label]:not(.lb-rank):not(.lb-player)::before { content: attr(data-label); color: var(--muted); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; align-self: center; }
+}
+
+/* Badges med bild i stället för emoji (components/badges/BadgeIcon.tsx) */
+.badge-icon-img { width: 1.25em; height: 1.25em; border-radius: 50%; object-fit: cover; vertical-align: -0.3em; display: inline-block; }
+.badge-codex-medallion .badge-icon-img, .next-badge-medallion .badge-icon-img { width: 100%; height: 100%; vertical-align: 0; }
+.royal-badge-icon .badge-icon-img { width: 1.35em; height: 1.35em; vertical-align: 0; box-shadow: 0 0 14px rgba(0,0,0,.5); }
+@media (max-width: 640px) { .crawl { text-align: left; } }
+@media (max-width: 520px) { .top-nav { margin: 0 -.75rem; padding-inline: .75rem; } }

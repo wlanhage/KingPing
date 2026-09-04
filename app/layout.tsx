@@ -6,6 +6,7 @@ import { FakeAd } from '@/components/FakeAd';
 import { Starfield } from '@/components/Starfield';
 import { getActiveTheme } from '@/lib/theme/server';
 import { themeCssVars, type PageKey } from '@/lib/theme';
+import { siteUrl } from '@/lib/site-url';
 import './globals.css';
 import './cursor.css';
 
@@ -16,6 +17,8 @@ const body = EB_Garamond({ subsets: ['latin'], weight: ['400', '500', '600', '70
 export async function generateMetadata(): Promise<Metadata> {
   const { theme } = await getActiveTheme();
   return {
+    // Behövs för att delningsbilder ska få absoluta URL:er. Vercel sätter produktionsdomänen i env.
+    metadataBase: new URL(siteUrl()),
     title: { default: theme.appName, template: `%s · ${theme.appName}` },
     description: theme.tagline,
     applicationName: theme.appName,

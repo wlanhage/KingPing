@@ -126,3 +126,21 @@ export const seasonEchoes: Record<string, string[]> = {
     '🧭 {lastWins} vinster i {lastSeason}. Riket räknar om från noll — @{winner} har redan en.',
   ],
 };
+
+/** Hovnarrens rostar av den störtade regenten i kröningsceremonin. */
+export const jesterRoasts = [
+  'Du vet ingenting, {name}.',
+  '{name} spelade tronspelet och förlorade. Man vinner eller dör. 🏓💀',
+  'En Lannister betalar alltid sina skulder. {name} betalade med kronan.',
+  'Tronen var kall ändå, {name} — precis som din backhand. ❄️',
+  '{name}, natten är mörk och full av dubbelfel. 🌑',
+  'Kronan satt löst på ett huvud fullt av ursäkter, {name}.',
+  '{name} föll snabbare än en usel serv.',
+  'Dina sista ord på tronen, {name}? "Oj."',
+  'Kaos är en stege, {name}. Du ramlade av. 🪜',
+  '{name}, en krona väger tungt — tydligen alldeles för tungt.',
+  'Valar morghulis, {name}. Alla rackethänder måste vila.',
+  'Historieböckerna minns {name}: fotnot, minsta stilen.',
+  'Vad säger man till dödens gud, {name}? Idag: "tack för lånet av tronen".',
+  'Sås till den fallne kungen {name}: mer sur än söt. 🍋',
+];

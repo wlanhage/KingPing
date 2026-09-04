@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
-import { Coronation, type CoronationEvent } from './Coronation';
+import { Coronation, type CoronationCopy, type CoronationEvent } from './Coronation';
+
+export type WinFormCopy = { crown: string; crowning: string; crowningNow: string; coronation: CoronationCopy };
 
 function formatCountdown(ms: number) {
   const total = Math.ceil(ms / 1000);
@@ -9,7 +11,7 @@ function formatCountdown(ms: number) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export function RecordWinForm({ players, lastWinAt, cooldownMs }: { players: { id: string; name: string }[]; lastWinAt: string | null; cooldownMs: number }) {
+export function RecordWinForm({ players, lastWinAt, cooldownMs, copy }: { players: { id: string; name: string }[]; lastWinAt: string | null; cooldownMs: number; copy: WinFormCopy }) {
   const [winnerId, setWinnerId] = useState(players[0]?.id ?? '');
   const [note, setNote] = useState('');
   const [confirming, setConfirming] = useState(false);
@@ -100,11 +102,11 @@ export function RecordWinForm({ players, lastWinAt, cooldownMs }: { players: { i
         </label>
 
         <button className='crown-btn' disabled={!winnerId || onCooldown}>
-          {onCooldown ? `Ny vinnare om ${formatCountdown(remainingMs)}` : `Kröna ${selected?.name ?? 'vinnaren'}`}
+          {onCooldown ? `Ny vinnare om ${formatCountdown(remainingMs)}` : `${copy.crown} ${selected?.name ?? 'vinnaren'}`}
         </button>
 
         {onCooldown && (
-          <p className='crown-hint'>En vinnare sattes nyss. För att undvika dubbelsättningar kan en ny krönas om {formatCountdown(remainingMs)}.</p>
+          <p className='crown-hint'>En vinnare sattes nyss. För att undvika dubbelsättningar kan nästa {copy.crowning} ske om {formatCountdown(remainingMs)}.</p>
         )}
         {error && <p className='crown-error'>{error}</p>}
       </form>
@@ -118,19 +120,19 @@ export function RecordWinForm({ players, lastWinAt, cooldownMs }: { players: { i
           onClick={() => { if (!submitting) setConfirming(false); }}
         >
           <div className='modal' onClick={(e) => e.stopPropagation()}>
-            <h3 id='confirm-title' className='modal-title'>Bekräfta kröning</h3>
+            <h3 id='confirm-title' className='modal-title'>Bekräfta {copy.crowning}</h3>
             <p className='modal-body'>Är du säker på att du vill sätta <strong>{selected?.name}</strong> som vinnare?</p>
             <div className='modal-actions'>
               <button type='button' className='btn-ghost' onClick={() => setConfirming(false)} disabled={submitting}>Avbryt</button>
               <button type='button' className='crown-btn' onClick={submit} disabled={submitting}>
-                {submitting ? 'Kröner…' : `Ja, kröna ${selected?.name}`}
+                {submitting ? copy.crowningNow : `Ja, ${copy.crown.toLowerCase()} ${selected?.name}`}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {coronation && <Coronation event={coronation} onDone={() => location.reload()} />}
+      {coronation && <Coronation event={coronation} copy={copy.coronation} onDone={() => location.reload()} />}
     </>
   );
 }

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BadgeIcon } from '@/components/badges/BadgeIcon';
 import { BADGES } from '@/lib/badges/badge-definitions';
 import { getLeaderboard } from '@/lib/domain/riket';
 import { getActiveTheme } from '@/lib/theme/server';
@@ -54,7 +55,7 @@ export default async function BadgesPage() {
             <div className='badge-codex-grid'>
               {items.map((b) => (
                 <article key={b.id} className={`badge-codex-card rarity-accent-${rarity}`}>
-                  <div className={`badge-codex-medallion rarity-${rarity}`} aria-hidden>{b.emoji}</div>
+                  <div className={`badge-codex-medallion rarity-${rarity}`} aria-hidden><BadgeIcon badge={b} /></div>
                   <div className='badge-codex-body'>
                     <h3 className='badge-codex-name'>{b.name}</h3>
                     <span className={`badge-codex-rarity rarity-text-${rarity}`}>{RARITY_TAG[rarity]}</span>

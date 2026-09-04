@@ -1,5 +1,5 @@
 import { withNeutral } from '../../copy/neutral';
-import { fridayIntros, nationIntros, seasonEchoes, streakTemplates } from '../../copy/templates';
+import { fridayIntros, jesterRoasts, nationIntros, seasonEchoes, streakTemplates } from '../../copy/templates';
 import type { Theme } from '../theme-types';
 
 /** Ursprungstemat: svenskt medeltidsrike. Färgerna speglar :root i globals.css. */
@@ -28,7 +28,17 @@ export const realm: Theme = {
   notFound: { title: 'Denna sal finns inte', subtitle: 'Kartan över riket har inget rum med det namnet. Kanske har härolden skrivit fel.', back: 'Tillbaka till Tronsalen' },
   epithets: { rank1: 'Kejsaren', rank2: 'Kronprinsen', rank3: 'Rikets tredje kraft' },
   roles: { monarch: 'Kung', monarchLower: 'kung', challenger: 'Utmanare', player: 'riddare', players: 'Riddare' },
-  verbs: { crown: 'Kröna', crowning: 'kröning' },
+  verbs: { crown: 'Kröna', crowning: 'kröning', crowningNow: 'Kröner…' },
+  coronation: {
+    crier: 'Hör upp! 🔔',
+    decree: 'har tagit det som är deras — med racket och eld 🗡️🔥',
+    holdCrier: 'Tronen håller stånd ❄️🐉',
+    holdDecree: 'försvarar tronen — {streak} i rad. Mother of Aces. 🥚🔥🏓',
+    dismiss: 'Länge leve regenten →',
+    jester: '🃏',
+    streakCreature: '🐉',
+    roasts: jesterRoasts,
+  },
   badgeOverrides: {},
   announcements: withNeutral({ streakTemplates, nationIntros, fridayIntros, seasonEchoes }),
   colors: {
