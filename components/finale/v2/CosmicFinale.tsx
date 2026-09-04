@@ -26,6 +26,11 @@ export function CosmicFinale({ summary, cinema }: { summary: FinaleSummary; cine
   const [muted, setMuted] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [webgl, setWebgl] = useState(true);
+  const [canvasGen, setCanvasGen] = useState(0);
+  const [errorCount, setErrorCount] = useState(0);
+  const [debug, setDebug] = useState(false);
+  const lastError = useRef<string | null>(null);
+  const lostCount = useRef(0);
   const root = useRef<HTMLDivElement | null>(null);
   const progress = useRef(0);
   const velocity = useRef(0);
@@ -34,6 +39,7 @@ export function CosmicFinale({ summary, cinema }: { summary: FinaleSummary; cine
   const cinemaStop = useRef<(() => void) | null>(null);
 
   useEffect(() => {
+    setDebug(new URLSearchParams(window.location.search).get('debug') === '1');
     setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     const audio = createFinaleAudio(summary.season.slug);
     audioRef.current = audio;
@@ -64,17 +70,32 @@ export function CosmicFinale({ summary, cinema }: { summary: FinaleSummary; cine
     };
   }, [started, reduced]);
 
-  // Global vakt: R3F kastar från sin rAF-loop vid förlorad kontext, och det fångar
-  // ingen felgräns. Canvasen är inte pinnad, så att avmontera den är säkert.
+  // Ingen global felvakt längre. Den förra fångade ALLA fönsterfel som nämnde
+  // THREE/WebGL, avmonterade canvasen för gott och körde preventDefault — ett enda
+  // ofarligt fel gav svart rymd, tyst. Nu registreras bara senaste felet för
+  // debugrutan; äkta kontextförlust hanteras separat med återmontering.
   useEffect(() => {
-    if (!started || reduced) return;
-    const isWebgl = (m: string) => /getContextAttributes|reading 'alpha'|WebGL|THREE\.|context lost/i.test(m);
-    const onError = (e: ErrorEvent) => { if (isWebgl(e.message ?? '')) { e.preventDefault(); setWebgl(false); } };
-    const onRej = (e: PromiseRejectionEvent) => { if (isWebgl(String(e.reason?.message ?? e.reason ?? ''))) { e.preventDefault(); setWebgl(false); } };
+    if (!started) return;
+    const record = (msg: string) => { lastError.current = msg; setErrorCount((n) => n + 1); };
+    const onError = (e: ErrorEvent) => record(e.message ?? String(e));
+    const onRej = (e: PromiseRejectionEvent) => record(String(e.reason?.message ?? e.reason ?? 'rejection'));
     window.addEventListener('error', onError);
     window.addEventListener('unhandledrejection', onRej);
     return () => { window.removeEventListener('error', onError); window.removeEventListener('unhandledrejection', onRej); };
-  }, [started, reduced]);
+  }, [started]);
+
+  // Äkta kontextförlust: montera om canvasen med ny key efter en kort paus i stället
+  // för att ge upp. Canvasen är inte pinnad, så om-montering är säker. Max tre försök.
+  function handleContextLost() {
+    lastError.current = 'webglcontextlost';
+    lostCount.current += 1;
+    // Fler än tre förluster i rad betyder att GPU:n inte orkar — då släpper vi 3D:n
+    // och låter den statiska nebulosan (CSS) bära bakgrunden.
+    if (lostCount.current > 3) { setWebgl(false); return; }
+    // Ny key → ny WebGLRenderer med färsk kontext. Pausen ger webbläsaren tid att
+    // frigöra den gamla innan vi ber om en ny.
+    window.setTimeout(() => setCanvasGen((g) => g + 1), 800);
+  }
 
   useEffect(() => () => cinemaStop.current?.(), []);
 
@@ -105,7 +126,7 @@ export function CosmicFinale({ summary, cinema }: { summary: FinaleSummary; cine
   const acts = { summary, reduced };
 
   return (
-    <div ref={root} className='finale finale-v2' style={seasonVars} data-reduced={reduced || undefined} data-started={started || undefined}>
+    <div ref={root} className='finale finale-v2' style={seasonVars} data-reduced={reduced || undefined} data-started={started || undefined} data-webgl={webgl ? 'on' : 'off'}>
       {!started && (
         <div className='finale-cover v2-cover'>
           <p className='finale-door-eyebrow'>Krönikan</p>
@@ -119,10 +140,11 @@ export function CosmicFinale({ summary, cinema }: { summary: FinaleSummary; cine
           {!reduced && webgl && (
             <div className='v2-stage' aria-hidden>
               <CosmosCanvas
+                key={canvasGen}
                 summary={summary}
                 progress={progress}
                 velocity={velocity}
-                onContextLost={() => setWebgl(false)}
+                onContextLost={handleContextLost}
                 onReady={(api) => {
                   if (process.env.NODE_ENV !== 'production') {
                     (window as unknown as { __cosmos?: unknown }).__cosmos = { ...api, progress, velocity };
@@ -137,8 +159,35 @@ export function CosmicFinale({ summary, cinema }: { summary: FinaleSummary; cine
           <CoronationV2 {...acts} />
           <EpilogueV2 {...acts} />
           <button type='button' className='finale-mute' onClick={toggleMute} aria-pressed={muted}>{muted ? '🔇' : '🔊'}</button>
+          {debug && <DebugHud progress={progress} velocity={velocity} webgl={webgl} canvasGen={canvasGen} errorCount={errorCount} lastError={lastError} />}
         </>
       )}
     </div>
   );
+}
+
+/** ?debug=1 — liten fast ruta som visar vad scenen faktiskt gör. Uppdaterar via rAF. */
+function DebugHud({ progress, velocity, webgl, canvasGen, errorCount, lastError }: {
+  progress: { current: number }; velocity: { current: number }; webgl: boolean; canvasGen: number;
+  errorCount: number; lastError: { current: string | null };
+}) {
+  const el = useRef<HTMLPreElement | null>(null);
+  useEffect(() => {
+    let raf = 0;
+    const tick = () => {
+      const w = (window as unknown as { __cosmos?: { gl: { getContext(): WebGLRenderingContext }; scene: { children: unknown[] } } }).__cosmos;
+      const lost = w ? w.gl.getContext().isContextLost() : null;
+      if (el.current) el.current.textContent = [
+        `progress ${progress.current.toFixed(3)}`,
+        `velocity ${Math.round(velocity.current)}`,
+        `webgl ${webgl ? 'on' : 'OFF'} · gen ${canvasGen} · ctxLost ${lost}`,
+        `scene ${w ? 'ready' : 'not ready'}`,
+        `errors ${errorCount}${lastError.current ? ' · ' + lastError.current.slice(0, 90) : ''}`,
+      ].join('\n');
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [progress, velocity, webgl, canvasGen, errorCount, lastError]);
+  return <pre ref={el} className='v2-debug' />;
 }

@@ -113,14 +113,29 @@ export function NumbersV2({ summary, reduced }: { summary: FinaleSummary; reduce
 
 export function GalaxyCaptionV2({ summary, reduced }: { summary: FinaleSummary; reduced: boolean }) {
   const ref = useRef<HTMLElement | null>(null);
+  const live = useRef<HTMLSpanElement | null>(null);
   useReveal(ref, reduced);
+  const total = summary.transfers.length;
+
+  // HUD:en räknar spåren i takt med att de ritas i rymden, så skrollen ger feedback
+  // även i DOM:en. Icke-pinnad ScrollTrigger på sektionen; progress 0–1 över den.
+  useEffect(() => {
+    if (reduced || !ref.current || !live.current) { if (live.current) live.current.textContent = String(total); return; }
+    const st = ScrollTrigger.create({
+      trigger: ref.current, start: 'top top', end: 'bottom bottom',
+      onUpdate: (self) => { if (live.current) live.current.textContent = String(Math.round(self.progress * total)); },
+    });
+    return () => st.kill();
+  }, [reduced, total]);
+
   return (
     <section ref={ref} className='v2-act v2-galaxy' data-act='galaxy'>
       <div className='hud-corner'>
         <p className='hud-eyebrow' data-reveal>Kronans vandring</p>
         <p className='hud-line' data-reveal>
-          <span className='hud-num' data-counter={summary.transfers.length}>0</span> tronskiften mellan {summary.wrapped.players} planeter
+          Spår <span className='hud-num' ref={live}>0</span> av {total} · {summary.wrapped.players} planeter
         </p>
+        <p className='hud-hint' data-reveal>Skrolla — kometen följer kronan</p>
       </div>
       <div className='v2-spacer' aria-hidden />
     </section>
