@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Cinzel, Cinzel_Decorative, EB_Garamond } from 'next/font/google';
 import { RealmLogo } from '@/components/RealmLogo';
+import { Starfield } from '@/components/Starfield';
 import { getActiveTheme } from '@/lib/theme/server';
 import { themeCssVars, type PageKey } from '@/lib/theme';
 import './globals.css';
@@ -42,6 +43,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       style={themeCssVars(theme.colors) as React.CSSProperties}
     >
       <body>
+        {theme.backdrop === 'starfield' && <Starfield />}
         <div className='app-shell'>
           <header className='realm-banner'>
             <Link href='/' className='realm-crest'>

@@ -42,6 +42,8 @@ export type Theme = {
     fridayIntros: string[];
   };
   colors: ThemeColors;
+  /** Rörlig bakgrund bakom hela sidan. Utelämnas för teman utan. */
+  backdrop?: 'starfield';
 };
 
 export type { EventType };

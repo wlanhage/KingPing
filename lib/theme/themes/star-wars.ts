@@ -77,6 +77,7 @@ export const starWars: Theme = {
     usurper: { name: 'Tronrövaren', emoji: '🗡️', description: 'Minst fem kronor tagna direkt från en sittande mästare.' },
   },
   announcements: withNeutral({ streakTemplates: galaxyStreakTemplates, nationIntros: galaxyNationIntros, fridayIntros: galaxyFridayIntros }),
+  backdrop: 'starfield',
   colors: {
     bg: '#05070f',
     panel: '#0e1424',
