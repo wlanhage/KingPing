@@ -3,7 +3,7 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Billboard, Line, Sparkles, Text } from '@react-three/drei';
 import * as THREE from 'three';
-import { Title3D } from '../../weave3d/Title3D';
+import { Title3D } from './Title3D';
 import { novaIntensity, STATION, stationT, trailProgress, type Cosmos, type Planet, type Trail } from './scene';
 
 /**

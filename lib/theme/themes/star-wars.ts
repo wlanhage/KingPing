@@ -14,6 +14,7 @@ export const starWars: Theme = {
     history: 'Arkiven',
     players: 'Jediriddare',
     badges: 'Utmärkelser',
+    archive: 'Tidsvalvet',
     settings: 'Rådet',
   },
   pages: {
@@ -22,6 +23,7 @@ export const starWars: Theme = {
     history: { title: 'Arkiven', subtitle: 'De senaste 50 händelserna i galaxen.' },
     players: { title: 'Jediriddare', subtitle: 'Galaxens utmanare. Klicka in på en riddare för full profil.' },
     badges: { title: 'Utmärkelser', subtitle: 'Alla {count} bragder en jedi kan förtjäna i galaxen.' },
+    archive: { title: 'Tidsvalvet', subtitle: 'Säsongerna som varit — och den som pågår.' },
     settings: { title: 'Rådet', subtitle: 'Miljöstatus för integrationer.' },
   },
   epithets: { rank1: 'Kejsaren', rank2: 'Lärlingen', rank3: 'Galaxens tredje kraft' },

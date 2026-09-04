@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { buildFinaleSummary } from '@/lib/domain/finale';
 import { getSeasonBySlug } from '@/lib/domain/season';
-import { SeasonFinale } from '@/components/finale/SeasonFinale';
 import { CosmicFinale } from '@/components/finale/v2/CosmicFinale';
 
 export const dynamic = 'force-dynamic';
@@ -38,7 +37,5 @@ export default async function FinalePage({ params, searchParams }: {
   }
 
   const summary = await buildFinaleSummary(season);
-  // v2 ("Galaxen") är standard på den här branchen. ?classic=1 visar v1 för jämförelse.
-  if (sp.classic === '1') return <SeasonFinale summary={summary} cinema={sp.cinema === '1'} weave3d={sp['3d'] === '1'} />;
   return <CosmicFinale summary={summary} cinema={sp.cinema === '1'} />;
 }

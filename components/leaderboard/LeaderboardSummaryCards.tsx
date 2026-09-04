@@ -1,6 +1,6 @@
-export function LeaderboardSummaryCards({ data }: { data: any }) {
+export function LeaderboardSummaryCards({ data, kingLabel = 'Nuvarande kung' }: { data: any; kingLabel?: string }) {
   const cards = [
-    ['Nuvarande kung', data.currentKing?.name ?? 'Ingen ännu'],
+    [kingLabel, data.currentKing?.name ?? 'Ingen ännu'],
     ['Längsta dynasti', data.longestStreak?.name ? `${data.longestStreak.name} (${data.longestStreak.longestStreak})` : 'Ingen data'],
     ['Mest trontid', data.mostThroneTime?.name ?? 'Ingen data'],
     ['Fredagsmästare', data.fridayChampion?.name ?? 'Ingen data'],

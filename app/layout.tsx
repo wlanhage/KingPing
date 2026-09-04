@@ -26,6 +26,7 @@ const navOrder: [PageKey, string][] = [
   ['history', '/history'],
   ['players', '/players'],
   ['badges', '/badges'],
+  ['archive', '/seasons'],
   ['settings', '/settings'],
 ];
 

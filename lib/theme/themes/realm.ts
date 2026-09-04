@@ -12,6 +12,7 @@ export const realm: Theme = {
     history: 'Krönikan',
     players: 'Riddare',
     badges: 'Utmärkelser',
+    archive: 'Arkivet',
     settings: 'Rådet',
   },
   pages: {
@@ -20,6 +21,7 @@ export const realm: Theme = {
     history: { title: 'Historik', subtitle: 'De senaste 50 händelserna i riket.' },
     players: { title: 'Riddare', subtitle: 'Rikets utmanare. Klicka in på en riddare för full profil.' },
     badges: { title: 'Utmärkelser', subtitle: 'Alla {count} bragder en riddare kan förtjäna i riket.' },
+    archive: { title: 'Arkivet', subtitle: 'Säsongerna som varit — och den som pågår.' },
     settings: { title: 'Rådet', subtitle: 'Miljöstatus för integrationer.' },
   },
   epithets: { rank1: 'Kejsaren', rank2: 'Kronprinsen', rank3: 'Rikets tredje kraft' },

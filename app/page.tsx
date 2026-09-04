@@ -6,6 +6,7 @@ import { formatDuration } from '@/lib/format';
 import { getActiveTheme } from '@/lib/theme/server';
 import { listSeasons } from '@/lib/domain/season';
 import { FinaleDoor } from '@/components/finale/FinaleDoor';
+import { FinaleIcon } from '@/components/finale/FinaleIcon';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,9 +61,14 @@ export default async function Page() {
 
       {endedSeason && (
         <>
-          <p className='finale-rewatch'>
-            <Link href={`/seasons/${endedSeason.slug}/final`}>📜 Återse krönikan · {endedSeason.name}</Link>
-          </p>
+          <Link href={`/seasons/${endedSeason.slug}/final`} className='finale-rewatch'>
+            <FinaleIcon className='finale-rewatch-icon' size={30} />
+            <span className='finale-rewatch-text'>
+              <strong>Återse krönikan</strong>
+              <small>{endedSeason.name} · kronans vandring genom galaxen</small>
+            </span>
+            <span className='finale-rewatch-arrow' aria-hidden>→</span>
+          </Link>
           <FinaleDoor slug={endedSeason.slug} name={endedSeason.name} />
         </>
       )}

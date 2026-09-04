@@ -1,18 +1,12 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { FinaleIcon } from './FinaleIcon';
 
 const seenKey = (slug: string) => `kp-finale-seen-${slug}`;
 
-/**
- * TILLFÄLLIGT UNDER UTVECKLING — ÅTERSTÄLL TILL false FÖRE PR.
- *
- * Med true ignoreras seen-flaggan så dörren kommer upp vid varje omladdning,
- * vilket gör den möjlig att testa utan att rensa localStorage mellan varven.
- * Flaggan skrivs fortfarande som vanligt, så själva en-gång-logiken går att
- * verifiera genom att sätta den här till false igen.
- */
-const ALWAYS_SHOW_DOOR = true;
+/** Sätt true under utveckling för att se dörren vid varje omladdning. Ska vara false i drift. */
+const ALWAYS_SHOW_DOOR = false;
 
 /**
  * Helskärmsdörr som visas EN gång per avslutad säsong och webbläsare.
@@ -36,6 +30,7 @@ export function FinaleDoor({ slug, name }: { slug: string; name: string }) {
   return (
     <div className='finale-door' role='dialog' aria-modal='true' aria-label='Säsongen är över'>
       <div className='finale-door-panel'>
+        <FinaleIcon className='finale-door-icon' size={44} />
         <p className='finale-door-eyebrow'>Hör upp</p>
         <h2 className='finale-door-title'>{name} är över</h2>
         <p className='finale-door-sub'>Krönikan är skriven. Träd in och se hur kronan vandrade.</p>
