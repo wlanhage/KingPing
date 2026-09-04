@@ -58,8 +58,11 @@ export function generateAnnouncement(ctx:any, announcements = realm.announcement
   // Texter som nyss stått i krönikan väljs bort — annars upprepade sig de små
   // kategorierna (första vinsten, fredag, tre raka) hela tiden.
   const recent: string[] = ctx.recentTexts ?? [];
-  // Utan förra kung (t.ex. säsongens första vinst) väljs texter som inte nämner någon.
-  const applicable = ctx.previousKingName ? variants : (variants.filter((t) => !t.includes('@{previousKing}')).length ? variants.filter((t) => !t.includes('@{previousKing}')) : variants);
+  // Utan förra kung (t.ex. säsongens första vinst): raderna om den tomma tronen plus de som
+  // inte nämner någon förra kung. Med förra kung används aldrig tomma-tronen-raderna.
+  const empty: string[] = ctx.eventType === 'NEW_KING' && !ctx.previousKingName ? (streakTemplates as any).NEW_KING_EMPTY ?? [] : [];
+  const nobodyNamed = variants.filter((t) => !t.includes('@{previousKing}'));
+  const applicable = ctx.previousKingName ? variants : [...empty, ...(nobodyNamed.length ? nobodyNamed : variants)];
   const rendered = applicable.map(render);
   const fresh = rendered.filter((t) => !recent.some((r) => r.endsWith(t)));
   let text = pick(fresh.length ? fresh : rendered);

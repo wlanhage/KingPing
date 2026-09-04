@@ -9,9 +9,12 @@ export const galaxyStreakTemplates: Record<string, string[]> = {
     '📡 Holonet rapporterar: @{winner} tar över tronrummet efter @{previousKing}.',
     '🔭 Sett från Coruscant: @{winner} regerar, @{previousKing} regerade.',
     '🌠 @{winner} tar kronan. @{previousKing} har en dålig känsla för det här.',
-    '🌌 @{winner} sätter sig på den tomma tronen. Galaxen har fått en härskare.',
     '🗣️ Jag har talat. @{winner} härskar, @{previousKing} lyssnar.',
     '⚔️ "Det är över, @{previousKing}! Jag har höjdfördelen!" — @{winner} tar kronan.',
+  ],
+  NEW_KING_EMPTY: [
+    '🌌 @{winner} sätter sig på den tomma tronen. Galaxen har fått en härskare.',
+    '🛸 Tronrummet stod tomt. @{winner} landade först.',
   ],
   FIRST_WIN: [
     '✨ @{winner} tar sin allra första seger. Kraften har vaknat.',

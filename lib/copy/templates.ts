@@ -9,7 +9,10 @@ export const streakTemplates: Record<string, string[]> = {
     '📜 Krönikören doppar pennan: @{winner} har krönts.',
     '🔔 Kyrkklockorna ringer för @{winner}. @{previousKing} hör dem från fängelsehålan.',
     '🛡️ Ny vapensköld på väggen — @{winner} regerar.',
+  ],
+  NEW_KING_EMPTY: [
     '👑 @{winner} sätter sig på den tomma tronen. Riket har fått en regent.',
+    '🕯️ Tronsalen stod tom. @{winner} tände facklorna och satte sig.',
   ],
   FIRST_WIN: [
     '🐣 @{winner} öppnar kontot! Första kronan någonsin. Pagen springer efter bläck.',

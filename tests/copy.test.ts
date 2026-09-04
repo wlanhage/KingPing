@@ -55,6 +55,16 @@ describe('generateAnnouncement utan förra kung', () => {
   });
 });
 
+describe('generateAnnouncement med förra kung', () => {
+  it('använder aldrig raderna om den tomma tronen när någon satt på den', () => {
+    const empty = [...realm.announcements.streakTemplates.NEW_KING_EMPTY].map((t) => t.replaceAll('@{winner}', 'Erik'));
+    for (let i = 0; i < 60; i++) {
+      const a = generateAnnouncement({ eventType: 'NEW_KING', winnerName: 'Erik', previousKingName: 'Axel', nationState: 'STABLE_ERA' });
+      expect(empty.some((e) => a.text.includes(e))).toBe(false);
+    }
+  });
+});
+
 describe('generateAnnouncement undviker nyss använda texter', () => {
   it('väljer den enda text som inte stått i krönikan nyligen', () => {
     const variants = realm.announcements.streakTemplates.SAME_KING_STREAK_4.map((t) => t.replaceAll('@{winner}', 'Erik'));
