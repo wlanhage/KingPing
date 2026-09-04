@@ -5,6 +5,16 @@ import { useEffect, useState } from 'react';
 const seenKey = (slug: string) => `kp-finale-seen-${slug}`;
 
 /**
+ * TILLFÄLLIGT UNDER UTVECKLING — ÅTERSTÄLL TILL false FÖRE PR.
+ *
+ * Med true ignoreras seen-flaggan så dörren kommer upp vid varje omladdning,
+ * vilket gör den möjlig att testa utan att rensa localStorage mellan varven.
+ * Flaggan skrivs fortfarande som vanligt, så själva en-gång-logiken går att
+ * verifiera genom att sätta den här till false igen.
+ */
+const ALWAYS_SHOW_DOOR = true;
+
+/**
  * Helskärmsdörr som visas EN gång per avslutad säsong och webbläsare.
  * Båda knapparna sätter seen-flaggan — dörren tjatar aldrig. Klicket på
  * "Träd in" är också användargesten som senare tillåter ljud i finalen.
@@ -13,6 +23,7 @@ export function FinaleDoor({ slug, name }: { slug: string; name: string }) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
+    if (ALWAYS_SHOW_DOOR) { setShow(true); return; }
     try { if (!window.localStorage.getItem(seenKey(slug))) setShow(true); } catch {}
   }, [slug]);
 
