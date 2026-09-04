@@ -1668,3 +1668,39 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
    avmonteras: ScrollTrigger har flyttat in den i en pin-spacer, och en avmontering
    skulle få React att anropa removeChild på fel förälder. */
 .finale-weave3d[data-collapsed] { min-height: 0; height: 0; overflow: hidden; padding: 0; }
+
+/* ─────────────────────────  FINALE V2: "Galaxen"  ───────────────────────── */
+.finale-v2 { position: relative; background: #030208; color: #f1e3c6; }
+.v2-stage { position: fixed; inset: 0; z-index: 0; }
+.v2-stage canvas { display: block; width: 100% !important; height: 100% !important; }
+.v2-cover { background: radial-gradient(circle at 50% 35%, rgba(231, 194, 92, .14), rgba(3, 2, 8, .98) 60%); }
+.v2-act { position: relative; z-index: 1; min-height: 100vh; display: grid; align-content: center; padding: 8vh 6vw; pointer-events: none; }
+.v2-act a, .v2-act button { pointer-events: auto; }
+.v2-coldopen { min-height: 120vh; text-align: center; }
+.v2-numbers { min-height: 160vh; }
+.v2-galaxy { min-height: 360vh; align-content: start; }
+.v2-coronation { min-height: 120vh; text-align: center; align-content: end; padding-bottom: 14vh; }
+.v2-epilogue { min-height: 140vh; text-align: center; }
+.v2-spacer { flex: 1; }
+
+/* HUD-typografi: stor display ovanpå rymden, tunna linjer, tabellsiffror */
+.hud-eyebrow { margin: 0 0 .6rem; font-family: var(--font-display), Georgia, serif; font-size: .74rem; letter-spacing: .32em; text-transform: uppercase; color: #b29a72; }
+.hud-title { margin: 0; font-family: var(--font-title), Georgia, serif; font-size: clamp(3rem, 11vw, 8.5rem); line-height: .95; letter-spacing: .02em; color: #fff2c0; text-shadow: 0 0 40px rgba(231, 194, 92, .55), 0 0 120px rgba(231, 194, 92, .25); }
+.hud-char { display: inline-block; will-change: transform, opacity, filter; }
+.hud-line { margin: 1rem 0 0; font-size: clamp(1rem, 2.2vw, 1.35rem); color: #f1e3c6; }
+.hud-num { font-family: var(--font-display), Georgia, serif; font-variant-numeric: tabular-nums; color: #ffd27a; font-weight: 700; }
+.hud-hint { margin-top: 3rem; color: #6f5a3a; font-size: .85rem; letter-spacing: .1em; }
+.hud-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; max-width: 1100px; margin: 0 auto; }
+.hud-panel { padding: 1.4rem 1.5rem; border: 1px solid rgba(231, 194, 92, .22); border-top-color: rgba(231, 194, 92, .6); background: linear-gradient(180deg, rgba(10, 8, 22, .72), rgba(3, 2, 8, .55)); backdrop-filter: blur(6px); border-radius: 6px; text-align: left; }
+.hud-panel-wide { grid-column: 1 / -1; }
+.hud-big { margin: 0; font-family: var(--font-title), Georgia, serif; font-size: clamp(2rem, 5vw, 3.6rem); color: #fff2c0; line-height: 1; }
+.hud-quote { margin: .4rem 0 .6rem; font-style: italic; font-size: 1.1rem; line-height: 1.5; color: #f1e3c6; }
+.hud-corner { position: sticky; top: 6vh; max-width: 420px; padding: 1rem 1.2rem; border-left: 2px solid rgba(231, 194, 92, .6); background: linear-gradient(90deg, rgba(3, 2, 8, .6), transparent); }
+.hud-credits { display: grid; gap: 2.6rem; max-width: 640px; margin: 0 auto; }
+.hud-credit-name { margin: 0; font-family: var(--font-display), Georgia, serif; font-size: 1.7rem; color: #fff2c0; }
+.hud-credit-role { margin: .2rem 0 0; color: #b29a72; }
+.hud-credit-roast { margin: .5rem auto 0; max-width: 40ch; font-style: italic; color: #8f7a55; }
+
+/* Reduced motion / ingen WebGL: statisk rymdbakgrund, allt innehåll synligt */
+.finale-v2[data-reduced] { background: radial-gradient(ellipse at 50% 20%, #1a1030, #030208 60%); }
+.finale-v2[data-reduced] .v2-galaxy, .finale-v2[data-reduced] .v2-coronation { min-height: 100vh; }
