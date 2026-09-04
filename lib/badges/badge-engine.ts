@@ -94,6 +94,12 @@ export function getPlayerBadges(playerId: string, context: PlayerBadgeContext): 
   // Arv, meta och strid.
   if (s.firstWinAt && context.globalStats.earliestWinAt && s.firstWinAt.getTime() === context.globalStats.earliestWinAt.getTime()) push(res, 'season_opener', 'Tog säsongens första krona.');
   if (s.totalReignMs > 0 && s.totalReignMs === context.globalStats.secondTotalReignMs) push(res, 'eternal_second', 'Näst mest trontid.');
+  // Jar Jar Binks pekar ut EN: den ende utan vinst, eller — när alla vunnit — den med minst trontid.
+  // Saknar två eller fler vinst finns ingen ensam Jar Jar.
+  const { winlessCount, minTotalReignMs } = context.globalStats;
+  const soleWinless = winlessCount === 1 && s.totalWins === 0;
+  const leastThroneTime = winlessCount === 0 && all.length > 1 && s.totalReignMs === minTotalReignMs;
+  if (soleWinless || leastThroneTime) push(res, 'jar_jar', soleWinless ? 'Alla andra har vunnit.' : 'Minst tid på tronen av alla.');
   if (s.reignCount >= 3 && s.averageReignMs >= DAY_MS) push(res, 'steady_hand', 'Minst ett dygn i snitt per regering.');
   if (s.timesDethroned >= 3 && s.takeoverWins >= s.timesDethroned) push(res, 'boomerang', 'Kommer alltid tillbaka.');
   // Nästan varje vinst tar kronan från någon — det som skiljer usurpatorn är att offren är många.

@@ -63,6 +63,8 @@ export function calculateGlobalStats(stats: PlayerStats[], currentKingId: string
     earliestWinAt: earliest(stats.map((s) => s.firstWinAt)),
     secondTotalReignMs: secondHighest(stats.map((s) => s.totalReignMs)),
     maxWinGrowth: Math.max(0, ...stats.map((s) => winGrowth(s) ?? 0)),
+    winlessCount: stats.filter((s) => s.totalWins === 0).length,
+    minTotalReignMs: stats.length ? Math.min(...stats.map((s) => s.totalReignMs)) : 0,
   };
 }
 
