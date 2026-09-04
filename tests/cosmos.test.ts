@@ -98,10 +98,16 @@ describe('kamera', () => {
     expect(cameraAt((STATION.WARP + STATION.SUPERNOVA) / 2, c, winner).fov).toBeGreaterThan(70);
   });
 
-  it('kameran slutar nära vinnarens planet', () => {
+  it('kameran står nära vinnaren vid supernovan — men utanför planeten', () => {
     const end = cameraAt(STATION.SUPERNOVA, c, winner).position;
     const dist = end.distanceTo({ x: winner.position[0], y: winner.position[1], z: winner.position[2] } as never);
-    expect(dist).toBeLessThan(6);
+    expect(dist).toBeGreaterThan(winner.radius * 2);
+    expect(dist).toBeLessThan(12);
+  });
+
+  it('kameran backar ut under supernovan så eftertexterna får luft', () => {
+    const at = (p: number) => cameraAt(p, c, winner).position.distanceTo({ x: winner.position[0], y: winner.position[1], z: winner.position[2] } as never);
+    expect(at(1)).toBeGreaterThan(at(STATION.SUPERNOVA) * 2);
   });
 
   it('kameran börjar långt utanför galaxen', () => {

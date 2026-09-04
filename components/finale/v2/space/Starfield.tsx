@@ -19,7 +19,7 @@ import * as THREE from 'three';
 
 type Refs = { warp: { current: number }; velocity: { current: number } };
 
-const COUNT = 1400;
+const COUNT = 1000;
 const TUNNEL = { radius: 26, length: 90 } as const;
 
 const vertex = /* glsl */ `
@@ -100,7 +100,7 @@ export function Starfield({ warp, velocity }: Refs) {
 
   return (
     <>
-      <Stars radius={220} depth={80} count={5000} factor={4} saturation={0.15} fade speed={0.3} />
+      <Stars radius={220} depth={80} count={3000} factor={4} saturation={0.15} fade speed={0.3} />
       <group ref={group}>
         <lineSegments geometry={geometry} frustumCulled={false}>
           <shaderMaterial

@@ -1679,8 +1679,10 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .v2-coldopen { min-height: 120vh; text-align: center; }
 .v2-numbers { min-height: 160vh; }
 .v2-galaxy { min-height: 260vh; align-content: start; }
-.v2-coronation { min-height: 120vh; text-align: center; align-content: end; padding-bottom: 14vh; }
-.v2-epilogue { min-height: 140vh; text-align: center; }
+.v2-coronation { min-height: 180vh; text-align: center; align-content: end; padding-bottom: 14vh; }
+/* Eftertexterna börjar först EFTER supernovans topp (progress ~0.92): toppen ligger
+   inne i den här sektionen, så innehållet skjuts ner så det inte krockar med titeln. */
+.v2-epilogue { min-height: 220vh; text-align: center; align-content: start; padding-top: 90vh; }
 .v2-spacer { flex: 1; }
 
 /* HUD-typografi: stor display ovanpå rymden, tunna linjer, tabellsiffror */
@@ -1696,7 +1698,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .hud-big { margin: 0; font-family: var(--font-title), Georgia, serif; font-size: clamp(2rem, 5vw, 3.6rem); color: #fff2c0; line-height: 1; }
 .hud-quote { margin: .4rem 0 .6rem; font-style: italic; font-size: 1.1rem; line-height: 1.5; color: #f1e3c6; }
 .hud-corner { position: sticky; top: 6vh; max-width: 420px; padding: 1rem 1.2rem; border-left: 2px solid rgba(231, 194, 92, .6); background: linear-gradient(90deg, rgba(3, 2, 8, .6), transparent); }
-.hud-credits { display: grid; gap: 2.6rem; max-width: 640px; margin: 0 auto; }
+.hud-credits { display: grid; gap: 2.6rem; max-width: 640px; margin: 0 auto; padding: 2.4rem 2rem; border-radius: 10px; background: rgba(3, 2, 8, .55); backdrop-filter: blur(8px); border: 1px solid rgba(231, 194, 92, .14); }
 .hud-credit-name { margin: 0; font-family: var(--font-display), Georgia, serif; font-size: 1.7rem; color: #fff2c0; }
 .hud-credit-role { margin: .2rem 0 0; color: #b29a72; }
 .hud-credit-roast { margin: .5rem auto 0; max-width: 40ch; font-style: italic; color: #8f7a55; }

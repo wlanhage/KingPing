@@ -79,7 +79,7 @@ export function CosmosCanvas({
 
   return (
     <Canvas
-      dpr={[1, 1.6]}
+      dpr={[1, 1.25]}
       camera={{ position: [60, 20, 70], fov: 50, near: 0.1, far: 900 }}
       gl={{ antialias: false, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
       onCreated={(state) => {

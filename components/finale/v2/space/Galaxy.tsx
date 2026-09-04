@@ -41,10 +41,10 @@ function PlanetBody({ planet, index, progressRef }: { planet: Planet; index: num
     body.current.rotation.y = t * 0.25;
     if (!planet.isWinner) return;
     // Supernovan: kroppen sväller och glöder, ringen spränger utåt.
+    // Måttlig flamma: ×3.2 och emissive 9 brände ut hela bilden till en vit klump.
     const nova = novaIntensity(progressRef.current);
-    const s = 1 + nova * 3.2;
-    body.current.scale.setScalar(s);
-    mat.current.emissiveIntensity = 0.9 + nova * 9;
+    body.current.scale.setScalar(1 + nova * 1.5);
+    mat.current.emissiveIntensity = 0.9 + nova * 3.2;
   });
 
   return (
@@ -157,17 +157,23 @@ function Supernova({ winner, progressRef }: { winner: Planet; progressRef: Progr
     const t = stationT(progressRef.current, STATION.SUPERNOVA, 1);
     if (group.current) group.current.visible = nova > 0;
     if (title.current) {
-      title.current.visible = t > 0.05;
+      title.current.visible = t > 0.05 && t < 0.95;
       const rise = Math.min(1, Math.max(0, (t - 0.05) / 0.5));
       title.current.position.y = winner.position[1] + 2.6 + rise * 2.4;
       title.current.scale.setScalar(0.5 + rise * 1.1);
+      // Tonar ut när eftertexterna når bilden, så de aldrig ligger ovanpå titeln.
+      const fade = 1 - Math.min(1, Math.max(0, (t - 0.6) / 0.3));
+      title.current.traverse((o) => {
+        const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
+        if (m && 'opacity' in m) { m.transparent = true; m.opacity = fade; }
+      });
     }
   });
   return (
     <>
       <group ref={group} position={winner.position} visible={false}>
-        <Sparkles count={420} scale={16} size={9} speed={2.4} color='#ffe6a8' opacity={0.9} />
-        <pointLight color='#fff2c0' intensity={120} distance={80} decay={1.4} />
+        <Sparkles count={320} scale={16} size={5} speed={2.4} color='#ffe6a8' opacity={0.7} />
+        <pointLight color='#fff2c0' intensity={35} distance={40} decay={1.4} />
       </group>
       <group ref={title} position={[winner.position[0], winner.position[1] + 2.6, winner.position[2]]} visible={false}>
         <Billboard>
