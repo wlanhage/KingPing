@@ -1,5 +1,6 @@
 import type { ComputedPlayerBadge } from '@/lib/badges/badge-types';
 import { formatDuration } from '@/lib/format';
+import type { Theme } from '@/lib/theme';
 
 type Rarity = 'common' | 'rare' | 'epic' | 'legendary' | 'mythical';
 
@@ -68,9 +69,9 @@ function reignLine(stats: any): string {
   return 'Har ännu inte bestigit tronen';
 }
 
-export function PlayerHero({ player, stats }: { player: any; stats: any }) {
+export function PlayerHero({ player, stats, theme }: { player: any; stats: any; theme: Theme }) {
   const initials = player.name.split(' ').map((s: string) => s[0]).join('').slice(0, 1).toUpperCase();
-  const title = stats?.isCurrentKing ? 'Nuvarande kung' : stats?.totalWins ? 'Tidigare monark' : 'Utmanare';
+  const title = stats?.isCurrentKing ? `Nuvarande ${theme.roles.monarchLower}` : stats?.totalWins ? `Tidigare ${theme.roles.monarchLower}` : theme.roles.challenger;
   const line = stats?.isCurrentKing ? 'Historien skrivs fortfarande.' : stats?.fridayWins ? 'Fredagarna fruktar detta namn.' : stats?.totalWins ? 'En gång kung. Alltid farlig.' : 'Denna spelare väntar fortfarande på sin första krona.';
   const badges: ComputedPlayerBadge[] = stats?.badges ?? [];
   const topBadges = sortBadges(badges).slice(0, 8);
@@ -79,7 +80,7 @@ export function PlayerHero({ player, stats }: { player: any; stats: any }) {
     <section className='royal-profile-hero'>
       <div className='royal-hero-aura' />
       <div className='royal-hero-crown-line' />
-      {stats?.isCurrentKing && <div className='royal-hero-king-tag'>👑 Regerande kung</div>}
+      {stats?.isCurrentKing && <div className='royal-hero-king-tag'>👑 Regerande {theme.roles.monarchLower}</div>}
 
       <div className='royal-hero-content'>
         <div className='royal-orbit-stage'>

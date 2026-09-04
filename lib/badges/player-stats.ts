@@ -1,4 +1,5 @@
 import { differenceInDays, subDays } from 'date-fns';
+import { countByWeekday, dayKey, hourOfDay } from '../domain/local-time';
 import type { GlobalStats, PlayerStats } from './badge-types';
 
 const durationMs = (start: Date, end?: Date | null) => (end ?? new Date()).getTime() - new Date(start).getTime();
@@ -21,13 +22,30 @@ export function calculatePlayerStats(player: any, currentKingId?: string | null,
   const winsLast7Days = wins.filter((w: any) => new Date(w.occurredAt) >= d7).length;
   const lastWinAt = wins[0]?.occurredAt ?? null;
   const daysSinceLastWin = lastWinAt ? differenceInDays(now, new Date(lastWinAt)) : null;
+  // Uppehållet FÖRE den senaste vinsten. Krävs för att kunna se en återkomst:
+  // daysSinceLastWin mäts från den senaste vinsten och är alltså alltid liten
+  // direkt efter att någon vunnit igen.
+  const previousWinAt = wins[1]?.occurredAt ?? null;
+  const daysSincePreviousWin = lastWinAt && previousWinAt ? differenceInDays(new Date(lastWinAt), new Date(previousWinAt)) : null;
   const streaksBroken = wins.filter((w: any) => (w.previousStreakCount ?? 0) >= 2).length;
   const biggestStreakBroken = Math.max(0, ...wins.map((w: any) => w.previousStreakCount ?? 0));
   const takeoverWins = wins.filter((w: any) => w.previousKingId && w.previousKingId !== w.winnerId).length;
   const timesDethroned = reigns.filter((r: any) => !!r.endedAt).length;
   const averageReignMs = reigns.length ? totalReignMs / reigns.length : 0;
   const crownEfficiencyMsPerWin = totalWins ? totalReignMs / totalWins : 0;
-  return { playerId: player.id, totalWins, totalReignMs, longestReignMs, currentReignMs, currentStreak, longestStreak, fridayWins, winsLast30Days, winsLast7Days, daysSinceLastWin, streaksBroken, biggestStreakBroken, takeoverWins, timesDethroned, averageReignMs, crownEfficiencyMsPerWin, isCurrentKing };
+  // Kalenderstatistik i svensk tid: veckodag, tid på dygnet och flest vinster samma dag.
+  const winDates: Date[] = wins.map((w: any) => new Date(w.occurredAt));
+  const winsByWeekday = countByWeekday(winDates);
+  const hours = winDates.map(hourOfDay);
+  const earlyWins = hours.filter((h) => h < 10).length;
+  const lunchWins = hours.filter((h) => h >= 11 && h < 14).length;
+  const lateWins = hours.filter((h) => h >= 17).length;
+  const perDay = new Map<string, number>();
+  for (const d of winDates) perDay.set(dayKey(d), (perDay.get(dayKey(d)) ?? 0) + 1);
+  const maxWinsInOneDay = Math.max(0, ...perDay.values());
+  const firstWinAt = winDates.length ? new Date(Math.min(...winDates.map((d) => d.getTime()))) : null;
+  const reignCount = reigns.length;
+  return { playerId: player.id, totalWins, totalReignMs, longestReignMs, currentReignMs, currentStreak, longestStreak, fridayWins, winsLast30Days, winsLast7Days, daysSinceLastWin, daysSincePreviousWin, streaksBroken, biggestStreakBroken, takeoverWins, timesDethroned, averageReignMs, crownEfficiencyMsPerWin, isCurrentKing, winsByWeekday, earlyWins, lunchWins, lateWins, maxWinsInOneDay, firstWinAt, reignCount };
 }
 
 export function calculateGlobalStats(stats: PlayerStats[], currentKingId: string | null): GlobalStats {
@@ -41,5 +59,17 @@ export function calculateGlobalStats(stats: PlayerStats[], currentKingId: string
     maxBiggestStreakBroken: Math.max(0, ...stats.map((s) => s.biggestStreakBroken)),
     maxCrownEfficiencyMsPerWin: Math.max(0, ...stats.map((s) => s.crownEfficiencyMsPerWin)),
     currentKingId,
+    earliestWinAt: earliest(stats.map((s) => s.firstWinAt)),
+    secondTotalReignMs: secondHighest(stats.map((s) => s.totalReignMs)),
   };
+}
+
+function earliest(dates: (Date | null)[]): Date | null {
+  const times = dates.flatMap((d) => (d ? [d.getTime()] : []));
+  return times.length ? new Date(Math.min(...times)) : null;
+}
+
+/** Näst högsta DISTINKTA värdet — delar två spelare toppen finns ingen tvåa. */
+function secondHighest(values: number[]): number {
+  return [...new Set(values)].sort((a, b) => b - a)[1] ?? 0;
 }

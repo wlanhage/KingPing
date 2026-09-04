@@ -1,20 +1,36 @@
 import { prisma } from '@/lib/prisma';
 import { formatDate } from '@/lib/format';
+import { getActiveSeason } from '@/lib/domain/season';
+import { getActiveTheme } from '@/lib/theme/server';
+import { CrawlChronicle } from '@/components/history/CrawlChronicle';
 
 export const dynamic = 'force-dynamic';
 
 export default async function History() {
+  const { theme } = await getActiveTheme();
   const events = await prisma.winEvent.findMany({
     orderBy: { occurredAt: 'desc' },
     take: 50,
     include: { winner: true },
   });
 
+  if (theme.historyStyle === 'crawl') {
+    const season = await getActiveSeason();
+    return (
+      <CrawlChronicle
+        eyebrow={season?.name}
+        title={theme.pages.history.title}
+        subtitle={theme.pages.history.subtitle}
+        items={events.map((e) => ({ id: e.id, date: formatDate(e.occurredAt), winner: e.winner.name, text: e.announcementText }))}
+      />
+    );
+  }
+
   return (
     <main className='page-stack'>
       <section>
-        <h1 className='title-xl'>Historik</h1>
-        <p className='subtitle'>De senaste 50 händelserna i riket.</p>
+        <h1 className='title-xl'>{theme.pages.history.title}</h1>
+        <p className='subtitle'>{theme.pages.history.subtitle}</p>
       </section>
       <section className='card'>
         {events.map((event) => (

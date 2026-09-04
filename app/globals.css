@@ -1295,7 +1295,6 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   font-size: .75rem;
 }
 
-
 /* ===== Rarity textfärger ===== */
 .rarity-text-common { color: var(--r-common); }
 .rarity-text-rare { color: var(--r-rare); }
@@ -1532,7 +1531,6 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .coro-skip { background: linear-gradient(180deg, #e7c25c, #b8901f); color: #2a1d00; border: 1px solid rgba(231, 194, 92, .5); }
 .coro-skip:hover { filter: brightness(1.06); }
 
-/* Drakar (streak ≥ 3) */
 .coro-dragons { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
 .coro-dragon {
   position: absolute;
@@ -1684,3 +1682,297 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   .fakead-overlay, .fakead-card { animation: none !important; }
 }
 
+
+/* ─────────────────────────  SÄSONGSFINALEN: dörr + återse  ───────────────────────── */
+.finale-door { position: fixed; inset: 0; z-index: 130; display: grid; place-items: center; padding: 1rem; background: rgba(3, 4, 8, .9); backdrop-filter: blur(6px); }
+.finale-door-panel { max-width: 480px; text-align: center; padding: 2.2rem 1.8rem; border: 1px solid var(--border); border-top: 2px solid rgba(231, 194, 92, .55); border-radius: 18px; background: var(--panel); box-shadow: 0 30px 90px rgba(0, 0, 0, .6); }
+.finale-door-eyebrow { margin: 0; letter-spacing: .24em; text-transform: uppercase; font-size: .75rem; color: var(--muted); font-family: var(--font-display), Georgia, serif; }
+.finale-door-title { margin: .4rem 0 .5rem; font-family: var(--font-title), Georgia, serif; font-size: clamp(1.6rem, 5vw, 2.4rem); color: var(--gold); }
+.finale-door-sub { margin: 0 0 1.4rem; color: var(--muted); line-height: 1.5; }
+.finale-door-actions { display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+.finale-rewatch { text-align: center; }
+.finale-rewatch a { color: var(--muted); }
+.finale-rewatch a:hover { color: var(--gold); }
+
+/* Finalens grundlayout */
+.finale { position: relative; }
+.finale-cover { position: fixed; inset: 0; z-index: 120; display: grid; place-content: center; gap: 1rem; text-align: center; background: radial-gradient(circle at 50% 30%, rgba(231, 194, 92, .1), rgba(3, 4, 8, .97) 65%); }
+.finale-cover-title { margin: 0; font-family: var(--font-title), Georgia, serif; font-size: clamp(2.2rem, 8vw, 4.4rem); color: var(--gold); text-shadow: 0 0 34px rgba(231, 194, 92, .5); }
+.finale-cover-hint { color: var(--muted); font-size: .85rem; }
+.finale-mute { position: fixed; right: 14px; bottom: 14px; z-index: 110; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--panel); color: var(--text); cursor: pointer; font-size: 1.1rem; }
+.finale-mute:hover { border-color: rgba(231, 194, 92, .6); }
+
+/* Ärver .coro-dragon för utseendet, men INTE dess oändliga coro-fly-animation:
+   en CSS-animation slår inline-styles och skulle ta över GSAP:s inflygning. */
+
+
+
+/* ─────────────────────────  FINALE V2: "Galaxen"  ───────────────────────── */
+.finale-v2 { position: relative; background: transparent; color: #f1e3c6; }
+.finale-v2[data-webgl="off"], .v2-stage { position: fixed; inset: 0; z-index: 0; }
+.v2-stage canvas { display: block; width: 100% !important; height: 100% !important; }
+/* Covern är halvgenomskinlig: galaxen vävs bakom den och syns tändas — det är
+   den visuella bekräftelsen på att knappen strax låses upp. */
+.v2-cover { background: radial-gradient(circle at 50% 35%, rgba(231, 194, 92, .12), rgba(3, 2, 8, .78) 62%); backdrop-filter: blur(3px); }
+.v2-cover .crown-btn[disabled] { opacity: .55; cursor: progress; filter: saturate(.6); }
+.v2-act { position: relative; z-index: 1; min-height: 100vh; display: grid; align-content: center; padding: 8vh 6vw; pointer-events: none; }
+.v2-act a, .v2-act button { pointer-events: auto; }
+.v2-coldopen { min-height: 120vh; text-align: center; }
+.v2-numbers { min-height: 240vh; display: block; padding: 6vh 0; }
+.v2-galaxy { min-height: 260vh; align-content: start; }
+.v2-coronation { min-height: 180vh; text-align: center; align-content: end; padding-bottom: 14vh; }
+/* Eftertexterna börjar först EFTER supernovans topp (progress ~0.92): toppen ligger
+   inne i den här sektionen, så innehållet skjuts ner så det inte krockar med titeln.
+   Vänsterställd spalt: kameran vrider samtidigt blicken åt vänster, så planeten och
+   vinnartiteln landar i högra två tredjedelarna bredvid texten — inte bakom den. */
+.v2-epilogue { min-height: 220vh; text-align: left; align-content: start; justify-items: start; padding: 90vh 6vw 8vh; }
+.v2-spacer { flex: 1; }
+
+/* HUD-typografi: stor display ovanpå rymden, tunna linjer, tabellsiffror */
+.hud-eyebrow { margin: 0 0 .6rem; font-family: var(--font-display), Georgia, serif; font-size: .74rem; letter-spacing: .32em; text-transform: uppercase; color: #b29a72; }
+.hud-title { margin: 0; font-family: var(--font-title), Georgia, serif; font-size: clamp(3rem, 11vw, 8.5rem); line-height: .95; letter-spacing: .02em; color: #fff2c0; text-shadow: 0 0 40px rgba(231, 194, 92, .55), 0 0 120px rgba(231, 194, 92, .25); }
+.hud-char { display: inline-block; will-change: transform, opacity, filter; }
+.hud-line { margin: 1rem 0 0; font-size: clamp(1rem, 2.2vw, 1.35rem); color: #f1e3c6; }
+.hud-num { font-family: var(--font-display), Georgia, serif; font-variant-numeric: tabular-nums; color: #ffd27a; font-weight: 700; }
+.hud-hint { margin-top: 3rem; color: #6f5a3a; font-size: .85rem; letter-spacing: .1em; }
+/* Siffrorna: inga lådor. Varje siffra är en annotation i rymden — en tunn guldlinje som
+   mätsticka, etikett, stor siffra, en rad detalj. Omväxlande sida så galaxen syns emellan,
+   och varje callout får hela radbredden så inget namn spränger sin ruta. */
+.hud-beat { min-height: 44vh; display: grid; align-content: center; padding: 0 8vw; }
+.hud-beat-right { justify-items: end; text-align: right; }
+.hud-callout { position: relative; max-width: 34rem; padding-left: 1.6rem; border-left: 2px solid rgba(231, 194, 92, .75); }
+.hud-beat-right .hud-callout { padding-left: 0; padding-right: 1.6rem; border-left: 0; border-right: 2px solid rgba(231, 194, 92, .75); }
+/* Mjuk mörk glöd bakom texten i stället för en låda — läsbar utan att dölja scenen. */
+.hud-callout::before { content: ''; position: absolute; inset: -2.5rem -3rem; z-index: -1; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(3, 2, 8, .78), rgba(3, 2, 8, .35) 55%, transparent 75%); filter: blur(6px); }
+.hud-callout .hud-eyebrow { margin-bottom: .45rem; }
+.hud-big { margin: 0; font-family: var(--font-title), Georgia, serif; font-size: clamp(2rem, 6.2vw, 4.6rem); line-height: 1.02; color: #fff2c0; overflow-wrap: anywhere; text-shadow: 0 0 28px rgba(231, 194, 92, .35); }
+.hud-big [data-counter] { font-variant-numeric: tabular-nums; }
+.hud-big-quote { font-family: var(--font-body), Georgia, serif; font-style: italic; font-size: clamp(1.3rem, 2.6vw, 1.9rem); line-height: 1.35; color: #f6e9c8; }
+.hud-detail { margin: .6rem 0 0; font-size: clamp(1rem, 1.9vw, 1.25rem); color: #d9c48f; }
+.hud-corner { position: sticky; top: 6vh; max-width: 420px; padding: 1rem 1.2rem; border-left: 2px solid rgba(231, 194, 92, .6); background: linear-gradient(90deg, rgba(3, 2, 8, .6), transparent); }
+.hud-credits { display: grid; gap: 2.2rem; width: min(440px, 88vw); margin: 0; padding: 2rem 2.2rem; border-radius: 10px; background: rgba(3, 2, 8, .82); backdrop-filter: blur(10px); border: 1px solid rgba(231, 194, 92, .22); border-left: 3px solid rgba(231, 194, 92, .7); box-shadow: 0 20px 60px rgba(0, 0, 0, .6); }
+.hud-credit-name { margin: 0; font-family: var(--font-display), Georgia, serif; font-size: 1.85rem; color: #fff6d8; text-shadow: 0 1px 0 rgba(0,0,0,.6); }
+.hud-credit-role { margin: .25rem 0 0; color: #e2cf9a; font-size: 1.05rem; }
+.hud-credit-roast { margin: .5rem 0 0; max-width: 40ch; font-style: italic; color: #d9c48f; line-height: 1.5; }
+
+/* Reduced motion / ingen WebGL: statisk rymdbakgrund, allt innehåll synligt */
+.finale-v2[data-reduced] .v2-galaxy, .finale-v2[data-reduced] .v2-coronation { min-height: 100vh; }
+
+.v2-debug { position: fixed; left: 12px; bottom: 12px; z-index: 200; margin: 0; padding: .5rem .7rem; font: 11px/1.5 ui-monospace, Menlo, monospace; color: #ffd27a; background: rgba(3, 2, 8, .85); border: 1px solid rgba(231, 194, 92, .4); border-radius: 6px; white-space: pre; pointer-events: none; }
+
+/* Titel: ord bryts aldrig godtyckligt. Brytpunkt bara vid <wbr> före känt suffix. */
+.hud-word { white-space: nowrap; display: inline; }
+.hud-title { font-size: clamp(2.6rem, 9.5vw, 8rem); }
+.hud-title-sm { font-size: clamp(2rem, 6vw, 4.6rem); }
+.hud-h2 { margin: 0 0 1.6rem; font-family: var(--font-display), Georgia, serif; font-size: clamp(1.3rem, 2.8vw, 2rem); color: #f1e3c6; font-weight: 400; }
+
+/* Fejden + superlativ */
+.v2-rivalry { min-height: 130vh; align-content: center; justify-items: end; padding: 10vh 8vw; text-align: right; }
+.hud-duel { position: relative; max-width: 40rem; padding-right: 1.6rem; border-right: 2px solid rgba(231, 194, 92, .75); }
+.hud-duel::before { content: ''; position: absolute; inset: -2rem -3rem; z-index: -1; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(3, 2, 8, .78), transparent 72%); filter: blur(6px); }
+.hud-duel-names { margin: 0; display: flex; gap: 1rem; justify-content: flex-end; align-items: baseline; font-family: var(--font-title), Georgia, serif; font-size: clamp(1.8rem, 5vw, 3.8rem); color: #fff2c0; text-shadow: 0 0 28px rgba(231, 194, 92, .35); flex-wrap: wrap; }
+.hud-duel-vs { color: #e7c25c; font-size: .6em; }
+.hud-supers { list-style: none; margin: 3.2rem 0 0; padding: 0; display: grid; gap: 1.2rem; justify-items: end; }
+.hud-super { display: grid; justify-items: end; gap: .1rem; }
+.hud-super .hud-eyebrow { margin: 0; font-size: .68rem; }
+.hud-super-name { font-family: var(--font-display), Georgia, serif; font-size: clamp(1.2rem, 2.4vw, 1.7rem); color: #fff2c0; }
+.hud-super-value { color: #d9c48f; }
+/* Den utan krona: ett eget ögonblick — men efter fejden, så vinnaren inte avslöjas. */
+.hud-winless { position: relative; margin-top: 3rem; max-width: 34rem; padding-right: 1.6rem; border-right: 2px solid rgba(231, 194, 92, .45); }
+.hud-winless::before { content: ''; position: absolute; inset: -1.6rem -2.4rem; z-index: -1; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(3, 2, 8, .72), transparent 72%); filter: blur(6px); }
+.hud-winless .hud-super-name { display: block; font-size: clamp(1.4rem, 3vw, 2.2rem); }
+.hud-winless-twist { color: #b29a72; font-style: italic; }
+
+/* Avfärden: paletten går över i nästa säsongs färger (variablerna sätts inline från temat) */
+.v2-departure { min-height: 150vh; text-align: center; align-content: center; --dep-gold: #e7c25c; --dep-accent: #c9a227; --dep-text: #f1e3c6; }
+.v2-departure .hud-title { color: var(--dep-text); text-shadow: 0 0 40px color-mix(in srgb, var(--dep-gold) 55%, transparent); }
+.hud-next { margin-top: 2.4rem; display: grid; gap: .5rem; justify-items: center; }
+.hud-next-name { margin: 0; font-family: var(--font-title), Georgia, serif; font-size: clamp(2.2rem, 7vw, 5.4rem); line-height: 1; color: var(--dep-gold); text-shadow: 0 0 46px color-mix(in srgb, var(--dep-gold) 60%, transparent); }
+.hud-next-tagline { margin: .4rem 0 0; max-width: 40ch; color: var(--dep-text); font-style: italic; }
+
+/* Hemknappen sist i avfärden. Sektionen har pointer-events: none för att släppa igenom
+   scroll till scenen, så knappen slår på dem igen. */
+.v2-home { margin-top: 2.8rem; justify-self: center; pointer-events: auto; display: inline-block; text-decoration: none; }
+.v2-departure .v2-home { background: linear-gradient(180deg, var(--dep-gold), color-mix(in srgb, var(--dep-gold) 70%, #000)); border-color: color-mix(in srgb, var(--dep-gold) 55%, transparent); }
+
+/* Krönikans ingång på Tronsalen: ikon + kort i stället för en textlänk */
+.finale-door-icon { display: block; margin: 0 auto .6rem; color: var(--gold); filter: drop-shadow(0 0 14px rgba(231, 194, 92, .55)); }
+.finale-rewatch { display: flex; align-items: center; gap: 1rem; width: min(560px, 100%); margin: 0 auto; padding: .9rem 1.2rem; border: 1px solid var(--border); border-left: 3px solid var(--gold); border-radius: 12px; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.18)), var(--panel); color: var(--text); transition: border-color .15s ease, transform .15s ease; }
+.finale-rewatch:hover { border-color: rgba(231, 194, 92, .6); transform: translateY(-1px); }
+.finale-rewatch-icon { flex: 0 0 auto; color: var(--gold); }
+.finale-rewatch-text { display: grid; gap: .1rem; }
+.finale-rewatch-text strong { font-family: var(--font-display), Georgia, serif; letter-spacing: .03em; }
+.finale-rewatch-text small { color: var(--muted); }
+.finale-rewatch-arrow { margin-left: auto; color: var(--gold); font-size: 1.2rem; }
+
+/* Arkivet: säsongerna som bokband, var och en i sitt tema (variablerna sätts inline) */
+.archive-shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+.archive-book { position: relative; padding: 1.4rem 1.4rem 1.2rem; border: 1px solid var(--border); border-top: 3px solid var(--gold); border-radius: 12px; background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(0,0,0,.2)), var(--panel); color: var(--text); box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 14px 34px rgba(0,0,0,.35); }
+.archive-book.is-active { border-top-color: var(--accent); }
+.archive-book-eyebrow { margin: 0 0 .4rem; font-family: var(--font-display), Georgia, serif; font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.archive-book-title { margin: 0 0 .6rem; font-family: var(--font-title), Georgia, serif; font-size: clamp(1.4rem, 3vw, 1.9rem); color: var(--gold); }
+.archive-book-meta { margin: 0 0 1rem; display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; color: var(--muted); }
+.archive-book-meta strong { color: var(--text); }
+.archive-book-theme { margin-left: auto; font-style: italic; }
+.archive-book-actions { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+.archive-book-btn { display: inline-flex; align-items: center; gap: .45rem; text-decoration: none; }
+.archive-book-locked { color: var(--muted); font-style: italic; font-size: .9rem; }
+
+/* Tabellen: banderoll när en avslutad säsong visas via ?season= */
+.season-banner { display: flex; flex-wrap: wrap; gap: .4rem 1rem; align-items: center; margin: 0; padding: .7rem 1rem; border: 1px solid var(--border); border-left: 3px solid var(--gold); border-radius: 10px; background: var(--panel); color: var(--muted); }
+.season-banner strong { color: var(--gold); }
+.season-banner a { margin-left: auto; color: var(--text); }
+
+/* Säsongsremsan högst upp i tronsalen */
+.season-strip { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; padding: .5rem .9rem; border: 1px solid var(--border); border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.14)), var(--panel); color: var(--muted); font-family: var(--font-display), Georgia, serif; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; transition: border-color .15s ease; }
+.season-strip:hover { border-color: rgba(231, 194, 92, .6); }
+.season-strip strong { color: var(--gold); font-weight: 700; }
+.season-strip-mark { display: inline-grid; place-items: center; }
+.season-strip-sep { opacity: .5; }
+.season-strip-cta { margin-left: auto; color: var(--text); }
+
+/* Galaxen: stjärnhimmel bakom hela sidan (tre lager i olika täthet) och kallare grundton */
+html[data-theme='star-wars'] body {
+  background:
+    radial-gradient(900px 520px at 50% -8%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%),
+    radial-gradient(760px 700px at 100% 0%, color-mix(in srgb, var(--accent-2) 12%, transparent), transparent 55%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bg) 85%, #000) 0%, var(--bg) 42%);
+  background-attachment: fixed;
+}
+/* Stjärnhimlen (components/Starfield.tsx): lager som driver med olika hastighet + blinkande stjärnor.
+   Varje lager är 2× viewporten och flyttas exakt en kakel-period per varv, så loopen är sömlös. */
+.starfield { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 45%, transparent 100%); mask-image: radial-gradient(120% 90% at 50% 0%, #000 45%, transparent 100%); }
+.starfield-layer, .starfield-twinkle { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background-repeat: repeat; will-change: transform; }
+.starfield-far { opacity: .55; background-size: 260px 260px; animation: starfield-drift-far 200s linear infinite;
+  background-image:
+    radial-gradient(1px 1px at 12px 18px, rgba(255,255,255,.9) 50%, transparent 100%),
+    radial-gradient(1px 1px at 140px 96px, rgba(255,255,255,.6) 50%, transparent 100%),
+    radial-gradient(1px 1px at 78px 210px, rgba(190,210,255,.8) 50%, transparent 100%),
+    radial-gradient(1px 1px at 230px 150px, rgba(255,255,255,.45) 50%, transparent 100%),
+    radial-gradient(1px 1px at 190px 240px, rgba(255,255,255,.5) 50%, transparent 100%); }
+.starfield-mid { opacity: .7; background-size: 340px 340px; animation: starfield-drift-mid 130s linear infinite;
+  background-image:
+    radial-gradient(1.4px 1.4px at 40px 60px, rgba(255,255,255,.85) 50%, transparent 100%),
+    radial-gradient(1.2px 1.2px at 250px 120px, rgba(200,220,255,.8) 50%, transparent 100%),
+    radial-gradient(1.4px 1.4px at 120px 290px, rgba(255,255,255,.6) 50%, transparent 100%),
+    radial-gradient(1.2px 1.2px at 300px 300px, rgba(255,240,200,.7) 50%, transparent 100%); }
+.starfield-near { opacity: .8; background-size: 460px 460px; animation: starfield-drift-near 85s linear infinite;
+  background-image:
+    radial-gradient(2px 2px at 90px 40px, rgba(255,255,255,.95) 50%, transparent 100%),
+    radial-gradient(1.8px 1.8px at 380px 200px, rgba(255,240,200,.8) 50%, transparent 100%),
+    radial-gradient(2px 2px at 200px 380px, rgba(190,210,255,.9) 50%, transparent 100%); }
+/* Blinklagren: få, ljusa stjärnor med glöd, olika rytm och fas så de inte blinkar i takt. */
+.starfield-twinkle { background-size: 520px 520px; }
+.starfield-twinkle-a { animation: starfield-drift-twinkle 150s linear infinite, starfield-twinkle 2.8s ease-in-out infinite alternate;
+  background-image:
+    radial-gradient(2.4px 2.4px at 60px 80px, #fff 40%, rgba(255,255,255,0) 100%),
+    radial-gradient(6px 6px at 60px 80px, rgba(255,255,255,.25) 0%, transparent 70%),
+    radial-gradient(2px 2px at 420px 300px, #fff 40%, rgba(255,255,255,0) 100%); }
+.starfield-twinkle-b { animation: starfield-drift-twinkle 110s linear infinite, starfield-twinkle 3.9s ease-in-out -1.3s infinite alternate;
+  background-image:
+    radial-gradient(2.2px 2.2px at 300px 120px, #ffe9a8 40%, rgba(255,233,168,0) 100%),
+    radial-gradient(6px 6px at 300px 120px, rgba(255,233,168,.25) 0%, transparent 70%),
+    radial-gradient(2px 2px at 140px 440px, #fff 40%, rgba(255,255,255,0) 100%); }
+.starfield-twinkle-c { animation: starfield-drift-twinkle 190s linear infinite, starfield-twinkle 5.1s ease-in-out -2.6s infinite alternate;
+  background-image:
+    radial-gradient(2.4px 2.4px at 240px 260px, #cfe0ff 40%, rgba(207,224,255,0) 100%),
+    radial-gradient(7px 7px at 240px 260px, rgba(207,224,255,.25) 0%, transparent 70%),
+    radial-gradient(2px 2px at 480px 40px, #fff 40%, rgba(255,255,255,0) 100%); }
+@keyframes starfield-drift-far { to { transform: translate3d(-260px, -260px, 0); } }
+@keyframes starfield-drift-mid { to { transform: translate3d(-340px, -340px, 0); } }
+@keyframes starfield-drift-near { to { transform: translate3d(-460px, -460px, 0); } }
+@keyframes starfield-drift-twinkle { to { transform: translate3d(-520px, -520px, 0); } }
+@keyframes starfield-twinkle { from { opacity: .15; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .starfield-layer, .starfield-twinkle { animation: none; } .starfield-twinkle { opacity: .7; } }
+
+/* 404 i temats ton */
+.not-found { display: grid; justify-items: center; gap: .6rem; max-width: 560px; margin: 12vh auto 0; text-align: center; }
+.not-found .dash-eyebrow { font-family: var(--font-display), Georgia, serif; font-size: 1rem; }
+.not-found .subtitle { margin: 0 0 1rem; }
+
+/* Skelett medan sidor laddar */
+.skeleton-line, .skeleton-card, .skeleton-block { position: relative; overflow: hidden; border-radius: 8px; background: rgba(255,255,255,.05); }
+.skeleton-line::after, .skeleton-card::after, .skeleton-block::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(231,194,92,.08), transparent); transform: translateX(-100%); animation: skeleton-shimmer 1.4s ease-in-out infinite; }
+.skeleton-title { width: min(360px, 60%); height: 2.4rem; }
+.skeleton-sub { width: min(480px, 80%); height: 1rem; margin-top: .7rem; }
+.skeleton-card { height: 92px; }
+.skeleton-block { height: 320px; }
+@keyframes skeleton-shimmer { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .skeleton-line::after, .skeleton-card::after, .skeleton-block::after { animation: none; } }
+
+/* Pallen ovanför tabellen */
+.podium { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; align-items: end; max-width: 760px; margin: 0 auto; width: 100%; }
+.podium-step { display: grid; justify-items: center; gap: .15rem; padding: 1.2rem .8rem 0; border: 1px solid var(--border); border-radius: 14px 14px 6px 6px; background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(0,0,0,.2)), var(--panel); color: var(--text); text-align: center; text-decoration: none; transition: transform .15s ease, border-color .15s ease; }
+.podium-step:hover { transform: translateY(-3px); border-color: rgba(231, 194, 92, .6); }
+.podium-medal { font-size: 1.5rem; line-height: 1; }
+.podium-initial { display: grid; place-items: center; width: 64px; height: 64px; margin-top: .3rem; border: 2px solid var(--podium-color, var(--border)); border-radius: 50%; font-family: var(--font-title), Georgia, serif; font-size: 1.6rem; color: var(--podium-color, var(--gold)); background: radial-gradient(circle at 50% 30%, rgba(255,255,255,.06), transparent 70%); }
+.podium-name { margin-top: .5rem; font-family: var(--font-display), Georgia, serif; font-size: 1.05rem; letter-spacing: .03em; }
+.podium-epithet { font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: var(--podium-color, var(--muted)); }
+.podium-stat { font-size: .85rem; color: var(--muted); }
+.podium-base { display: grid; place-items: center; width: 100%; margin-top: .8rem; padding: .35rem 0; border-top: 1px solid var(--border); font-family: var(--font-title), Georgia, serif; font-size: 1.3rem; color: var(--podium-color, var(--muted)); background: rgba(0,0,0,.25); }
+.podium-rank-1 { --podium-color: var(--gold); --podium-base: 3.2rem; border-top: 2px solid rgba(231,194,92,.6); box-shadow: 0 0 40px rgba(231,194,92,.12); }
+.podium-rank-1 .podium-base { padding: .9rem 0; }
+.podium-rank-1 .podium-initial { width: 80px; height: 80px; font-size: 2rem; }
+.podium-rank-2 { --podium-color: #c9ced6; }
+.podium-rank-2 .podium-base { padding: .6rem 0; }
+.podium-rank-3 { --podium-color: #c88a4e; }
+@media (max-width: 560px) { .podium { gap: .4rem; } .podium-step { padding: .8rem .4rem 0; } .podium-name { font-size: .9rem; } .podium-stat { font-size: .72rem; } .podium-initial, .podium-rank-1 .podium-initial { width: 52px; height: 52px; font-size: 1.3rem; } }
+
+/* Trendpilar i tabellen */
+.lb-trend { display: inline-block; margin-left: .35rem; font-size: .7rem; font-weight: 700; letter-spacing: .02em; vertical-align: middle; }
+.lb-trend.up { color: #6fcf8a; }
+.lb-trend.down { color: #e07070; }
+.lb-trend.flat { color: var(--muted); opacity: .6; }
+
+/* Profil: vinster per veckodag */
+.weekday-panel { padding: 1.2rem 1.4rem 1rem; border: 1px solid var(--border); border-radius: 14px; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.18)), var(--panel); }
+.weekday-panel h2 { margin: 0; font-family: var(--font-display), Georgia, serif; font-size: 1.1rem; letter-spacing: .04em; }
+.weekday-summary { margin: .25rem 0 1rem; color: var(--muted); }
+.weekday-summary strong { color: var(--gold); }
+.weekday-bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: .5rem; height: 150px; }
+.weekday-col { display: grid; grid-template-rows: auto 1fr auto; justify-items: center; gap: .3rem; min-width: 0; }
+.weekday-count { font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 1em; }
+.weekday-track { display: flex; align-items: flex-end; width: 100%; max-width: 40px; height: 100%; }
+.weekday-bar { width: 100%; min-height: 2px; border-radius: 4px 4px 2px 2px; background: linear-gradient(180deg, rgba(231,194,92,.55), rgba(231,194,92,.2)); transition: height .3s ease; }
+.weekday-col.is-best .weekday-bar { background: linear-gradient(180deg, var(--gold), rgba(231,194,92,.5)); box-shadow: 0 0 18px rgba(231,194,92,.25); }
+.weekday-col.is-best .weekday-count { color: var(--gold); font-weight: 700; }
+.weekday-col.is-friday .weekday-label { color: var(--gold); }
+.weekday-label { font-family: var(--font-display), Georgia, serif; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* Profil: närmast att låsa upp */
+.next-badges-panel { padding: 1.2rem 1.4rem; border: 1px solid var(--border); border-radius: 14px; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.18)), var(--panel); }
+.next-badges-panel h2 { margin: 0 0 .8rem; font-family: var(--font-display), Georgia, serif; font-size: 1.1rem; letter-spacing: .04em; }
+.next-badges-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .7rem; }
+.next-badge { display: grid; grid-template-columns: auto 1fr; gap: .7rem; align-items: center; padding: .7rem .8rem; border: 1px solid var(--border); border-left-width: 3px; border-radius: 10px; background: rgba(0,0,0,.18); }
+.next-badge-medallion { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; background: rgba(255,255,255,.04); }
+.next-badge-body { display: grid; gap: .2rem; min-width: 0; }
+.next-badge-name { font-family: var(--font-display), Georgia, serif; font-size: .9rem; letter-spacing: .03em; }
+.next-badge-count { font-size: .8rem; color: var(--muted); }
+.next-badge-track { height: 5px; border-radius: 3px; background: rgba(255,255,255,.07); overflow: hidden; }
+.next-badge-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, rgba(231,194,92,.6), var(--gold)); }
+
+/* Utmärkelser: vilka som bär varje badge */
+.badge-codex-owners { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; margin-top: .6rem; }
+.badge-owner { display: grid; place-items: center; width: 26px; height: 26px; border: 1px solid rgba(231,194,92,.45); border-radius: 50%; font-family: var(--font-display), Georgia, serif; font-size: .72rem; font-weight: 700; color: var(--gold); background: rgba(0,0,0,.25); text-decoration: none; transition: border-color .15s ease, transform .15s ease; }
+.badge-owner:hover { border-color: var(--gold); transform: translateY(-1px); }
+.badge-owner-none { font-size: .78rem; font-style: italic; color: var(--muted); opacity: .8; }
+
+/* Arkiven som textrulle (components/history/CrawlChronicle.tsx). Spåret ger skrollsträckan,
+   scenen sitter fast, planet lutar bakåt och texten flyttas i planet av skrollen. */
+.crawl-track { position: relative; width: 100vw; margin: 0 0 -4rem calc(50% - 50vw); }
+/* 100vw räknar med rullisten där den syns — klipp bort den horisontella överflödet på rull-sidor. */
+html:has(.crawl-track) { overflow-x: clip; }
+.crawl-stage { position: sticky; top: 0; height: 100vh; overflow: hidden; }
+.crawl-head { position: absolute; top: 0; left: 0; right: 0; z-index: 2; padding: 1.1rem 1rem 1.4rem; text-align: center; background: linear-gradient(180deg, var(--bg) 35%, transparent 100%); }
+.crawl-eyebrow { margin: 0; font-family: var(--font-display), Georgia, serif; font-size: .78rem; letter-spacing: .32em; text-transform: uppercase; color: var(--muted); }
+.crawl-title { margin: .1rem 0 0; font-family: 'Franklin Gothic Medium', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif; font-weight: 700; font-size: clamp(1.9rem, 4.5vw, 3rem); letter-spacing: .08em; text-transform: uppercase; color: var(--gold); text-shadow: 0 0 24px rgba(255, 216, 74, .25); }
+.crawl-sub { margin: .25rem 0 0; color: var(--muted); font-size: .92rem; }
+.crawl-viewport { position: absolute; inset: 0; perspective: 380px; perspective-origin: 50% 22%;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 10%, #000 34%, #000 100%); mask-image: linear-gradient(to bottom, transparent 10%, #000 34%, #000 100%); }
+.crawl-plane { position: absolute; left: 50%; bottom: 0; width: min(1240px, 104vw); height: 100%; transform-origin: 50% 100%; transform: translateX(-50%) rotateX(24deg); }
+.crawl { padding: 38vh 0 60vh; will-change: transform; color: var(--gold); font-family: 'Franklin Gothic Medium', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif; font-weight: 700; font-size: clamp(1.5rem, 3.1vw, 2.7rem); line-height: 1.3; text-align: justify; text-shadow: 0 0 20px rgba(255, 216, 74, .16);
+  /* Typsnittet saknar en vikt över 700 — en tunn kontur i samma gula ger ~1,2× tjockare stil. */
+  -webkit-text-stroke: .035em var(--gold); paint-order: stroke fill; }
+.crawl-item { margin: 0 0 1.5em; white-space: pre-line; }
+.crawl-item-meta { display: block; margin-bottom: .25em; font-size: .52em; letter-spacing: .24em; text-transform: uppercase; text-align: center; opacity: .72; white-space: normal; -webkit-text-stroke: 0; }

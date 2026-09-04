@@ -1,15 +1,27 @@
+import { countByWeekday } from './local-time';
 import { EventType, NationState } from '@prisma/client';
 import { differenceInDays, isFriday } from 'date-fns';
 import { prisma } from '../prisma';
-import { fridayIntros, nationIntros, streakTemplates } from '../copy/templates';
+import { realm } from '../theme/themes/realm';
 import { calculateGlobalStats, calculatePlayerStats } from '../badges/player-stats';
 import { getPlayerBadges } from '../badges/badge-engine';
+import { resolveSeason, scopePlayerToSeason, seasonNow, winOccurredAtFilter, type SeasonWindow } from './season';
+import { getTheme } from '../theme';
 
 
 // Hur länge efter en kröning man måste vänta innan en ny vinnare kan sättas (skydd mot dubbelsättningar).
 export const WIN_COOLDOWN_MS = 20 * 60 * 1000;
 
-export async function getCurrentKing() { return prisma.reign.findFirst({ where:{ endedAt:null }, include:{ player:true }, orderBy:{ startedAt:'desc' } }); }
+// För en pågående säsong: den som sitter på tronen nu. För en avslutad säsong: den som
+// satt på tronen när säsongen tog slut.
+export async function getCurrentKing(season?: SeasonWindow) {
+  if (!season?.endedAt) return prisma.reign.findFirst({ where:{ endedAt:null }, include:{ player:true }, orderBy:{ startedAt:'desc' } });
+  return prisma.reign.findFirst({
+    where: { startedAt: { lte: season.endedAt }, OR: [{ endedAt: null }, { endedAt: { gt: season.endedAt } }] },
+    include: { player: true },
+    orderBy: { startedAt: 'desc' },
+  });
+}
 export const COMEBACK_DAYS = 14; // ~2 veckor utan vinst räknas som en återkomst
 
 export function determineEventType(ctx:{isSameKing:boolean; streakCount:number; previousStreakCount?:number|null; isFirstWin?:boolean; daysSinceLastWin?:number|null;}):EventType {
@@ -26,61 +38,92 @@ export function determineEventType(ctx:{isSameKing:boolean; streakCount:number; 
 export function determineNationState(ctx:{recentWinnerIds:string[]; currentStreak:number; brokeBigStreak:boolean;}):NationState { if(ctx.currentStreak>=5)return NationState.TYRANNY; if(ctx.currentStreak>=3)return NationState.DYNASTY; if(ctx.brokeBigStreak)return NationState.REVOLUTION; const u=new Set(ctx.recentWinnerIds).size; if(u>=5)return NationState.INSTABILITY; if(u>=3)return NationState.TENSION; return NationState.STABLE_ERA; }
 const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
-export function generateAnnouncement(ctx:any){
-  const variants = (streakTemplates as any)[ctx.eventType] ?? [`👑 @{winner} har krönts.`];
-  let text = pick(variants as string[])
+// Texterna kommer från temat. Default är riddartemat, så befintliga anrop (och tester)
+// beter sig oförändrat.
+export function generateAnnouncement(ctx:any, announcements = realm.announcements){
+  const { streakTemplates, nationIntros, fridayIntros } = announcements;
+  const variants: string[] = (streakTemplates as any)[ctx.eventType] ?? [`👑 @{winner} har krönts.`];
+  const render = (template: string) => template
     .replaceAll('@{winner}', ctx.winnerName)
     .replaceAll('@{previousKing}', ctx.previousKingName ?? 'den förra regenten')
     .replaceAll('{previousStreakCount}', String(ctx.previousStreakCount ?? 0))
     .replaceAll('{days}', String(ctx.days ?? ctx.daysSinceLastWin ?? 0));
+  // Texter som nyss stått i krönikan väljs bort — annars upprepade sig de små
+  // kategorierna (första vinsten, fredag, tre raka) hela tiden.
+  const recent: string[] = ctx.recentTexts ?? [];
+  // Utan förra kung (t.ex. säsongens första vinst) väljs texter som inte nämner någon.
+  const applicable = ctx.previousKingName ? variants : (variants.filter((t) => !t.includes('@{previousKing}')).length ? variants.filter((t) => !t.includes('@{previousKing}')) : variants);
+  const rendered = applicable.map(render);
+  const fresh = rendered.filter((t) => !recent.some((r) => r.endsWith(t)));
+  let text = pick(fresh.length ? fresh : rendered);
   // Lägg på en nations-intro ibland. Det tråkiga "stabila" läget hålls sällsynt
   // så att det inte upprepas, medan dramatiska lägen får synas oftare.
-  const intros = nationIntros[ctx.nationState as keyof typeof nationIntros];
+  const intros = (nationIntros as any)[ctx.nationState];
   const introChance = ctx.nationState === 'STABLE_ERA' ? 0.2 : 0.5;
   if (intros && Math.random() < introChance) text = `${pick(intros)}\n${text}`;
   if (ctx.isFridayFinal) text = `${pick(fridayIntros)}\n${text}`;
   return { text, layout: 'royal', persona: 'ROYAL_DECREE' };
 }
 export async function calculateStreak(winnerId:string){ const events=await prisma.winEvent.findMany({where:{winnerId}, orderBy:{occurredAt:'desc'}, take:10}); return events.length===0?0:events.reduce((acc,e,i)=> i===0?1: acc + (events[i-1].occurredAt>=e.occurredAt?1:0),0); }
-export async function recordWin(winnerId:string,note?:string){ const now=new Date(); const current=await getCurrentKing(); const isSameKing=current?.playerId===winnerId; const previousEvents=await prisma.winEvent.findMany({orderBy:{occurredAt:'desc'},take:7}); const previousStreakCount=previousEvents[0]?.streakCount ?? 0; const streakCount=isSameKing?previousStreakCount+1:1;
+export async function recordWin(winnerId:string,note?:string){ const now=new Date(); const season=await resolveSeason(); const current=await getCurrentKing(season); const isSameKing=current?.playerId===winnerId;
+ // Streak och rikets läge räknas mot SÄSONGENS vinster. WinEvent.streakCount sparas vid
+ // skrivning, så utan detta skulle en pågående streak fortsätta rakt över säsongsgränsen.
+ const previousEvents=await prisma.winEvent.findMany({where:{occurredAt:winOccurredAtFilter(season)},orderBy:{occurredAt:'desc'},take:7}); const previousStreakCount=previousEvents[0]?.streakCount ?? 0; const streakCount=isSameKing?previousStreakCount+1:1;
  const winnerWinCount=await prisma.winEvent.count({where:{winnerId}}); const lastWin=await prisma.winEvent.findFirst({where:{winnerId},orderBy:{occurredAt:'desc'}}); const isFirstWin=winnerWinCount===0; const daysSinceLastWin=lastWin?differenceInDays(now,new Date(lastWin.occurredAt)):null;
- const eventType=determineEventType({isSameKing:!!isSameKing, streakCount, previousStreakCount, isFirstWin, daysSinceLastWin}); const nationState=determineNationState({recentWinnerIds:previousEvents.map(e=>e.winnerId),currentStreak:streakCount,brokeBigStreak:!isSameKing&&previousStreakCount>=3}); const winner=await prisma.player.findUniqueOrThrow({where:{id:winnerId}}); const ann=generateAnnouncement({eventType,winnerName:winner.name,previousKingName:current?.player.name,previousStreakCount,nationState,isFridayFinal:isFriday(now),daysSinceLastWin});
+ const eventType=determineEventType({isSameKing:!!isSameKing, streakCount, previousStreakCount, isFirstWin, daysSinceLastWin}); const nationState=determineNationState({recentWinnerIds:previousEvents.map(e=>e.winnerId),currentStreak:streakCount,brokeBigStreak:!isSameKing&&previousStreakCount>=3}); const winner=await prisma.player.findUniqueOrThrow({where:{id:winnerId}}); const ann=generateAnnouncement({eventType,winnerName:winner.name,previousKingName:current?.player.name,previousStreakCount,nationState,isFridayFinal:isFriday(now),daysSinceLastWin,recentTexts:previousEvents.map(e=>e.announcementText)}, getTheme(season.theme).announcements);
  return prisma.$transaction(async(tx)=>{ if(current && !isSameKing){ await tx.reign.update({where:{id:current.id}, data:{endedAt:now}}); await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} if(!current){ await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} const win=await tx.winEvent.create({data:{winnerId,previousKingId:current?.playerId,occurredAt:now,eventType,streakCount,previousStreakCount,note,announcementText:ann.text,nationState,isFridayFinal:isFriday(now)}}); const a=await tx.announcement.create({data:{winEventId:win.id,text:ann.text,layout:ann.layout,persona:ann.persona}}); return {win,a}; }); }
 
-export function buildPlayerStats(player: any, currentKingId?: string | null) {
-  const base = calculatePlayerStats(player, currentKingId);
-  return { ...base, lastWinAt: player.wins?.[0]?.occurredAt ?? null };
+// Utan säsong: oförändrat all-time-beteende (används av testerna). Med säsong: spelarens
+// vinster filtreras och regeringar klampas mot fönstret, och "nu" fryses vid säsongsslutet
+// så att rullande 7/30-dagarsfönster blir meningsfulla även historiskt.
+export function buildPlayerStats(player: any, currentKingId?: string | null, season?: SeasonWindow, now: Date = new Date()) {
+  const scoped = season ? scopePlayerToSeason(player, season, now) : player;
+  const asOf = season ? seasonNow(season, now) : now;
+  const base = calculatePlayerStats(scoped, currentKingId, asOf);
+  return { ...base, lastWinAt: scoped.wins?.[0]?.occurredAt ?? null };
 }
 
-export async function getLeaderboard() {
+export async function getLeaderboard(season?: SeasonWindow) {
+  const s = season ?? (await resolveSeason());
+  const now = new Date();
+  // Hela historiken hämtas och skalas ner i minnet: regeringsklampning kan ändå inte
+  // uttryckas i en Prisma-query, och datamängden är i storleksordningen tiotal rader.
   const players = await prisma.player.findMany({ include: { wins: { orderBy: { occurredAt: 'desc' } }, reigns: true } });
-  const current = await getCurrentKing();
-  const rawRows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId) })).sort((a,b)=>b.totalReignMs-a.totalReignMs);
+  const current = await getCurrentKing(s);
+  const rawRows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId, s, now) })).sort((a,b)=>b.totalReignMs-a.totalReignMs);
   const ranked = rawRows.map((row, i) => ({ ...row, rank: i + 1 }));
   const statMap = Object.fromEntries(ranked.map((r) => [r.id, r]));
   const globalStats = calculateGlobalStats(Object.values(statMap) as any, current?.playerId ?? null);
   return ranked.map((row) => ({ ...row, badges: getPlayerBadges(row.id, { playerStats: statMap as any, globalStats }) }));
 }
 
-export async function getKingdomStats() {
-  const rows = await getLeaderboard();
+export async function getKingdomStats(season?: SeasonWindow) {
+  const rows = await getLeaderboard(season);
   const currentKing = rows.find((r) => r.isCurrentKing) ?? null;
   const fridayChampion = [...rows].sort((a,b)=>b.fridayWins-a.fridayWins)[0] ?? null;
   const longestStreak = [...rows].sort((a,b)=>b.longestStreak-a.longestStreak)[0] ?? null;
   return { currentKing, fridayChampion, longestStreak, mostThroneTime: rows[0] ?? null };
 }
 
-export async function getPlayerTimeline(playerId: string) {
-  const wins = await prisma.winEvent.findMany({ where: { winnerId: playerId }, include: { winner: true }, orderBy: { occurredAt: 'desc' }, take: 20 });
+export async function getPlayerTimeline(playerId: string, season?: SeasonWindow) {
+  const s = season ?? (await resolveSeason());
+  const wins = await prisma.winEvent.findMany({ where: { winnerId: playerId, occurredAt: winOccurredAtFilter(s) }, include: { winner: true }, orderBy: { occurredAt: 'desc' }, take: 20 });
   return wins.map((w) => ({ id: w.id, date: w.occurredAt, eventType: w.eventType, announcementText: w.announcementText, previousKingId: w.previousKingId, reignDurationMs: null }));
 }
 
-export async function getPlayerStats(playerId: string) {
-  const current = await getCurrentKing();
+export async function getPlayerWeekdayWins(playerId: string, season?: SeasonWindow) {
+  const s = season ?? (await resolveSeason());
+  const wins = await prisma.winEvent.findMany({ where: { winnerId: playerId, occurredAt: winOccurredAtFilter(s) }, select: { occurredAt: true } });
+  return countByWeekday(wins.map((w) => w.occurredAt));
+}
+
+export async function getPlayerStats(playerId: string, season?: SeasonWindow) {
+  const s = season ?? (await resolveSeason());
+  const current = await getCurrentKing(s);
   const player = await prisma.player.findUnique({ where: { id: playerId }, include: { wins: { orderBy: { occurredAt: 'desc' } }, reigns: true } });
   if (!player) return null;
-  const stats = buildPlayerStats(player, current?.playerId);
-  const board = await getLeaderboard();
+  const stats = buildPlayerStats(player, current?.playerId, s);
+  const board = await getLeaderboard(s);
   const statMap = Object.fromEntries(board.map((r) => [r.id, r]));
   const globalStats = calculateGlobalStats(board as any, current?.playerId ?? null);
   return {
@@ -95,9 +138,10 @@ export async function getPlayerStats(playerId: string) {
 
 // Ärkefiende: spelaren man bytt kronan med mest — summan av krona snott + krona snodd ifrån.
 // Returnerar null tills minst 2 sådana händelser finns med samma motståndare (annars för tunt underlag).
-export async function getPlayerNemesis(playerId: string) {
+export async function getPlayerNemesis(playerId: string, season?: SeasonWindow) {
+  const s = season ?? (await resolveSeason());
   const events = await prisma.winEvent.findMany({
-    where: { OR: [{ winnerId: playerId }, { previousKingId: playerId }] },
+    where: { OR: [{ winnerId: playerId }, { previousKingId: playerId }], occurredAt: winOccurredAtFilter(s) },
     select: { winnerId: true, previousKingId: true },
   });
   const tally = new Map<string, { stolenFrom: number; stolenBy: number }>();
@@ -126,13 +170,14 @@ export async function getPlayerNemesis(playerId: string) {
   return { rival, stolenFrom: best.stolenFrom, stolenBy: best.stolenBy, total: bestTotal };
 }
 
-export async function getPlayerProfile(playerId: string) {
+export async function getPlayerProfile(playerId: string, season?: SeasonWindow) {
+  const s = season ?? (await resolveSeason());
   const player = await prisma.player.findUnique({ where: { id: playerId } });
   if (!player) return null;
-  const stats = await getPlayerStats(playerId);
-  const timeline = await getPlayerTimeline(playerId);
-  const nemesis = await getPlayerNemesis(playerId);
-  return { player, stats, timeline, nemesis };
+  const stats = await getPlayerStats(playerId, s);
+  const timeline = await getPlayerTimeline(playerId, s);
+  const nemesis = await getPlayerNemesis(playerId, s);
+  return { player, stats, timeline, nemesis, season: s };
 }
 
 export async function calculateLeaderboard(){ return getLeaderboard(); }
