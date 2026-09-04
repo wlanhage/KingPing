@@ -1,12 +1,12 @@
 import { countByWeekday } from './local-time';
-import { dominance } from '../badges/player-stats';
+import { dominance, stolenReign } from '../badges/player-stats';
 import { EventType, NationState } from '@prisma/client';
 import { differenceInDays, isFriday } from 'date-fns';
 import { prisma } from '../prisma';
 import { realm } from '../theme/themes/realm';
 import { calculateGlobalStats, calculatePlayerStats } from '../badges/player-stats';
 import { getPlayerBadges } from '../badges/badge-engine';
-import { getPreviousSeason, isWinInSeason, resolveSeason, scopePlayerToSeason, seasonNow, winOccurredAtFilter, type SeasonWindow } from './season';
+import { clampReignToSeason, getPreviousSeason, isWinInSeason, resolveSeason, scopePlayerToSeason, seasonNow, winOccurredAtFilter, type SeasonWindow } from './season';
 import { describeSeasonEcho, ECHO_WINDOW, pickSeasonEcho, type SeasonEcho } from './season-echo';
 import { getTheme } from '../theme';
 
@@ -124,7 +124,9 @@ export async function getLeaderboard(season?: SeasonWindow) {
   // Parvis övertag kräver allas vinster i säsongen — räknas här, inte per spelare.
   const seasonWins = players.flatMap((p) => p.wins.filter((w) => isWinInSeason(w.occurredAt, s)));
   const dom = dominance(seasonWins);
-  const rawRows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId, s, now, previous), maxNetTakeovers: dom[p.id]?.net ?? 0, dominatedRivalId: dom[p.id]?.rivalId ?? null })).sort((a,b)=>b.totalReignMs-a.totalReignMs);
+  const seasonReigns = players.flatMap((p) => p.reigns.flatMap((r) => { const c = clampReignToSeason(r, s, now); return c ? [{ playerId: p.id, startedAt: c.startedAt, endedAt: c.endedAt }] : []; }));
+  const stolen = stolenReign(seasonWins, seasonReigns);
+  const rawRows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId, s, now, previous), maxNetTakeovers: dom[p.id]?.net ?? 0, dominatedRivalId: dom[p.id]?.rivalId ?? null, stolenReignMs: stolen[p.id] ?? 0 })).sort((a,b)=>b.totalReignMs-a.totalReignMs);
   const ranked = rawRows.map((row, i) => ({ ...row, rank: i + 1 }));
   const statMap = Object.fromEntries(ranked.map((r) => [r.id, r]));
   const globalStats = calculateGlobalStats(Object.values(statMap) as any, current?.playerId ?? null);

@@ -46,7 +46,7 @@ export function calculatePlayerStats(player: any, currentKingId?: string | null,
   const firstWinAt = winDates.length ? new Date(Math.min(...winDates.map((d) => d.getTime()))) : null;
   const reignCount = reigns.length;
   const distinctVictims = new Set(wins.filter((w: any) => w.previousKingId && w.previousKingId !== w.winnerId).map((w: any) => w.previousKingId)).size;
-  return { playerId: player.id, totalWins, totalReignMs, longestReignMs, currentReignMs, currentStreak, longestStreak, fridayWins, winsLast30Days, winsLast7Days, daysSinceLastWin, daysSincePreviousWin, streaksBroken, biggestStreakBroken, takeoverWins, timesDethroned, averageReignMs, crownEfficiencyMsPerWin, isCurrentKing, winsByWeekday, earlyWins, lunchWins, lateWins, maxWinsInOneDay, firstWinAt, reignCount, distinctVictims, previousSeasonWins: null, maxNetTakeovers: 0, dominatedRivalId: null };
+  return { playerId: player.id, totalWins, totalReignMs, longestReignMs, currentReignMs, currentStreak, longestStreak, fridayWins, winsLast30Days, winsLast7Days, daysSinceLastWin, daysSincePreviousWin, streaksBroken, biggestStreakBroken, takeoverWins, timesDethroned, averageReignMs, crownEfficiencyMsPerWin, isCurrentKing, winsByWeekday, earlyWins, lunchWins, lateWins, maxWinsInOneDay, firstWinAt, reignCount, distinctVictims, previousSeasonWins: null, maxNetTakeovers: 0, dominatedRivalId: null, stolenReignMs: 0 };
 }
 
 export function calculateGlobalStats(stats: PlayerStats[], currentKingId: string | null): GlobalStats {
@@ -65,6 +65,7 @@ export function calculateGlobalStats(stats: PlayerStats[], currentKingId: string
     maxWinGrowth: Math.max(0, ...stats.map((s) => winGrowth(s) ?? 0)),
     winlessCount: stats.filter((s) => s.totalWins === 0).length,
     minTotalReignMs: stats.length ? Math.min(...stats.map((s) => s.totalReignMs)) : 0,
+    maxStolenReignMs: Math.max(0, ...stats.map((s) => s.stolenReignMs)),
   };
 }
 
@@ -113,6 +114,25 @@ export function dominance(wins: TakeoverLike[]): Record<string, { rivalId: strin
       if (net > best.net) best = { rivalId: rival, net };
     }
     out[me] = best;
+  }
+  return out;
+}
+
+type ReignLike = { playerId: string; startedAt: Date; endedAt: Date | null };
+
+/**
+ * Trontid tagen från andra: varje kronbyte avslutar den förra kungens regering, och
+ * regeringens längd tillfaller den som tog kronan. Regeringen och vinsten skrivs i samma
+ * transaktion med samma tidsstämpel, så de matchas på (spelare, sluttid).
+ */
+export function stolenReign(wins: (TakeoverLike & { occurredAt: Date })[], reigns: ReignLike[]): Record<string, number> {
+  const byEnd = new Map<string, number>();
+  for (const r of reigns) if (r.endedAt) byEnd.set(`${r.playerId}@${new Date(r.endedAt).getTime()}`, new Date(r.endedAt).getTime() - new Date(r.startedAt).getTime());
+  const out: Record<string, number> = {};
+  for (const w of wins) {
+    if (!w.previousKingId || w.previousKingId === w.winnerId) continue;
+    const ms = byEnd.get(`${w.previousKingId}@${new Date(w.occurredAt).getTime()}`) ?? 0;
+    out[w.winnerId] = (out[w.winnerId] ?? 0) + ms;
   }
   return out;
 }

@@ -131,8 +131,8 @@ export function NumbersV2({ summary, reduced }: { summary: FinaleSummary; reduce
   if (notes.length > 0) callouts.push(
     <div key='note' className='hud-callout' data-reveal>
       <p className='hud-eyebrow'>Ur loggboken</p>
-      <p className='hud-big hud-big-quote'>&ldquo;{notes[notes.length - 1].text}&rdquo;</p>
-      <p className='hud-detail'>— {notes[notes.length - 1].byName}</p>
+      <p className='hud-big hud-big-quote'>&ldquo;{notes[0].text}&rdquo;</p>
+      <p className='hud-detail'>— {notes[0].byName}</p>
     </div>,
   );
 

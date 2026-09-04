@@ -1,6 +1,7 @@
 import { BADGES, BADGE_BY_ID } from './badge-definitions';
 import type { ComputedPlayerBadge, PlayerBadgeContext, PlayerStats } from './badge-types';
 import { winGrowth } from './player-stats';
+import { formatDuration } from '../format';
 
 const rarityRank = { mythical: 5, legendary: 4, epic: 3, rare: 2, common: 1 } as const;
 const categoryOrder = ['throne', 'streak', 'combat', 'friday', 'calendar', 'form', 'legacy', 'meta', 'chaos', 'shame'] as const;
@@ -63,7 +64,8 @@ export function getPlayerBadges(playerId: string, context: PlayerBadgeContext): 
   if (s.totalReignMs > 0 && s.totalReignMs >= context.globalStats.maxTotalReignMs * 0.6 && s.winsLast30Days === 0) push(res, 'historically_relevant', 'Stor historik, svag nutid.');
   if (s.biggestStreakBroken >= 5) push(res, 'tyrant_slayer', 'Har brutit streak 5+.');
   if (hasTop(s.streaksBroken, context.globalStats.maxStreaksBroken)) push(res, 'regime_changer', 'Har brutit flest streaks.', s.streaksBroken);
-  if (hasTop(s.takeoverWins, Math.max(0, ...all.map((p) => p.takeoverWins)))) push(res, 'king_slayer', 'Flest takeover-vinster.', s.takeoverWins);
+  // Inte flest kronor tagna (det är nästan bara "flest vinster" igen) utan mest trontid som avslutats hos andra.
+  if (hasTop(s.stolenReignMs, context.globalStats.maxStolenReignMs)) push(res, 'king_slayer', `Har avslutat regeringar värda ${formatDuration(s.stolenReignMs)} hos andra.`, s.stolenReignMs);
   if (s.biggestStreakBroken >= 3) push(res, 'revolutionary', 'Har störtat dynasti.');
   if (s.takeoverWins + s.timesDethroned >= 4) push(res, 'chaos_agent', 'Ofta med i tronskiften.');
   if (s.timesDethroned >= 3 && s.averageReignMs > 0 && s.averageReignMs < 2 * 60 * 60 * 1000) push(res, 'borrowed_crown', 'Flera korta regeringar.');

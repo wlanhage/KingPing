@@ -54,7 +54,7 @@ export const starWars: Theme = {
     defender_of_the_throne: { name: 'Tronvakten', emoji: '🛡️', description: 'Har vunnit medan de redan satt på tronen.' },
     tyrant_slayer: { name: 'Sithdräparen', emoji: '⚔️', description: 'Har brutit en streak på 5+ vinster.' },
     revolutionary: { name: 'Rebellen', emoji: '🔥', description: 'Har avslutat en dynasti på 3+ raka vinster.' },
-    king_slayer: { name: 'Mästarmördaren', emoji: '🗡️', description: 'Flest takeover-vinster mot sittande mästare.' },
+    king_slayer: { name: 'Mästarmördaren', emoji: '🗡️', description: 'Har fällt de längsta väldena — mest trontid tagen från sittande mästare.' },
     regime_changer: { name: 'Upprorsledaren', emoji: '🩸', description: 'Har brutit flest streaks.' },
     longest_reign: { name: 'Holokronen', emoji: '📜', description: 'Har haft den längsta enskilda regeringstiden.' },
     prophecy: { name: 'Den utvalde', emoji: '✨', description: 'Återvände till tronen när galaxen minst anade det.' },

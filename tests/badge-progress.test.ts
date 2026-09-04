@@ -5,7 +5,7 @@ import type { PlayerStats } from '../lib/badges/badge-types';
 const stats = (o: Partial<PlayerStats>): PlayerStats => ({
   playerId: 'p', totalWins: 0, totalReignMs: 0, longestReignMs: 0, currentReignMs: 0, currentStreak: 0, longestStreak: 0, fridayWins: 0,
   winsLast30Days: 0, winsLast7Days: 0, daysSinceLastWin: null, daysSincePreviousWin: null, streaksBroken: 0, biggestStreakBroken: 0,
-  takeoverWins: 0, timesDethroned: 0, averageReignMs: 0, crownEfficiencyMsPerWin: 0, isCurrentKing: false, winsByWeekday: [0, 0, 0, 0, 0, 0, 0], earlyWins: 0, lunchWins: 0, lateWins: 0, maxWinsInOneDay: 0, firstWinAt: null, reignCount: 0, distinctVictims: 0, previousSeasonWins: null, maxNetTakeovers: 0, dominatedRivalId: null, ...o,
+  takeoverWins: 0, timesDethroned: 0, averageReignMs: 0, crownEfficiencyMsPerWin: 0, isCurrentKing: false, winsByWeekday: [0, 0, 0, 0, 0, 0, 0], earlyWins: 0, lunchWins: 0, lateWins: 0, maxWinsInOneDay: 0, firstWinAt: null, reignCount: 0, distinctVictims: 0, previousSeasonWins: null, maxNetTakeovers: 0, dominatedRivalId: null, stolenReignMs: 0, ...o,
 });
 
 describe('nextBadges', () => {

@@ -8,6 +8,7 @@ import { PlayerNemesis } from '@/components/player/PlayerNemesis';
 import { PlayerTimeline } from '@/components/player/PlayerTimeline';
 import { PlayerWeekdayChart } from '@/components/player/PlayerWeekdayChart';
 import { PlayerNextBadges } from '@/components/player/PlayerNextBadges';
+import { BadgeStrip } from '@/components/player/BadgeStrip';
 import { StatsGrid } from '@/components/stats/StatsGrid';
 import { getPlayerProfile, getPlayerWeekdayWins } from '@/lib/domain/riket';
 import { resolveSeason } from '@/lib/domain/season';
@@ -47,6 +48,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
         </p>
       )}
       <PlayerHero player={profile.player} stats={s} theme={theme} />
+      <BadgeStrip badges={s.badges ?? []} />
       <StatsGrid stats={[
         { label: 'Total tid på tronen', value: formatDuration(s.totalReignMs) },
         { label: 'Totala vinster', value: s.totalWins },

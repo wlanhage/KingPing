@@ -63,7 +63,7 @@ describe('superlatives', () => {
   it('lyfter en per kategori och hoppar över nollor', () => {
     const rows = [row({ id: 'axel', rank: 1, totalWins: 17, takeoverWins: 6, fridayWins: 0, longestReignMs: 8_000_000 }), row({ id: 'lanhage', rank: 2, totalWins: 12, takeoverWins: 5, fridayWins: 3, longestReignMs: 12_000_000 })];
     const s = superlatives(rows, { axel: 8, lanhage: 5 }, (ms) => `${Math.round(ms / 3_600_000)}h`);
-    expect(s.map((x) => x.label)).toEqual(['Kronvakten', 'Kungamördaren', 'Fredagarnas skräck', 'Längsta enskilda välde']);
+    expect(s.map((x) => x.label)).toEqual(['Kronvakten', 'Erövraren', 'Fredagarnas skräck', 'Längsta enskilda välde']);
     expect(s[0].name).toBe('AXEL');
     expect(s[2].name).toBe('LANHAGE');
     expect(s[3].value).toBe('3h');

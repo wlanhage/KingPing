@@ -98,7 +98,7 @@ export function RecordWinForm({ players, lastWinAt, cooldownMs, copy }: { player
 
         <label className='crown-field'>
           <span className='crown-label'>Anteckning <em>(valfritt)</em></span>
-          <input className='crown-input' placeholder='T.ex. avgörande final' value={note} onChange={(e) => setNote(e.target.value)} disabled={onCooldown} />
+          <input className='crown-input' placeholder='Vad hände? Ett ord eller en hel saga' value={note} onChange={(e) => setNote(e.target.value)} disabled={onCooldown} />
         </label>
 
         <button className='crown-btn' disabled={!winnerId || onCooldown}>

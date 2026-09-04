@@ -2030,3 +2030,9 @@ html:has(.crawl-track) { overflow-x: clip; }
 .skeleton-text { margin: 1rem 0 0; font-family: var(--font-display), Georgia, serif; font-size: .78rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); opacity: .8; }
 .skeleton-text::after { content: 'Härolden hämtar krönikan…'; }
 html[data-theme='star-wars'] .skeleton-text::after { content: 'Hoppar till hyperrymden…'; }
+
+/* Profil: alla badges som chips under hjälten (components/player/BadgeStrip.tsx) */
+.badge-strip { display: flex; flex-wrap: wrap; gap: .45rem; }
+.badge-chip { display: inline-flex; align-items: center; gap: .45rem; padding: .35rem .7rem .35rem .45rem; border: 1px solid var(--border); border-left-width: 3px; border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.18)), var(--panel); color: var(--text); font-size: .88rem; }
+.badge-chip-icon { font-size: 1.05rem; line-height: 1; }
+.badge-chip-name { font-family: var(--font-display), Georgia, serif; font-size: .8rem; letter-spacing: .03em; }

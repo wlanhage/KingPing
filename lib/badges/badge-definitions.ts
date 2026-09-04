@@ -25,7 +25,7 @@ export const BADGES = [
   { id: 'historically_relevant', name: 'Historiskt relevant', emoji: '🪦', description: 'Toppspelare historiskt, men svag nutida form.', rarity: 'epic', category: 'legacy', tone: 'roast', ladder: 'inactivity', tier: 4 },
   { id: 'tyrant_slayer', name: 'Tyrannfällaren', emoji: '⚔️', description: 'Har brutit en streak på 5+ vinster.', rarity: 'legendary', category: 'combat', tone: 'dramatic', ladder: 'streaks_broken', tier: 2 },
   { id: 'regime_changer', name: 'Regimskiftare', emoji: '🩸', description: 'Har brutit flest streaks.', rarity: 'epic', category: 'combat', tone: 'dramatic' },
-  { id: 'king_slayer', name: 'Kungamördaren', emoji: '🪓', description: 'Flest takeover-vinster mot sittande kungar.', rarity: 'epic', category: 'combat', tone: 'dramatic' },
+  { id: 'king_slayer', name: 'Kungamördaren', emoji: '🪓', description: 'Har störtat de längsta regeringarna — mest trontid tagen från andra.', rarity: 'epic', category: 'combat', tone: 'dramatic' },
   { id: 'revolutionary', name: 'Revolutionären', emoji: '🔥', description: 'Har avslutat en dynasti på 3+ raka vinster.', rarity: 'epic', category: 'combat', tone: 'dramatic', ladder: 'streaks_broken', tier: 1 },
   { id: 'chaos_agent', name: 'Kaosagenten', emoji: '🌀', description: 'Är ofta inblandad i tronskiften.', rarity: 'rare', category: 'chaos', tone: 'meme' },
   { id: 'borrowed_crown', name: 'Kronan var lånad', emoji: '🤡', description: 'Har flera korta regeringstider.', rarity: 'common', category: 'shame', tone: 'roast', ladder: 'short_reign', tier: 2 },

@@ -22,7 +22,7 @@ export function verdictFor(row: VerdictRow, defences: number, playerCount: numbe
   if (row.rank === 1) return 'Härskaren. Galaxen kretsar kring dig.';
   if (row.rank === 2) return 'Tronarvingen som aldrig fick ärva.';
   if (defences >= 4) return `Höll kronan som ett galler — ${defences} försvar.`;
-  if (row.takeoverWins >= 3) return `Kungamördaren. ${row.takeoverWins} kronor tagna med våld.`;
+  if (row.takeoverWins >= 3) return `Erövraren. ${row.takeoverWins} kronor tagna med våld.`;
   if (row.timesDethroned >= 3 && row.totalWins <= 3) return `Kronan var lånad. ${row.timesDethroned} gånger.`;
   if (row.fridayWins >= 2) return `Fredagarnas skräck — ${row.fridayWins} fredagsfinaler.`;
   if (row.longestStreak >= 3) return `Byggde en dynasti på ${row.longestStreak} raka.`;
@@ -73,7 +73,7 @@ export function superlatives(rows: VerdictRow[], defences: Record<string, number
   const guard = top(rows, (r) => defences[r.id] ?? 0);
   if (guard) out.push({ label: 'Kronvakten', name: guard.name, value: `${defences[guard.id]} försvar` });
   const slayer = top(rows, (r) => r.takeoverWins);
-  if (slayer) out.push({ label: 'Kungamördaren', name: slayer.name, value: `${slayer.takeoverWins} erövringar` });
+  if (slayer) out.push({ label: 'Erövraren', name: slayer.name, value: `${slayer.takeoverWins} erövringar` });
   const friday = top(rows, (r) => r.fridayWins);
   if (friday) out.push({ label: 'Fredagarnas skräck', name: friday.name, value: `${friday.fridayWins} fredagsfinaler` });
   const reign = top(rows, (r) => r.longestReignMs);

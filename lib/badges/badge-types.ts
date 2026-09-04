@@ -17,9 +17,11 @@ export type PlayerStats = { playerId: string; totalWins: number; totalReignMs: n
   /** Vinster förra säsongen. null = ingen förra säsong, eller spelaren fanns inte då. */
   previousSeasonWins: number | null;
   /** Största övertaget mot en enskild rival: kronor tagna från denne minus kronor denne tagit tillbaka. Fylls i av tabellbygget. */
-  maxNetTakeovers: number; dominatedRivalId: string | null };
+  maxNetTakeovers: number; dominatedRivalId: string | null;
+  /** Trontid som spelaren avslutat hos andra genom att ta kronan. Fylls i av tabellbygget. */
+  stolenReignMs: number };
 export type GlobalStats = { maxTotalReignMs: number; maxTotalWins: number; maxLongestStreak: number; maxFridayWins: number; maxWinsLast30Days: number; maxStreaksBroken: number; maxBiggestStreakBroken: number; maxCrownEfficiencyMsPerWin: number; currentKingId: string | null; earliestWinAt: Date | null; secondTotalReignMs: number; maxWinGrowth: number;
   /** Hur många spelare som saknar vinst, och minsta trontid bland alla — för Jar Jar Binks. */
-  winlessCount: number; minTotalReignMs: number };
+  winlessCount: number; minTotalReignMs: number; maxStolenReignMs: number };
 export type PlayerBadgeContext = { now?: Date; playerStats: Record<string, PlayerStats>; globalStats: GlobalStats };
 export type ComputedPlayerBadge = { id: BadgeId; definition: BadgeDefinition; reason: string; value?: number | string };

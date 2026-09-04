@@ -87,7 +87,33 @@ export async function buildFinaleSummary(season: SeasonWindow): Promise<FinaleSu
       biggestBreak: breakEvent ? { announcementText: breakEvent.announcementText, brokenStreak: breakEvent.previousStreakCount ?? 0, byName: name(breakEvent.winnerId) } : null,
     },
     wrapped,
-    notes: events.filter((e) => e.note?.trim()).map((e) => ({ text: e.note!.trim(), byName: name(e.winnerId) })),
+    notes: rankNotes(events.filter((e) => e.note?.trim()).map((e) => ({ text: e.note!.trim(), byName: name(e.winnerId) }))),
     nextSeason: next ? { name: next.name, theme: next.theme } : null,
   };
+}
+
+export type FinaleNote = { text: string; byName: string };
+
+/** Formulärets gamla exempeltext skrevs av rakt av — den är inget citat. */
+const PLACEHOLDER_NOTES = new Set(['avgörande final', 't.ex. avgörande final', 'final', 'vinst', 'test']);
+const normalize = (t: string) => t.toLowerCase().replace(/[^\p{L}\p{N} ]/gu, '').replace(/\s+/g, ' ').trim();
+
+/** Ett citats värde: längd och ordantal bär mest, utrop och emoji ger bonus. */
+export function noteScore(text: string): number {
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  const emoji = /\p{Extended_Pictographic}/u.test(text) ? 2 : 0;
+  const punch = /[!?…]/.test(text) ? 3 : 0;
+  return words * 2 + Math.min(text.length, 80) / 10 + punch + emoji;
+}
+
+/**
+ * Bästa citatet först. Exempeltexter och enstaka ord faller bort; vid lika poäng vinner
+ * det senaste. Finalen visar notes[0].
+ */
+export function rankNotes(notes: FinaleNote[]): FinaleNote[] {
+  return notes
+    .map((n, i) => ({ n, i }))
+    .filter(({ n }) => !PLACEHOLDER_NOTES.has(normalize(n.text)) && normalize(n.text).length >= 3)
+    .sort((a, b) => noteScore(b.n.text) - noteScore(a.n.text) || b.i - a.i)
+    .map(({ n }) => n);
 }

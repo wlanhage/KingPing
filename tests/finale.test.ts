@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractTransfers } from '../lib/domain/finale';
+import { rankNotes, noteScore, extractTransfers } from '../lib/domain/finale';
 
 const E = (winnerId: string, previousKingId: string | null, i: number, note: string | null = null) => ({
   winnerId, previousKingId, occurredAt: new Date(2026, 0, 1 + i), eventType: 'NEW_KING',
@@ -24,5 +24,19 @@ describe('extractTransfers', () => {
   it('händelser sorteras i tidsordning oavsett indata', () => {
     const { transfers } = extractTransfers([E('axel', 'calle', 5), E('calle', null, 0)]);
     expect(transfers[0].toId).toBe('calle');
+  });
+});
+
+describe('rankNotes', () => {
+  const n = (text: string, byName = 'X') => ({ text, byName });
+  it('sorterar bort exempeltexten och sätter det bästa citatet först', () => {
+    const ranked = rankNotes([n('Avgörande final'), n('Minipingisen segrade'), n('Tre matchbollar bort, sen en nätrullare. Galet!', 'Calle')]);
+    expect(ranked.map((x) => x.text)).toEqual(['Tre matchbollar bort, sen en nätrullare. Galet!', 'Minipingisen segrade']);
+  });
+  it('vid lika poäng vinner det senaste', () => {
+    expect(rankNotes([n('Bra match'), n('Kul match')])[0].text).toBe('Kul match');
+  });
+  it('utrop och emoji ger bonus', () => {
+    expect(noteScore('Vilken vändning! 🔥')).toBeGreaterThan(noteScore('Vilken vändning'));
   });
 });
