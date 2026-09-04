@@ -84,6 +84,7 @@ export function getPlayerBadges(playerId: string, context: PlayerBadgeContext): 
   if (s.winsByWeekday.slice(0, 5).every((n) => n > 0)) push(res, 'all_weather', 'Har vunnit alla fem arbetsdagar.');
   if (s.maxWinsInOneDay >= 3) push(res, 'hat_trick', 'Tre vinster på en dag.', s.maxWinsInOneDay);
   if (s.totalWins >= 8 && s.fridayWins === 0) push(res, 'friday_phobia', 'Aldrig vunnit på en fredag.');
+  if (s.winsByWeekday.slice(0, 4).every((n) => n > 0) && s.winsByWeekday[4] === 0) push(res, 'worst_when_it_counts', 'Vinner alla vardagar utom fredag.');
   // Arv, meta och strid.
   if (s.firstWinAt && context.globalStats.earliestWinAt && s.firstWinAt.getTime() === context.globalStats.earliestWinAt.getTime()) push(res, 'season_opener', 'Tog säsongens första krona.');
   if (s.totalReignMs > 0 && s.totalReignMs === context.globalStats.secondTotalReignMs) push(res, 'eternal_second', 'Näst mest trontid.');

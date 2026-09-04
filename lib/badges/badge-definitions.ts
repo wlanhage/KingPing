@@ -48,7 +48,8 @@ export const BADGES = [
   { id: 'overtime', name: 'Övertid', emoji: '🌙', description: 'Vinner efter fem, när alla andra gått hem.', rarity: 'rare', category: 'calendar', tone: 'meme' },
   { id: 'all_weather', name: 'Allvädersspelaren', emoji: '🌦️', description: 'Har vunnit på veckans alla fem arbetsdagar.', rarity: 'epic', category: 'calendar', tone: 'prestige' },
   { id: 'hat_trick', name: 'Hattricket', emoji: '🎩', description: 'Tre vinster på en och samma dag.', rarity: 'epic', category: 'form', tone: 'dramatic' },
-  { id: 'friday_phobia', name: 'Fredagsfobi', emoji: '🙈', description: 'Många vinster — men aldrig på en fredag.', rarity: 'common', category: 'shame', tone: 'roast' },
+  { id: 'friday_phobia', name: 'Fredagsfobi', emoji: '🙈', description: 'Många vinster — men aldrig på en fredag.', rarity: 'common', category: 'shame', tone: 'roast', ladder: 'friday_avoidance', tier: 1 },
+  { id: 'worst_when_it_counts', name: 'Sämst när det gäller', emoji: '🫠', description: 'Har vunnit måndag, tisdag, onsdag och torsdag — men aldrig på en fredag.', rarity: 'rare', category: 'shame', tone: 'roast', ladder: 'friday_avoidance', tier: 2 },
   // Arv, meta och strid.
   { id: 'season_opener', name: 'Rikets förste', emoji: '🎬', description: 'Tog säsongens allra första krona.', rarity: 'epic', category: 'legacy', tone: 'prestige' },
   { id: 'eternal_second', name: 'Den evige tvåan', emoji: '🥈', description: 'Näst mest trontid. Så nära, så länge.', rarity: 'rare', category: 'shame', tone: 'roast' },
