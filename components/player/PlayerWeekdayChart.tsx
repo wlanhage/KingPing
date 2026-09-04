@@ -1,4 +1,4 @@
-import { WEEKDAYS_LONG, WEEKDAYS_SHORT } from '@/lib/domain/weekday';
+import { WEEKDAYS_LONG, WEEKDAYS_SHORT } from '@/lib/domain/local-time';
 
 /** Ren CSS-stapelgraf: när på veckan spelaren brukar vinna. */
 export function PlayerWeekdayChart({ counts }: { counts: number[] }) {

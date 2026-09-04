@@ -33,6 +33,28 @@ export const BADGES = [
   { id: 'time_traveler', name: 'Tidsresenären', emoji: '🕰️', description: 'Vann igen efter ett mycket långt uppehåll.', rarity: 'epic', category: 'legacy', tone: 'dramatic' },
   { id: 'prophecy', name: 'Profetian', emoji: '📜', description: 'Återvände till tronen när riket minst anade det.', rarity: 'mythical', category: 'legacy', tone: 'dramatic' },
   { id: 'eagle_has_landed', name: 'Örnen har landat', emoji: '🦅', description: 'Ingen vet exakt vad detta betyder. Men det har hänt.', rarity: 'mythical', category: 'chaos', tone: 'meme' },
+  // Antal kronor — en trappa med fasta mål, till skillnad från Kronsamlaren som är relativ.
+  { id: 'five_crowns', name: 'Fem kronor', emoji: '🖐️', description: 'Har vunnit fem gånger.', rarity: 'common', category: 'throne', tone: 'prestige', ladder: 'wins_count', tier: 1 },
+  { id: 'ten_crowns', name: 'Tio kronor', emoji: '🔟', description: 'Tio segrar i riket.', rarity: 'rare', category: 'throne', tone: 'prestige', ladder: 'wins_count', tier: 2 },
+  { id: 'twentyfive_crowns', name: 'Kronornas kvartssekel', emoji: '🏅', description: 'Tjugofem segrar. Nu är det en karriär.', rarity: 'epic', category: 'throne', tone: 'prestige', ladder: 'wins_count', tier: 3 },
+  { id: 'fifty_crowns', name: 'Halvsekelkungen', emoji: '🎖️', description: 'Femtio segrar. Bordet borde döpas om.', rarity: 'legendary', category: 'throne', tone: 'prestige', ladder: 'wins_count', tier: 4 },
+  // Längd på en enskild regering.
+  { id: 'week_on_throne', name: 'En vecka på tronen', emoji: '📅', description: 'Har suttit en hel vecka i ett svep.', rarity: 'rare', category: 'throne', tone: 'prestige', ladder: 'reign_length', tier: 1 },
+  { id: 'month_on_throne', name: 'Månadens härskare', emoji: '🗓️', description: 'Trettio dagar utan att bli störtad.', rarity: 'legendary', category: 'throne', tone: 'prestige', ladder: 'reign_length', tier: 2 },
+  // Kalendern: när på veckan och dygnet man vinner.
+  { id: 'monday_monarch', name: 'Måndagsmonarken', emoji: '🌧️', description: 'Minst tre måndagsvinster. Börjar veckan med att härska.', rarity: 'rare', category: 'calendar', tone: 'meme' },
+  { id: 'early_bird', name: 'Morgonrodnad', emoji: '🌅', description: 'Har vunnit före klockan tio. Kaffet hann inte ens svalna.', rarity: 'common', category: 'calendar', tone: 'meme' },
+  { id: 'lunch_warrior', name: 'Lunchkrigaren', emoji: '🥪', description: 'Minst tre vinster mitt i lunchen.', rarity: 'rare', category: 'calendar', tone: 'meme' },
+  { id: 'overtime', name: 'Övertid', emoji: '🌙', description: 'Vinner efter fem, när alla andra gått hem.', rarity: 'rare', category: 'calendar', tone: 'meme' },
+  { id: 'all_weather', name: 'Allvädersspelaren', emoji: '🌦️', description: 'Har vunnit på veckans alla fem arbetsdagar.', rarity: 'epic', category: 'calendar', tone: 'prestige' },
+  { id: 'hat_trick', name: 'Hattricket', emoji: '🎩', description: 'Tre vinster på en och samma dag.', rarity: 'epic', category: 'form', tone: 'dramatic' },
+  { id: 'friday_phobia', name: 'Fredagsfobi', emoji: '🙈', description: 'Många vinster — men aldrig på en fredag.', rarity: 'common', category: 'shame', tone: 'roast' },
+  // Arv, meta och strid.
+  { id: 'season_opener', name: 'Rikets förste', emoji: '🎬', description: 'Tog säsongens allra första krona.', rarity: 'epic', category: 'legacy', tone: 'prestige' },
+  { id: 'eternal_second', name: 'Den evige tvåan', emoji: '🥈', description: 'Näst mest trontid. Så nära, så länge.', rarity: 'rare', category: 'shame', tone: 'roast' },
+  { id: 'steady_hand', name: 'Stadig hand', emoji: '🧱', description: 'Minst tre regeringar med ett dygn i snitt.', rarity: 'rare', category: 'meta', tone: 'prestige' },
+  { id: 'boomerang', name: 'Bumerangen', emoji: '🪃', description: 'Störtad minst tre gånger — och tagit tillbaka kronan varje gång.', rarity: 'rare', category: 'chaos', tone: 'meme' },
+  { id: 'usurper', name: 'Usurpatorn', emoji: '🗡️', description: 'Minst fem kronor tagna direkt från en sittande kung.', rarity: 'epic', category: 'combat', tone: 'dramatic' },
 ] as const satisfies readonly BadgeDefinition[];
 
 export const BADGE_BY_ID = Object.fromEntries(BADGES.map((b) => [b.id, b]));

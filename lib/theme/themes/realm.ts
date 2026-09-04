@@ -1,3 +1,4 @@
+import { withNeutral } from '../../copy/neutral';
 import { fridayIntros, nationIntros, streakTemplates } from '../../copy/templates';
 import type { Theme } from '../theme-types';
 
@@ -29,7 +30,7 @@ export const realm: Theme = {
   roles: { monarch: 'Kung', monarchLower: 'kung', challenger: 'Utmanare', player: 'riddare', players: 'Riddare' },
   verbs: { crown: 'Kröna', crowning: 'kröning' },
   badgeOverrides: {},
-  announcements: { streakTemplates, nationIntros, fridayIntros },
+  announcements: withNeutral({ streakTemplates, nationIntros, fridayIntros }),
   colors: {
     bg: '#120d08',
     panel: '#1e1810',

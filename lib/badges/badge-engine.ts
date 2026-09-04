@@ -2,7 +2,8 @@ import { BADGES, BADGE_BY_ID } from './badge-definitions';
 import type { ComputedPlayerBadge, PlayerBadgeContext, PlayerStats } from './badge-types';
 
 const rarityRank = { mythical: 5, legendary: 4, epic: 3, rare: 2, common: 1 } as const;
-const categoryOrder = ['throne', 'streak', 'combat', 'friday', 'form', 'legacy', 'meta', 'chaos', 'shame'] as const;
+const categoryOrder = ['throne', 'streak', 'combat', 'friday', 'calendar', 'form', 'legacy', 'meta', 'chaos', 'shame'] as const;
+const DAY_MS = 86_400_000;
 const categoryRank = Object.fromEntries(categoryOrder.map((c, i) => [c, i]));
 const hasTop = (value: number, max: number) => value > 0 && value === max;
 
@@ -68,6 +69,27 @@ export function getPlayerBadges(playerId: string, context: PlayerBadgeContext): 
   // så badgen gick aldrig att få.
   if ((s.daysSincePreviousWin ?? 0) >= 60 && (s.daysSinceLastWin ?? 999) <= 30) push(res, 'time_traveler', 'Vunnit igen efter långt uppehåll.', s.daysSincePreviousWin ?? undefined);
   if (s.isCurrentKing && (s.daysSinceLastWin ?? 999) <= 1 && s.winsLast30Days > 0 && s.totalWins >= 8) push(res, 'prophecy', 'Episk återkomst till tronen.');
+  // Antal kronor och regeringslängd — fasta mål, trappor.
+  if (s.totalWins >= 5) push(res, 'five_crowns', 'Fem segrar.', s.totalWins);
+  if (s.totalWins >= 10) push(res, 'ten_crowns', 'Tio segrar.', s.totalWins);
+  if (s.totalWins >= 25) push(res, 'twentyfive_crowns', 'Tjugofem segrar.', s.totalWins);
+  if (s.totalWins >= 50) push(res, 'fifty_crowns', 'Femtio segrar.', s.totalWins);
+  if (s.longestReignMs >= 7 * DAY_MS) push(res, 'week_on_throne', 'Satt sju dagar i ett svep.');
+  if (s.longestReignMs >= 30 * DAY_MS) push(res, 'month_on_throne', 'Satt trettio dagar i ett svep.');
+  // Kalendern.
+  if ((s.winsByWeekday[0] ?? 0) >= 3) push(res, 'monday_monarch', 'Minst tre måndagsvinster.', s.winsByWeekday[0]);
+  if (s.earlyWins >= 2) push(res, 'early_bird', 'Vinner före klockan tio.', s.earlyWins);
+  if (s.lunchWins >= 3) push(res, 'lunch_warrior', 'Vinner mitt i lunchen.', s.lunchWins);
+  if (s.lateWins >= 2) push(res, 'overtime', 'Vinner efter klockan fem.', s.lateWins);
+  if (s.winsByWeekday.slice(0, 5).every((n) => n > 0)) push(res, 'all_weather', 'Har vunnit alla fem arbetsdagar.');
+  if (s.maxWinsInOneDay >= 3) push(res, 'hat_trick', 'Tre vinster på en dag.', s.maxWinsInOneDay);
+  if (s.totalWins >= 8 && s.fridayWins === 0) push(res, 'friday_phobia', 'Aldrig vunnit på en fredag.');
+  // Arv, meta och strid.
+  if (s.firstWinAt && context.globalStats.earliestWinAt && s.firstWinAt.getTime() === context.globalStats.earliestWinAt.getTime()) push(res, 'season_opener', 'Tog säsongens första krona.');
+  if (s.totalReignMs > 0 && s.totalReignMs === context.globalStats.secondTotalReignMs) push(res, 'eternal_second', 'Näst mest trontid.');
+  if (s.reignCount >= 3 && s.averageReignMs >= DAY_MS) push(res, 'steady_hand', 'Minst ett dygn i snitt per regering.');
+  if (s.timesDethroned >= 3 && s.takeoverWins >= s.timesDethroned) push(res, 'boomerang', 'Kommer alltid tillbaka.');
+  if (s.takeoverWins >= 5) push(res, 'usurper', 'Fem kronor tagna från sittande kungar.', s.takeoverWins);
   // TODO: eagle_has_landed kräver särskilt event/trigger i datamodell eller manuell/persisted tilldelning.
   // TODO: merge persisted earned badges here when historical badge table exists.
 
