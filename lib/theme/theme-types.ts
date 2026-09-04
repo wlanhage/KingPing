@@ -28,6 +28,8 @@ export type Theme = {
   tagline: string;
   nav: Record<PageKey, string>;
   pages: Record<PageKey, { title: string; subtitle: string }>;
+  /** Texter för 404-sidan. */
+  notFound: { title: string; subtitle: string; back: string };
   /** Epitet för plats 1–3 på rankinglistan. */
   epithets: { rank1: string; rank2: string; rank3: string };
   roles: { monarch: string; monarchLower: string; challenger: string; player: string; players: string };

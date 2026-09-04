@@ -26,6 +26,7 @@ export const starWars: Theme = {
     archive: { title: 'Tidsvalvet', subtitle: 'Säsongerna som varit — och den som pågår.' },
     settings: { title: 'Rådet', subtitle: 'Miljöstatus för integrationer.' },
   },
+  notFound: { title: 'Det här är inte sidan du letar efter', subtitle: 'Koordinaterna leder rakt ut i tomrummet. Hyperrymden har inga rum med det namnet.', back: 'Tillbaka till Tronrummet' },
   epithets: { rank1: 'Kejsaren', rank2: 'Lärlingen', rank3: 'Galaxens tredje kraft' },
   roles: { monarch: 'Mästare', monarchLower: 'mästare', challenger: 'Utmanare', player: 'jedi', players: 'Jediriddare' },
   verbs: { crown: 'Upphöj', crowning: 'upphöjelse' },

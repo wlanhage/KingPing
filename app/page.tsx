@@ -7,6 +7,7 @@ import { getActiveTheme } from '@/lib/theme/server';
 import { listSeasons } from '@/lib/domain/season';
 import { FinaleDoor } from '@/components/finale/FinaleDoor';
 import { FinaleIcon } from '@/components/finale/FinaleIcon';
+import { SeasonStrip } from '@/components/SeasonStrip';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +23,7 @@ export default async function Page() {
 
   return (
     <main className='dash'>
+      <SeasonStrip />
       <header className='dash-header'>
         <h1>{theme.pages.home.title}</h1>
         <p>{theme.pages.home.subtitle}</p>

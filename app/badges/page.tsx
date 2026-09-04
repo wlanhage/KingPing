@@ -1,4 +1,6 @@
+import Link from 'next/link';
 import { BADGES } from '@/lib/badges/badge-definitions';
+import { getLeaderboard } from '@/lib/domain/riket';
 import { getActiveTheme } from '@/lib/theme/server';
 import { themedBadge } from '@/lib/theme';
 
@@ -29,6 +31,11 @@ export default async function BadgesPage() {
   const { theme } = await getActiveTheme();
   // Namnen kommer från temat; vilka badges som finns är oförändrat.
   const badges = BADGES.map((b) => themedBadge(b, theme));
+  // Vilka som bär varje badge just nu. I en ladder syns man bara på steget man står på.
+  const owners = new Map<string, { id: string; name: string }[]>();
+  for (const row of await getLeaderboard()) {
+    for (const earned of row.badges) owners.set(earned.id, [...(owners.get(earned.id) ?? []), { id: row.id, name: row.name }]);
+  }
   return (
     <main className='page-stack'>
       <section>
@@ -52,6 +59,12 @@ export default async function BadgesPage() {
                     <h3 className='badge-codex-name'>{b.name}</h3>
                     <span className={`badge-codex-rarity rarity-text-${rarity}`}>{RARITY_TAG[rarity]}</span>
                     <p className='badge-codex-desc'>{b.description}</p>
+                    <div className='badge-codex-owners'>
+                      {(owners.get(b.id) ?? []).map((o) => (
+                        <Link key={o.id} href={`/players/${o.id}`} className='badge-owner' title={o.name}>{o.name.trim()[0]?.toUpperCase()}</Link>
+                      ))}
+                      {!owners.get(b.id)?.length && <span className='badge-owner-none'>Ingen bär den ännu</span>}
+                    </div>
                   </div>
                 </article>
               ))}

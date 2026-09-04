@@ -1,3 +1,4 @@
+import { countByWeekday } from './weekday';
 import { EventType, NationState } from '@prisma/client';
 import { differenceInDays, isFriday } from 'date-fns';
 import { prisma } from '../prisma';
@@ -100,6 +101,12 @@ export async function getPlayerTimeline(playerId: string, season?: SeasonWindow)
   const s = season ?? (await resolveSeason());
   const wins = await prisma.winEvent.findMany({ where: { winnerId: playerId, occurredAt: winOccurredAtFilter(s) }, include: { winner: true }, orderBy: { occurredAt: 'desc' }, take: 20 });
   return wins.map((w) => ({ id: w.id, date: w.occurredAt, eventType: w.eventType, announcementText: w.announcementText, previousKingId: w.previousKingId, reignDurationMs: null }));
+}
+
+export async function getPlayerWeekdayWins(playerId: string, season?: SeasonWindow) {
+  const s = season ?? (await resolveSeason());
+  const wins = await prisma.winEvent.findMany({ where: { winnerId: playerId, occurredAt: winOccurredAtFilter(s) }, select: { occurredAt: true } });
+  return countByWeekday(wins.map((w) => w.occurredAt));
 }
 
 export async function getPlayerStats(playerId: string, season?: SeasonWindow) {

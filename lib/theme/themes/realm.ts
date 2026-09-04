@@ -24,6 +24,7 @@ export const realm: Theme = {
     archive: { title: 'Arkivet', subtitle: 'Säsongerna som varit — och den som pågår.' },
     settings: { title: 'Rådet', subtitle: 'Miljöstatus för integrationer.' },
   },
+  notFound: { title: 'Denna sal finns inte', subtitle: 'Kartan över riket har inget rum med det namnet. Kanske har härolden skrivit fel.', back: 'Tillbaka till Tronsalen' },
   epithets: { rank1: 'Kejsaren', rank2: 'Kronprinsen', rank3: 'Rikets tredje kraft' },
   roles: { monarch: 'Kung', monarchLower: 'kung', challenger: 'Utmanare', player: 'riddare', players: 'Riddare' },
   verbs: { crown: 'Kröna', crowning: 'kröning' },

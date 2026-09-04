@@ -17,6 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: theme.appName, template: `%s · ${theme.appName}` },
     description: theme.tagline,
     applicationName: theme.appName,
+    icons: { icon: `/icons/${theme.key}.svg` },
   };
 }
 
@@ -44,7 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <div className='app-shell'>
           <header className='realm-banner'>
             <Link href='/' className='realm-crest'>
-              <span className='realm-crest-mark' aria-hidden><RealmLogo /></span>
+              <span className='realm-crest-mark' aria-hidden><RealmLogo themeKey={theme.key} /></span>
               <span className='realm-crest-name'>{theme.appName}</span>
             </Link>
             <nav className='top-nav'>
