@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { getPlayerBadges } from '../lib/badges/badge-engine';
 import type { PlayerBadgeContext, PlayerStats } from '../lib/badges/badge-types';
 
-const p = (id: string, o: Partial<PlayerStats>): PlayerStats => ({ playerId: id, totalWins: 0, totalReignMs: 0, longestReignMs: 0, currentReignMs: 0, currentStreak: 0, longestStreak: 0, fridayWins: 0, winsLast30Days: 0, winsLast7Days: 0, daysSinceLastWin: null, daysSincePreviousWin: null, streaksBroken: 0, biggestStreakBroken: 0, takeoverWins: 0, timesDethroned: 0, averageReignMs: 0, crownEfficiencyMsPerWin: 0, isCurrentKing: false, winsByWeekday: [0, 0, 0, 0, 0, 0, 0], earlyWins: 0, lunchWins: 0, lateWins: 0, maxWinsInOneDay: 0, firstWinAt: null, reignCount: 0, ...o });
+const p = (id: string, o: Partial<PlayerStats>): PlayerStats => ({ playerId: id, totalWins: 0, totalReignMs: 0, longestReignMs: 0, currentReignMs: 0, currentStreak: 0, longestStreak: 0, fridayWins: 0, winsLast30Days: 0, winsLast7Days: 0, daysSinceLastWin: null, daysSincePreviousWin: null, streaksBroken: 0, biggestStreakBroken: 0, takeoverWins: 0, timesDethroned: 0, averageReignMs: 0, crownEfficiencyMsPerWin: 0, isCurrentKing: false, winsByWeekday: [0, 0, 0, 0, 0, 0, 0], earlyWins: 0, lunchWins: 0, lateWins: 0, maxWinsInOneDay: 0, firstWinAt: null, reignCount: 0, distinctVictims: 0, ...o });
 const ctx = (players: PlayerStats[]): PlayerBadgeContext => ({ playerStats: Object.fromEntries(players.map((x) => [x.playerId, x])), globalStats: { maxTotalReignMs: Math.max(...players.map((x) => x.totalReignMs), 0), maxTotalWins: Math.max(...players.map((x) => x.totalWins), 0), maxLongestStreak: Math.max(...players.map((x) => x.longestStreak), 0), maxFridayWins: Math.max(...players.map((x) => x.fridayWins), 0), maxWinsLast30Days: Math.max(...players.map((x) => x.winsLast30Days), 0), maxStreaksBroken: Math.max(...players.map((x) => x.streaksBroken), 0), maxBiggestStreakBroken: Math.max(...players.map((x) => x.biggestStreakBroken), 0), maxCrownEfficiencyMsPerWin: Math.max(...players.map((x) => x.crownEfficiencyMsPerWin), 0), currentKingId: players.find((x) => x.isCurrentKing)?.playerId ?? null, earliestWinAt: earliest(players), secondTotalReignMs: [...new Set(players.map((x) => x.totalReignMs))].sort((a, b) => b - a)[1] ?? 0 } });
 const earliest = (players: PlayerStats[]) => { const t = players.flatMap((x) => (x.firstWinAt ? [x.firstWinAt.getTime()] : [])); return t.length ? new Date(Math.min(...t)) : null; };
 
@@ -158,6 +158,7 @@ describe('nya badges', () => {
     expect(ids(p('a', { reignCount: 3, averageReignMs: DAY }))).toContain('steady_hand');
     expect(ids(p('a', { timesDethroned: 3, takeoverWins: 3 }))).toContain('boomerang');
     expect(ids(p('a', { timesDethroned: 3, takeoverWins: 2 }))).not.toContain('boomerang');
-    expect(ids(p('a', { takeoverWins: 5 }))).toContain('usurper');
+    expect(ids(p('a', { distinctVictims: 5, takeoverWins: 5 }))).toContain('usurper');
+    expect(ids(p('a', { distinctVictims: 4, takeoverWins: 12 }))).not.toContain('usurper'); // många kronor från få offer räcker inte
   });
 });

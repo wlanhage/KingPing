@@ -25,7 +25,7 @@ const TRACKS: { id: string; target: number; unit: string; value: (s: PlayerStats
   { id: 'fifty_crowns', target: 50, unit: 'vinster', value: (s) => s.totalWins },
   { id: 'week_on_throne', target: 7, unit: 'dagar på tronen i ett svep', value: (s) => Math.floor(s.longestReignMs / DAY_MS) },
   { id: 'month_on_throne', target: 30, unit: 'dagar på tronen i ett svep', value: (s) => Math.floor(s.longestReignMs / DAY_MS) },
-  { id: 'usurper', target: 5, unit: 'kronor tagna från sittande kung', value: (s) => s.takeoverWins },
+  { id: 'usurper', target: 5, unit: 'olika kungar störtade', value: (s) => s.distinctVictims },
   { id: 'monday_monarch', target: 3, unit: 'måndagsvinster', value: (s) => s.winsByWeekday[0] ?? 0 },
   { id: 'early_bird', target: 2, unit: 'vinster före tio', value: (s) => s.earlyWins },
   { id: 'lunch_warrior', target: 3, unit: 'lunchvinster', value: (s) => s.lunchWins },

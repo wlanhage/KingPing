@@ -74,7 +74,7 @@ export const starWars: Theme = {
     monday_monarch: { name: 'Måndagsmästaren', emoji: '🌧️', description: 'Minst tre måndagsvinster. Börjar veckan med att härska.' },
     season_opener: { name: 'Galaxens förste', emoji: '🎬', description: 'Tog säsongens allra första krona.' },
     eternal_second: { name: 'Den evige lärlingen', emoji: '🥈', description: 'Näst mest trontid. Så nära, så länge.' },
-    usurper: { name: 'Tronrövaren', emoji: '🗡️', description: 'Minst fem kronor tagna direkt från en sittande mästare.' },
+    usurper: { name: 'Tronrövaren', emoji: '🗡️', description: 'Har tagit kronan från minst fem olika mästare.' },
   },
   announcements: withNeutral({ streakTemplates: galaxyStreakTemplates, nationIntros: galaxyNationIntros, fridayIntros: galaxyFridayIntros }),
   backdrop: 'starfield',

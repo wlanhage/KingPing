@@ -10,7 +10,9 @@ export type BadgeDefinition = { id: string; name: string; emoji: string; descrip
 export type BadgeId = string;
 export type PlayerStats = { playerId: string; totalWins: number; totalReignMs: number; longestReignMs: number; currentReignMs: number; currentStreak: number; longestStreak: number; fridayWins: number; winsLast30Days: number; winsLast7Days: number; daysSinceLastWin: number | null; daysSincePreviousWin: number | null; streaksBroken: number; biggestStreakBroken: number; takeoverWins: number; timesDethroned: number; averageReignMs: number; crownEfficiencyMsPerWin: number; isCurrentKing: boolean;
   /** Måndag = 0 … söndag = 6, i svensk tid. */
-  winsByWeekday: number[]; earlyWins: number; lunchWins: number; lateWins: number; maxWinsInOneDay: number; firstWinAt: Date | null; reignCount: number };
+  winsByWeekday: number[]; earlyWins: number; lunchWins: number; lateWins: number; maxWinsInOneDay: number; firstWinAt: Date | null; reignCount: number;
+  /** Antal olika spelare som spelaren tagit kronan ifrån. */
+  distinctVictims: number };
 export type GlobalStats = { maxTotalReignMs: number; maxTotalWins: number; maxLongestStreak: number; maxFridayWins: number; maxWinsLast30Days: number; maxStreaksBroken: number; maxBiggestStreakBroken: number; maxCrownEfficiencyMsPerWin: number; currentKingId: string | null; earliestWinAt: Date | null; secondTotalReignMs: number };
 export type PlayerBadgeContext = { now?: Date; playerStats: Record<string, PlayerStats>; globalStats: GlobalStats };
 export type ComputedPlayerBadge = { id: BadgeId; definition: BadgeDefinition; reason: string; value?: number | string };

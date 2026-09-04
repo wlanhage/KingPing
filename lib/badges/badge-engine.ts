@@ -89,7 +89,8 @@ export function getPlayerBadges(playerId: string, context: PlayerBadgeContext): 
   if (s.totalReignMs > 0 && s.totalReignMs === context.globalStats.secondTotalReignMs) push(res, 'eternal_second', 'Näst mest trontid.');
   if (s.reignCount >= 3 && s.averageReignMs >= DAY_MS) push(res, 'steady_hand', 'Minst ett dygn i snitt per regering.');
   if (s.timesDethroned >= 3 && s.takeoverWins >= s.timesDethroned) push(res, 'boomerang', 'Kommer alltid tillbaka.');
-  if (s.takeoverWins >= 5) push(res, 'usurper', 'Fem kronor tagna från sittande kungar.', s.takeoverWins);
+  // Nästan varje vinst tar kronan från någon — det som skiljer usurpatorn är att offren är många.
+  if (s.distinctVictims >= 5) push(res, 'usurper', 'Har störtat fem olika kungar.', s.distinctVictims);
   // TODO: eagle_has_landed kräver särskilt event/trigger i datamodell eller manuell/persisted tilldelning.
   // TODO: merge persisted earned badges here when historical badge table exists.
 
