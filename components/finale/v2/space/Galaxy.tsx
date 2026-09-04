@@ -157,16 +157,12 @@ function Supernova({ winner, progressRef }: { winner: Planet; progressRef: Progr
     const t = stationT(progressRef.current, STATION.SUPERNOVA, 1);
     if (group.current) group.current.visible = nova > 0;
     if (title.current) {
-      title.current.visible = t > 0.05 && t < 0.95;
+      // Titeln står kvar till sista pixeln. Faden som fanns här tonade bort namnet
+      // precis när eftertexterna täckte det, så det gick aldrig att se.
+      title.current.visible = t > 0.05;
       const rise = Math.min(1, Math.max(0, (t - 0.05) / 0.5));
       title.current.position.y = winner.position[1] + 2.6 + rise * 2.4;
       title.current.scale.setScalar(0.5 + rise * 1.1);
-      // Tonar ut när eftertexterna når bilden, så de aldrig ligger ovanpå titeln.
-      const fade = 1 - Math.min(1, Math.max(0, (t - 0.6) / 0.3));
-      title.current.traverse((o) => {
-        const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
-        if (m && 'opacity' in m) { m.transparent = true; m.opacity = fade; }
-      });
     }
   });
   return (

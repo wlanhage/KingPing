@@ -160,10 +160,13 @@ export function cameraAt(progress: number, cosmos: Cosmos, winner: Planet | null
     fov = 50 + 35 * Math.sin(warp * Math.PI);
   }
   if (p >= STATION.SUPERNOVA) {
-    // Station 5: backa ut ur explosionen — långt nog att planeten inte fyller bilden,
-    // och med blicken lyft så titeln får övre tredjedelen medan planeten sjunker.
-    position = target.clone().add(new THREE.Vector3(0, 2.4 + nova * 3.5, 7.5 + nova * 16));
-    lookAt = target.clone().add(new THREE.Vector3(0, 1.6 + nova * 1.2, 0));
+    // Station 5: backa ut ur explosionen — långt nog att planeten inte fyller bilden.
+    // När eftertexterna kommer (andra halvan) glider blicken åt vänster i bild, så att
+    // planeten och titeln landar i högra två tredjedelarna bredvid textspalten, i
+    // stället för bakom den.
+    const aside = smooth(stationT(nova, 0.35, 0.8)) * 5.5;
+    position = target.clone().add(new THREE.Vector3(-aside * 0.35, 2.6 + nova * 3.5, 9 + nova * 20));
+    lookAt = target.clone().add(new THREE.Vector3(-aside, 1.8 + nova * 1.2, 0));
     fov = 50;
   }
 

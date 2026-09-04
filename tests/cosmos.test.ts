@@ -110,6 +110,13 @@ describe('kamera', () => {
     expect(at(1)).toBeGreaterThan(at(STATION.SUPERNOVA) * 2);
   });
 
+  it('blicken vrids åt vänster om vinnaren när eftertexterna kommer', () => {
+    const early = cameraAt(STATION.SUPERNOVA + 0.005, c, winner).lookAt.x;
+    const late = cameraAt(0.99, c, winner).lookAt.x;
+    expect(Math.abs(early - winner.position[0])).toBeLessThan(0.5);
+    expect(late).toBeLessThan(winner.position[0] - 4);
+  });
+
   it('kameran börjar långt utanför galaxen', () => {
     expect(cameraAt(0, c, winner).position.length()).toBeGreaterThan(c.extent * 3);
   });

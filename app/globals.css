@@ -1681,8 +1681,10 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .v2-galaxy { min-height: 260vh; align-content: start; }
 .v2-coronation { min-height: 180vh; text-align: center; align-content: end; padding-bottom: 14vh; }
 /* Eftertexterna börjar först EFTER supernovans topp (progress ~0.92): toppen ligger
-   inne i den här sektionen, så innehållet skjuts ner så det inte krockar med titeln. */
-.v2-epilogue { min-height: 220vh; text-align: center; align-content: start; padding-top: 90vh; }
+   inne i den här sektionen, så innehållet skjuts ner så det inte krockar med titeln.
+   Vänsterställd spalt: kameran vrider samtidigt blicken åt vänster, så planeten och
+   vinnartiteln landar i högra två tredjedelarna bredvid texten — inte bakom den. */
+.v2-epilogue { min-height: 220vh; text-align: left; align-content: start; justify-items: start; padding: 90vh 6vw 8vh; }
 .v2-spacer { flex: 1; }
 
 /* HUD-typografi: stor display ovanpå rymden, tunna linjer, tabellsiffror */
@@ -1698,10 +1700,10 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .hud-big { margin: 0; font-family: var(--font-title), Georgia, serif; font-size: clamp(2rem, 5vw, 3.6rem); color: #fff2c0; line-height: 1; }
 .hud-quote { margin: .4rem 0 .6rem; font-style: italic; font-size: 1.1rem; line-height: 1.5; color: #f1e3c6; }
 .hud-corner { position: sticky; top: 6vh; max-width: 420px; padding: 1rem 1.2rem; border-left: 2px solid rgba(231, 194, 92, .6); background: linear-gradient(90deg, rgba(3, 2, 8, .6), transparent); }
-.hud-credits { display: grid; gap: 2.6rem; max-width: 640px; margin: 0 auto; padding: 2.4rem 2rem; border-radius: 10px; background: rgba(3, 2, 8, .55); backdrop-filter: blur(8px); border: 1px solid rgba(231, 194, 92, .14); }
-.hud-credit-name { margin: 0; font-family: var(--font-display), Georgia, serif; font-size: 1.7rem; color: #fff2c0; }
-.hud-credit-role { margin: .2rem 0 0; color: #b29a72; }
-.hud-credit-roast { margin: .5rem auto 0; max-width: 40ch; font-style: italic; color: #8f7a55; }
+.hud-credits { display: grid; gap: 2.2rem; width: min(440px, 88vw); margin: 0; padding: 2rem 2.2rem; border-radius: 10px; background: rgba(3, 2, 8, .82); backdrop-filter: blur(10px); border: 1px solid rgba(231, 194, 92, .22); border-left: 3px solid rgba(231, 194, 92, .7); box-shadow: 0 20px 60px rgba(0, 0, 0, .6); }
+.hud-credit-name { margin: 0; font-family: var(--font-display), Georgia, serif; font-size: 1.85rem; color: #fff6d8; text-shadow: 0 1px 0 rgba(0,0,0,.6); }
+.hud-credit-role { margin: .25rem 0 0; color: #e2cf9a; font-size: 1.05rem; }
+.hud-credit-roast { margin: .5rem 0 0; max-width: 40ch; font-style: italic; color: #d9c48f; line-height: 1.5; }
 
 /* Reduced motion / ingen WebGL: statisk rymdbakgrund, allt innehåll synligt */
 .finale-v2[data-reduced] .v2-galaxy, .finale-v2[data-reduced] .v2-coronation { min-height: 100vh; }
