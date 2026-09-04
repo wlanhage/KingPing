@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -215,6 +216,11 @@ export function DepartureV2({ summary, reduced }: { summary: FinaleSummary; redu
         <p className='hud-detail' data-reveal>Nästa säsong väntar bortom horisonten.</p>
       )}
       <p className='hud-hint' data-reveal>Vad som kröns kan aldrig dö.</p>
+      {/* Vägen hem. Finns en nästa säsong är startsidan redan i dess tema, så knappen
+          bjuder in dit; annars tillbaka till tronsalen. */}
+      <Link href='/' className='crown-btn v2-home' data-reveal>
+        {next && nextTheme ? `Träd in i ${nextTheme.nav.home} →` : 'Tillbaka till tronsalen →'}
+      </Link>
     </section>
   );
 }

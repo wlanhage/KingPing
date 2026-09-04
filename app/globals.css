@@ -1751,3 +1751,8 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .hud-next { margin-top: 2.4rem; display: grid; gap: .5rem; justify-items: center; }
 .hud-next-name { margin: 0; font-family: var(--font-title), Georgia, serif; font-size: clamp(2.2rem, 7vw, 5.4rem); line-height: 1; color: var(--dep-gold); text-shadow: 0 0 46px color-mix(in srgb, var(--dep-gold) 60%, transparent); }
 .hud-next-tagline { margin: .4rem 0 0; max-width: 40ch; color: var(--dep-text); font-style: italic; }
+
+/* Hemknappen sist i avfärden. Sektionen har pointer-events: none för att släppa igenom
+   scroll till scenen, så knappen slår på dem igen. */
+.v2-home { margin-top: 2.8rem; justify-self: center; pointer-events: auto; display: inline-block; text-decoration: none; }
+.v2-departure .v2-home { background: linear-gradient(180deg, var(--dep-gold), color-mix(in srgb, var(--dep-gold) 70%, #000)); border-color: color-mix(in srgb, var(--dep-gold) 55%, transparent); }
