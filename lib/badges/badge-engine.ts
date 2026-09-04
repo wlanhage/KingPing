@@ -99,7 +99,7 @@ export function getPlayerBadges(playerId: string, context: PlayerBadgeContext): 
   const { winlessCount, minTotalReignMs } = context.globalStats;
   const soleWinless = winlessCount === 1 && s.totalWins === 0;
   const leastThroneTime = winlessCount === 0 && all.length > 1 && s.totalReignMs === minTotalReignMs;
-  if (soleWinless || leastThroneTime) push(res, 'jar_jar', soleWinless ? 'Alla andra har vunnit.' : 'Minst tid på tronen av alla.');
+  if (soleWinless || leastThroneTime) push(res, 'jar_jar', soleWinless ? 'Yousa alla har vunnit. Meesa inte. Okey-day.' : 'Meesa satt på tronen kortast av alla. Muy muy sad.');
   if (s.reignCount >= 3 && s.averageReignMs >= DAY_MS) push(res, 'steady_hand', 'Minst ett dygn i snitt per regering.');
   if (s.timesDethroned >= 3 && s.takeoverWins >= s.timesDethroned) push(res, 'boomerang', 'Kommer alltid tillbaka.');
   // Nästan varje vinst tar kronan från någon — det som skiljer usurpatorn är att offren är många.

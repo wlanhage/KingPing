@@ -54,7 +54,7 @@ export const BADGES = [
   { id: 'worst_when_it_counts', name: 'Sämst när det gäller', emoji: '🫠', description: 'Har vunnit måndag, tisdag, onsdag och torsdag — men aldrig på en fredag.', rarity: 'rare', category: 'shame', tone: 'roast', ladder: 'friday_avoidance', tier: 2 },
   // Arv, meta och strid.
   { id: 'season_opener', name: 'Rikets förste', emoji: '🎬', description: 'Tog säsongens allra första krona.', rarity: 'epic', category: 'legacy', tone: 'prestige' },
-  { id: 'jar_jar', name: 'Jar Jar Binks', emoji: '🦎', icon: '/badges/jar-jar.png', description: 'Den ende utan vinst — eller, när alla vunnit, den med minst tid på tronen. Meesa så ledsen.', rarity: 'epic', category: 'shame', tone: 'roast' },
+  { id: 'jar_jar', name: 'Jar Jar Binks', emoji: '🦎', icon: '/badges/jar-jar.png', description: 'Exsqueeze me! Meesa trodde det var meesa tur nu. How wude!', rarity: 'epic', category: 'shame', tone: 'roast' },
   { id: 'eternal_second', name: 'Den evige tvåan', emoji: '🥈', description: 'Näst mest trontid. Så nära, så länge.', rarity: 'rare', category: 'shame', tone: 'roast' },
   { id: 'steady_hand', name: 'Stadig hand', emoji: '🧱', description: 'Minst tre regeringar med ett dygn i snitt.', rarity: 'rare', category: 'meta', tone: 'prestige' },
   { id: 'boomerang', name: 'Bumerangen', emoji: '🪃', description: 'Störtad minst tre gånger — och tagit tillbaka kronan varje gång.', rarity: 'rare', category: 'chaos', tone: 'meme' },
