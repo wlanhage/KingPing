@@ -6,15 +6,16 @@ import { getKingdomStats, getLeaderboard } from '@/lib/domain/riket';
 import { rankDeltas, trendReferenceDate } from '@/lib/domain/rank-trend';
 import { resolveSeason } from '@/lib/domain/season';
 import { formatDate } from '@/lib/format';
-import { getActiveTheme } from '@/lib/theme/server';
+import { getTheme } from '@/lib/theme';
 
 export const dynamic = 'force-dynamic';
 
 /** Utan ?season= visas den pågående säsongen; arkivet länkar hit med slug för avslutade. */
 export default async function LeaderboardPage({ searchParams }: { searchParams: Promise<{ season?: string }> }) {
-  const { theme } = await getActiveTheme();
   const { season: slug } = await searchParams;
   const season = await resolveSeason(slug);
+  // Säsongens eget tema: en arkiverad säsong visas med sina egna namn och epitet.
+  const theme = getTheme(season.theme);
   const rows = await getLeaderboard(season);
   const summary = await getKingdomStats(season);
   // Trenden räknas fram ur historiken: samma tabell, men med säsongen "avslutad" för en vecka sedan.

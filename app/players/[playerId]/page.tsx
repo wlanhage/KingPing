@@ -14,8 +14,7 @@ import { resolveSeason } from '@/lib/domain/season';
 import { formatDate } from '@/lib/format';
 import { nextBadges } from '@/lib/badges/badge-progress';
 import { formatDuration, formatShortDuration, formatRelativeDate } from '@/lib/format';
-import { getActiveTheme } from '@/lib/theme/server';
-import { themedBadge } from '@/lib/theme';
+import { getTheme, themedBadge } from '@/lib/theme';
 
 export async function generateMetadata({ params }: { params: Promise<{ playerId: string }> }) {
   const { playerId } = await params;
@@ -29,7 +28,8 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
   const season = await resolveSeason(slug);
   const profile = await getPlayerProfile(playerId, season);
   if (!profile || !profile.stats) notFound();
-  const { theme } = await getActiveTheme();
+  // Säsongens eget tema, så att en arkiverad säsong behåller sina namn (Kejsaren, inte Darth Vader).
+  const theme = getTheme(season.theme);
   const weekdayWins = await getPlayerWeekdayWins(playerId, profile.season);
   // Badge-namnen döps om av temat på ett ställe; orbiten och modalen ärver det.
   const s = { ...profile.stats, badges: (profile.stats.badges ?? []).map((b) => ({ ...b, definition: themedBadge(b.definition, theme) })) };
