@@ -10,6 +10,7 @@ const MIN: Record<string, number> = {
 };
 const PLACEHOLDER = /@\{(\w+)\}|\{(\w+)\}/g;
 const ALLOWED = new Set(['winner', 'previousKing', 'previousStreakCount', 'days']);
+const ECHO_ALLOWED = new Set(['winner', 'previousKing', 'lastSeason', 'lastRank', 'lastWins', 'lastChampion']);
 
 describe.each([['riket', realm], ['galaxen', starWars]])('krönikans texter i %s', (_, theme) => {
   const { streakTemplates, nationIntros, fridayIntros } = theme.announcements;
@@ -21,6 +22,15 @@ describe.each([['riket', realm], ['galaxen', starWars]])('krönikans texter i %s
     }
     for (const intros of Object.values(nationIntros)) expect(intros.length).toBeGreaterThanOrEqual(4);
     expect(fridayIntros.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it('tillbakablickarna finns i alla grupper med kända platshållare', () => {
+    const echoes = theme.announcements.seasonEchoes;
+    for (const group of ['champion', 'winless', 'last', 'runnerUp', 'dethronedChampion', 'generic']) {
+      expect(echoes[group]?.length ?? 0, group).toBeGreaterThanOrEqual(3);
+      for (const t of echoes[group]) for (const m of t.matchAll(PLACEHOLDER)) expect(ECHO_ALLOWED.has(m[1] ?? m[2]), t).toBe(true);
+    }
+    for (const t of echoes.generic) expect(t).toContain('{lastSeason}');
   });
 
   it('använder bara kända platshållare', () => {

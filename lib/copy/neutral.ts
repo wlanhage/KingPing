@@ -95,6 +95,36 @@ export const neutralFridayIntros = [
   '🥂 Fredag. Bordet stänger för helgen med ett avgörande.',
 ];
 
+export const neutralSeasonEchoes: Record<string, string[]> = {
+  champion: [
+    '📋 Förra säsongens vinnare enligt protokollet: @{winner}. Protokollet gäller tydligen fortfarande.',
+    '🏢 Ledningen konstaterar att chefen över bordet från {lastSeason} inte har avgått.',
+    '☕ Samma person slipper hämta kaffet i år också.',
+  ],
+  winless: [
+    '📎 HR noterar: @{winner} hade noll vinster i {lastSeason}. Utvecklingssamtalet gav resultat.',
+    '📈 Från noll i {lastSeason} till en. Procentuellt sett årets bästa kurva.',
+    '🖨️ Skrivaren har aldrig skrivit ut @{winner}s namn förut. Nu gör den det.',
+  ],
+  last: [
+    '📉 Sist i {lastSeason}. Kvartalsrapporten ser plötsligt bättre ut.',
+    '🗂️ @{winner} låg längst ner i tabellen för {lastSeason}. Ärendet är eskalerat — uppåt.',
+  ],
+  runnerUp: [
+    '📊 Tvåa i {lastSeason}. Årets mål enligt utvecklingsplanen: ett steg upp. Check.',
+    '🧾 @{winner} var näst bäst i {lastSeason}. Bonusen betalades aldrig ut. Nu tas den.',
+  ],
+  dethronedChampion: [
+    '🗓️ @{previousKing} var bäst i {lastSeason}. Det står i ett gammalt veckobrev.',
+    '📌 Förra säsongens vinnare störtad. Post-it-lappen på tronen har bytts.',
+  ],
+  generic: [
+    '📋 {lastSeason}: plats {lastRank}, {lastWins} vinster. Ny säsong, ny rad i tabellen.',
+    '🗓️ {lastSeason} är stängd i bokföringen. @{winner} öppnar den nya.',
+    '🔔 Första klockringningen sedan {lastSeason}. @{winner} ringde.',
+  ],
+};
+
 const mergeLists = (a: Record<string, string[]>, b: Record<string, string[]>) =>
   Object.fromEntries([...new Set([...Object.keys(a), ...Object.keys(b)])].map((k) => [k, [...(a[k] ?? []), ...(b[k] ?? [])]]));
 
@@ -104,5 +134,6 @@ export function withNeutral(themed: AnnouncementCopy): AnnouncementCopy {
     streakTemplates: mergeLists(themed.streakTemplates, neutralStreakTemplates),
     nationIntros: mergeLists(themed.nationIntros, neutralNationIntros),
     fridayIntros: [...themed.fridayIntros, ...neutralFridayIntros],
+    seasonEchoes: mergeLists(themed.seasonEchoes, neutralSeasonEchoes),
   };
 }

@@ -1,5 +1,5 @@
 import { withNeutral } from '../../copy/neutral';
-import { fridayIntros, nationIntros, streakTemplates } from '../../copy/templates';
+import { fridayIntros, nationIntros, seasonEchoes, streakTemplates } from '../../copy/templates';
 import type { Theme } from '../theme-types';
 
 /** Ursprungstemat: svenskt medeltidsrike. Färgerna speglar :root i globals.css. */
@@ -30,7 +30,7 @@ export const realm: Theme = {
   roles: { monarch: 'Kung', monarchLower: 'kung', challenger: 'Utmanare', player: 'riddare', players: 'Riddare' },
   verbs: { crown: 'Kröna', crowning: 'kröning' },
   badgeOverrides: {},
-  announcements: withNeutral({ streakTemplates, nationIntros, fridayIntros }),
+  announcements: withNeutral({ streakTemplates, nationIntros, fridayIntros, seasonEchoes }),
   colors: {
     bg: '#120d08',
     panel: '#1e1810',

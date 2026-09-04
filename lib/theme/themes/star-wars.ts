@@ -1,4 +1,4 @@
-import { galaxyFridayIntros, galaxyNationIntros, galaxyStreakTemplates } from '../../copy/galaxy';
+import { galaxyFridayIntros, galaxyNationIntros, galaxySeasonEchoes, galaxyStreakTemplates } from '../../copy/galaxy';
 import { withNeutral } from '../../copy/neutral';
 import type { Theme } from '../theme-types';
 
@@ -77,7 +77,7 @@ export const starWars: Theme = {
     eternal_second: { name: 'Den evige lärlingen', emoji: '🥈', description: 'Näst mest trontid. Så nära, så länge.' },
     usurper: { name: 'Tronrövaren', emoji: '🗡️', description: 'Har tagit kronan från minst fem olika mästare.' },
   },
-  announcements: withNeutral({ streakTemplates: galaxyStreakTemplates, nationIntros: galaxyNationIntros, fridayIntros: galaxyFridayIntros }),
+  announcements: withNeutral({ streakTemplates: galaxyStreakTemplates, nationIntros: galaxyNationIntros, fridayIntros: galaxyFridayIntros, seasonEchoes: galaxySeasonEchoes }),
   backdrop: 'starfield',
   historyStyle: 'crawl',
   colors: {

@@ -6,6 +6,7 @@ import { realm } from '../theme/themes/realm';
 import { calculateGlobalStats, calculatePlayerStats } from '../badges/player-stats';
 import { getPlayerBadges } from '../badges/badge-engine';
 import { getPreviousSeason, isWinInSeason, resolveSeason, scopePlayerToSeason, seasonNow, winOccurredAtFilter, type SeasonWindow } from './season';
+import { describeSeasonEcho, ECHO_WINDOW, pickSeasonEcho, type SeasonEcho } from './season-echo';
 import { getTheme } from '../theme';
 
 
@@ -43,11 +44,16 @@ const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 export function generateAnnouncement(ctx:any, announcements = realm.announcements){
   const { streakTemplates, nationIntros, fridayIntros } = announcements;
   const variants: string[] = (streakTemplates as any)[ctx.eventType] ?? [`👑 @{winner} har krönts.`];
+  const echo: SeasonEcho | null = ctx.echo ?? null;
   const render = (template: string) => template
     .replaceAll('@{winner}', ctx.winnerName)
     .replaceAll('@{previousKing}', ctx.previousKingName ?? 'den förra regenten')
     .replaceAll('{previousStreakCount}', String(ctx.previousStreakCount ?? 0))
-    .replaceAll('{days}', String(ctx.days ?? ctx.daysSinceLastWin ?? 0));
+    .replaceAll('{days}', String(ctx.days ?? ctx.daysSinceLastWin ?? 0))
+    .replaceAll('{lastSeason}', echo?.lastSeason ?? '')
+    .replaceAll('{lastRank}', String(echo?.lastRank ?? ''))
+    .replaceAll('{lastWins}', String(echo?.lastWins ?? ''))
+    .replaceAll('{lastChampion}', echo?.lastChampion ?? '');
   // Texter som nyss stått i krönikan väljs bort — annars upprepade sig de små
   // kategorierna (första vinsten, fredag, tre raka) hela tiden.
   const recent: string[] = ctx.recentTexts ?? [];
@@ -62,15 +68,32 @@ export function generateAnnouncement(ctx:any, announcements = realm.announcement
   const introChance = ctx.nationState === 'STABLE_ERA' ? 0.2 : 0.5;
   if (intros && Math.random() < introChance) text = `${pick(intros)}\n${text}`;
   if (ctx.isFridayFinal) text = `${pick(fridayIntros)}\n${text}`;
+  // En blick bakåt på förra säsongen — ibland, och bara i början av en ny.
+  const echoLine = pickSeasonEcho(announcements.seasonEchoes ?? {}, echo, recent, render, ctx.rand);
+  if (echoLine) text = `${text}\n${echoLine}`;
   return { text, layout: 'royal', persona: 'ROYAL_DECREE' };
 }
 export async function calculateStreak(winnerId:string){ const events=await prisma.winEvent.findMany({where:{winnerId}, orderBy:{occurredAt:'desc'}, take:10}); return events.length===0?0:events.reduce((acc,e,i)=> i===0?1: acc + (events[i-1].occurredAt>=e.occurredAt?1:0),0); }
+/**
+ * Underlag för krönikans tillbakablickar: bara under säsongens första ECHO_WINDOW händelser,
+ * och bara om det finns en förra säsong som vinnaren var med i.
+ */
+async function loadSeasonEcho(season: SeasonWindow, winnerId: string, previousKingId: string | null): Promise<SeasonEcho | null> {
+  const previous = await getPreviousSeason(season);
+  if (!previous) return null;
+  const eventsSoFar = await prisma.winEvent.count({ where: { occurredAt: winOccurredAtFilter(season) } });
+  if (eventsSoFar >= ECHO_WINDOW) return null;
+  const winner = await prisma.player.findUnique({ where: { id: winnerId }, select: { createdAt: true } });
+  if (!winner || winner.createdAt.getTime() >= season.startedAt.getTime()) return null;
+  return describeSeasonEcho(previous, await getLeaderboard(previous), winnerId, previousKingId);
+}
+
 export async function recordWin(winnerId:string,note?:string){ const now=new Date(); const season=await resolveSeason(); const current=await getCurrentKing(season); const isSameKing=current?.playerId===winnerId;
  // Streak och rikets läge räknas mot SÄSONGENS vinster. WinEvent.streakCount sparas vid
  // skrivning, så utan detta skulle en pågående streak fortsätta rakt över säsongsgränsen.
  const previousEvents=await prisma.winEvent.findMany({where:{occurredAt:winOccurredAtFilter(season)},orderBy:{occurredAt:'desc'},take:7}); const previousStreakCount=previousEvents[0]?.streakCount ?? 0; const streakCount=isSameKing?previousStreakCount+1:1;
  const winnerWinCount=await prisma.winEvent.count({where:{winnerId}}); const lastWin=await prisma.winEvent.findFirst({where:{winnerId},orderBy:{occurredAt:'desc'}}); const isFirstWin=winnerWinCount===0; const daysSinceLastWin=lastWin?differenceInDays(now,new Date(lastWin.occurredAt)):null;
- const eventType=determineEventType({isSameKing:!!isSameKing, streakCount, previousStreakCount, isFirstWin, daysSinceLastWin}); const nationState=determineNationState({recentWinnerIds:previousEvents.map(e=>e.winnerId),currentStreak:streakCount,brokeBigStreak:!isSameKing&&previousStreakCount>=3}); const winner=await prisma.player.findUniqueOrThrow({where:{id:winnerId}}); const ann=generateAnnouncement({eventType,winnerName:winner.name,previousKingName:current?.player.name,previousStreakCount,nationState,isFridayFinal:isFriday(now),daysSinceLastWin,recentTexts:previousEvents.map(e=>e.announcementText)}, getTheme(season.theme).announcements);
+ const eventType=determineEventType({isSameKing:!!isSameKing, streakCount, previousStreakCount, isFirstWin, daysSinceLastWin}); const nationState=determineNationState({recentWinnerIds:previousEvents.map(e=>e.winnerId),currentStreak:streakCount,brokeBigStreak:!isSameKing&&previousStreakCount>=3}); const winner=await prisma.player.findUniqueOrThrow({where:{id:winnerId}}); const echo=await loadSeasonEcho(season, winnerId, current?.playerId ?? null); const ann=generateAnnouncement({eventType,winnerName:winner.name,previousKingName:current?.player.name,previousStreakCount,nationState,isFridayFinal:isFriday(now),daysSinceLastWin,recentTexts:previousEvents.map(e=>e.announcementText),echo}, getTheme(season.theme).announcements);
  return prisma.$transaction(async(tx)=>{ if(current && !isSameKing){ await tx.reign.update({where:{id:current.id}, data:{endedAt:now}}); await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} if(!current){ await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} const win=await tx.winEvent.create({data:{winnerId,previousKingId:current?.playerId,occurredAt:now,eventType,streakCount,previousStreakCount,note,announcementText:ann.text,nationState,isFridayFinal:isFriday(now)}}); const a=await tx.announcement.create({data:{winEventId:win.id,text:ann.text,layout:ann.layout,persona:ann.persona}}); return {win,a}; }); }
 
 // Utan säsong: oförändrat all-time-beteende (används av testerna). Med säsong: spelarens

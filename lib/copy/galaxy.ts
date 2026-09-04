@@ -88,3 +88,40 @@ export const galaxyFridayIntros = [
   '🍻 Fredag i kantinan. Insatsen är kronan, och galaxen håller andan.',
   '🌌 Veckans sista hyperrymdshopp landade i ett avgörande.',
 ];
+
+export const galaxySeasonEchoes: Record<string, string[]> = {
+  champion: [
+    '⚡ Kejsaren av {lastSeason} har inte glömt hur man gör.',
+    '🌌 {lastSeason} slutade med @{winner} på tronen. Galaxen börjar om på samma sätt.',
+    '🛰️ Imperiet slår tillbaka: @{winner} härskade i {lastSeason} och tänker fortsätta.',
+    '👁️ Förra säsongens härskare kliver in i tronrummet som om ingenting hänt.',
+  ],
+  winless: [
+    '🌑 Noll vinster i {lastSeason}. Galaxen tjänade dig inte väl då — kraften har vaknat.',
+    '📡 Holonet nämnde aldrig @{winner} under {lastSeason}. Sändningen är rättad.',
+    '🎓 Padawanen från {lastSeason} utan en enda seger har klippt flätan.',
+    '🧊 @{winner} satt fastfrusen i karbonit hela {lastSeason}. Tinad, och vinner.',
+  ],
+  last: [
+    '🛸 Sist i {lastSeason}. Först i dag. Rådet höjer på ögonbrynen.',
+    '🌠 Från yttre randen av tabellen i {lastSeason} till tronrummet — @{winner} tog hyperrymden.',
+    '🪐 {lastSeason} lämnade @{winner} längst ner. Rebellen har rest sig.',
+  ],
+  runnerUp: [
+    '🥈 Lärlingen från {lastSeason} vill inte vara lärling längre.',
+    '⚔️ Tvåan i {lastSeason} lärde sig allt av mästaren. Nu behövs ingen mästare.',
+    '🌌 @{winner} slutade tvåa i {lastSeason}. Profetian talade om en annan ordning.',
+  ],
+  dethronedChampion: [
+    '💥 @{previousKing} härskade i {lastSeason}. Den galaxen finns inte längre.',
+    '🛰️ Förra säsongens kejsare störtad. @{previousKing}s imperium stannade vid gränsen till {lastSeason}.',
+    '🗡️ @{winner} påminner @{previousKing} om att {lastSeason} är arkiverad i Tidsvalvet.',
+  ],
+  generic: [
+    '📡 I {lastSeason} slutade @{winner} på plats {lastRank} med {lastWins} vinster. Ny säsong, ny stjärnkarta.',
+    '🌌 {lastSeason} är arkiverad i Tidsvalvet. @{winner} tänder första stjärnan i den nya.',
+    '🧭 Plats {lastRank} i {lastSeason}. Koordinaterna pekar högre den här gången.',
+    '🚀 Kronan från {lastSeason} är skrotad. Den här är nybyggd för @{winner}.',
+    '✨ {lastWins} vinster i {lastSeason}. Galaxen räknar om från noll — @{winner} har redan en.',
+  ],
+};

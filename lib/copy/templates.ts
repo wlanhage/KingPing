@@ -88,3 +88,41 @@ export const fridayIntros = [
   '🍺 Fredag i riket. Mjödet är hällt och kronan är satsad.',
   '🏰 Slottets sista duell för veckan är över.',
 ];
+
+/** Tillbakablickar på förra säsongen, bara under den nya säsongens första händelser. */
+export const seasonEchoes: Record<string, string[]> = {
+  champion: [
+    '👑 Kejsaren av {lastSeason} har inte glömt hur man gör.',
+    '📜 {lastSeason} slutade med @{winner} på tronen. Den här säsongen börjar likadant.',
+    '🏰 Gamla vanor: @{winner} regerade i {lastSeason} och tänker tydligen fortsätta.',
+    '⚜️ Förra säsongens härskare kliver in som om ingenting hänt.',
+  ],
+  winless: [
+    '🐣 Noll vinster i {lastSeason}. Riket tjänade dig inte väl då — det gör det nu.',
+    '📜 Krönikan från {lastSeason} nämnde inte @{winner} en enda gång. Det är åtgärdat.',
+    '🕯️ @{winner} gick genom hela {lastSeason} utan krona. Nu är ljuset tänt.',
+    '🎺 Härolden får öva på ett nytt namn: @{winner} vann inget alls i {lastSeason}.',
+  ],
+  last: [
+    '🐌 Sist i {lastSeason}. Först i dag. Riket blinkar förvånat.',
+    '📉 Från botten av tabellen i {lastSeason} till tronen — @{winner} tog trapporna två steg i taget.',
+    '🪦 {lastSeason} begravde @{winner} längst ner i tabellen. Uppståndelsen är ett faktum.',
+  ],
+  runnerUp: [
+    '🥈 Kronprinsen från {lastSeason} vill inte vara tvåa längre.',
+    '👑 Tronarvingen som aldrig fick ärva i {lastSeason} tar saken i egna händer.',
+    '📜 Tvåa i {lastSeason}. @{winner} har läst slutet och tänker skriva om det.',
+  ],
+  dethronedChampion: [
+    '⚔️ @{previousKing} härskade i {lastSeason}. Det räknas inte längre.',
+    '🏰 Förra säsongens kejsare störtad. @{previousKing}s era tog slut vid gränsen till {lastSeason}.',
+    '🗡️ @{winner} påminner @{previousKing} om att {lastSeason} är arkiverad.',
+  ],
+  generic: [
+    '📜 I {lastSeason} slutade @{winner} på plats {lastRank} med {lastWins} vinster. Ny säsong, nytt blad.',
+    '🏰 {lastSeason} är arkiverad. @{winner} skriver första raderna i det nya kapitlet.',
+    '🗝️ Plats {lastRank} i {lastSeason}. Krönikören noterar att @{winner} siktar högre.',
+    '📯 Kronan från {lastSeason} är nedsmält. Den här är nypräglad för @{winner}.',
+    '🧭 {lastWins} vinster i {lastSeason}. Riket räknar om från noll — @{winner} har redan en.',
+  ],
+};

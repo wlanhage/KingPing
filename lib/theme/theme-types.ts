@@ -40,6 +40,8 @@ export type Theme = {
     streakTemplates: Record<string, string[]>;
     nationIntros: Record<NationState | string, string[]>;
     fridayIntros: string[];
+    /** Tillbakablickar på förra säsongen: champion, winless, last, runnerUp, dethronedChampion, generic. */
+    seasonEchoes: Record<string, string[]>;
   };
   colors: ThemeColors;
   /** Rörlig bakgrund bakom hela sidan. Utelämnas för teman utan. */
