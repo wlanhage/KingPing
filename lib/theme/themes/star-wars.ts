@@ -88,7 +88,7 @@ export const starWars: Theme = {
     eternal_second: { name: 'Den evige lärlingen', emoji: '🥈', description: 'Näst mest trontid. Så nära, så länge.' },
     usurper: { name: 'Tronrövaren', emoji: '🗡️', description: 'Har tagit kronan från minst fem olika mästare.' },
     overlord: { name: 'Jag är din far', emoji: '🖤', description: 'Har tagit kronan från en och samma spelare minst fem gånger fler än tvärtom. Nej. NEJ!' },
-    never_defended: { name: 'Stormtrooper', emoji: '🪖', description: 'A shot and a miss. Fem vinster, aldrig ett försvar.' },
+    never_defended: { name: 'Stormtrooper', emoji: '🪖', icon: '/badges/stormtrooper.png', description: 'A shot and a miss. Fem vinster, aldrig ett försvar.' },
   },
   announcements: withNeutral({ streakTemplates: galaxyStreakTemplates, nationIntros: galaxyNationIntros, fridayIntros: galaxyFridayIntros, seasonEchoes: galaxySeasonEchoes }),
   seasonWord: 'Episod',
