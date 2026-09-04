@@ -5,12 +5,12 @@ html {
   --cursor-point: url('/cursors/gauntlet-3d-point.png') 4 4;
 }
 html[data-theme='star-wars'] {
-  --cursor-default: url('/cursors/saber-blue.png') 28 4;
-  --cursor-point: url('/cursors/saber-blue-point.png') 28 6;
+  --cursor-default: url('/cursors/saber-blue.png') 4 4;
+  --cursor-point: url('/cursors/saber-blue-point.png') 4 6;
 }
 html[data-theme='star-wars'][data-sith='1'] {
-  --cursor-default: url('/cursors/saber-red.png') 28 4;
-  --cursor-point: url('/cursors/saber-red-point.png') 28 6;
+  --cursor-default: url('/cursors/saber-red.png') 4 4;
+  --cursor-point: url('/cursors/saber-red-point.png') 4 6;
 }
 
 html, body {
