@@ -12,7 +12,12 @@ import { buildWeave, type WeavePlayer, type WeaveTransfer } from '@/lib/domain/w
 export const ORBIT = { INNER: 6, STEP: 3.2, TILT: 0.35 } as const;
 
 /** Sidans progress där varje station börjar. Håll i synk med planens tabell. */
-export const STATION = { COLD_OPEN: 0, NUMBERS: 0.15, GALAXY: 0.35, WARP: 0.8, SUPERNOVA: 0.92 } as const;
+export const STATION = { COLD_OPEN: 0, NUMBERS: 0.2, GALAXY: 0.46, WARP: 0.72, SUPERNOVA: 0.83, DEPARTURE: 0.965 } as const;
+
+/** Avfärden 0–1: kameran drar sig ur galaxen i warp mot nästa säsong. */
+export function departureT(progress: number): number {
+  return stationT(progress, STATION.DEPARTURE, 1);
+}
 
 export type Planet = {
   id: string;
@@ -170,7 +175,17 @@ export function cameraAt(progress: number, cosmos: Cosmos, winner: Planet | null
     fov = 50;
   }
 
-  const warpAmount = p >= STATION.SUPERNOVA ? 0 : Math.sin(warp * Math.PI) * (p >= STATION.WARP ? 1 : 0) + cold * 0;
+  const dep = departureT(p);
+  if (dep > 0) {
+    // Station 6: avfärden. Kameran rycks bakåt och uppåt i warp — vi lämnar riket.
+    const e = smooth(dep);
+    position = position.clone().add(new THREE.Vector3(0, e * 18, e * 160));
+    fov = 50 + e * 28;
+  }
+
+  const stationWarp = p >= STATION.WARP && p < STATION.SUPERNOVA ? Math.sin(warp * Math.PI) : 0;
+  const warpAmount = Math.max(stationWarp, dep > 0 ? smooth(dep) : 0);
+  void cold;
   return { position, lookAt, fov, warp: warpAmount };
 }
 

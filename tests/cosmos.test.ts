@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildCosmos, cameraAt, novaIntensity, ORBIT, STATION, stationT, trailProgress } from '../components/finale/v2/space/scene';
+import { buildCosmos, cameraAt, departureT, novaIntensity, ORBIT, STATION, stationT, trailProgress } from '../components/finale/v2/space/scene';
 import type { WeaveTransfer } from '../lib/domain/weave';
 
 const standings = [
@@ -90,7 +90,17 @@ describe('kamera', () => {
   it('warp är noll före warpstationen, toppar i den och är noll vid supernovan', () => {
     expect(cameraAt(0.5, c, winner).warp).toBe(0);
     expect(cameraAt((STATION.WARP + STATION.SUPERNOVA) / 2, c, winner).warp).toBeGreaterThan(0.9);
-    expect(cameraAt(0.95, c, winner).warp).toBe(0);
+    expect(cameraAt((STATION.SUPERNOVA + STATION.DEPARTURE) / 2, c, winner).warp).toBe(0);
+  });
+
+  it('avfärden: warpen tänds igen och kameran lämnar galaxen', () => {
+    const before = cameraAt(STATION.DEPARTURE - 0.001, c, winner);
+    const late = cameraAt(0.995, c, winner);
+    expect(before.warp).toBe(0);
+    expect(late.warp).toBeGreaterThan(0.5);
+    expect(late.position.length()).toBeGreaterThan(before.position.length() * 3);
+    expect(departureT(STATION.DEPARTURE)).toBe(0);
+    expect(departureT(1)).toBe(1);
   });
 
   it('FOV vidgas under warpen', () => {
@@ -112,7 +122,7 @@ describe('kamera', () => {
 
   it('blicken vrids åt vänster om vinnaren när eftertexterna kommer', () => {
     const early = cameraAt(STATION.SUPERNOVA + 0.005, c, winner).lookAt.x;
-    const late = cameraAt(0.99, c, winner).lookAt.x;
+    const late = cameraAt(STATION.DEPARTURE - 0.005, c, winner).lookAt.x;
     expect(Math.abs(early - winner.position[0])).toBeLessThan(0.5);
     expect(late).toBeLessThan(winner.position[0] - 4);
   });
@@ -142,8 +152,8 @@ describe('hjälpfunktioner', () => {
 
   it('supernovan flammar snabbt och klingar av långsamt', () => {
     expect(novaIntensity(STATION.SUPERNOVA - 0.01)).toBe(0);
-    const peak = novaIntensity(STATION.SUPERNOVA + 0.012);
-    const late = novaIntensity(0.99);
+    const peak = novaIntensity(STATION.SUPERNOVA + 0.025);
+    const late = novaIntensity(0.96);
     expect(peak).toBeGreaterThan(0.9);
     expect(late).toBeGreaterThan(0.3);
     expect(late).toBeLessThan(peak);

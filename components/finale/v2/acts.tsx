@@ -5,6 +5,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type { FinaleSummary } from '@/lib/domain/finale';
 import { formatDuration } from '@/lib/format';
 import { JESTER_ROASTS } from '@/components/Coronation';
+import { getTheme } from '@/lib/theme';
+import { superlatives, topRivalry, verdicts } from './verdicts';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -40,13 +42,34 @@ function useReveal(ref: React.RefObject<HTMLElement | null>, reduced: boolean) {
   }, [ref, reduced]);
 }
 
-/** Delar upp text i spans så bokstäverna kan stagger-animeras. */
+/**
+ * Delar upp text i spans så bokstäverna kan stagger-animeras — men ett ord får aldrig
+ * brytas var som helst ("RUNDPINGI / SRIKET"). Varje ord är nowrap; långa
+ * sammansättningar får EN tillåten brytpunkt före ett känt suffix, så "Rundpingisriket"
+ * blir "Rundpingis / riket" när det inte får plats på en rad.
+ */
+const BREAK_BEFORE = ['riket', 'galaxen', 'imperiet', 'ligan', 'kungadömet'];
+
 function Split({ text }: { text: string }) {
+  const words = text.split(' ');
   return (
     <span aria-label={text}>
-      {[...text].map((ch, i) => (
-        <span key={i} className='hud-char' aria-hidden>{ch === ' ' ? ' ' : ch}</span>
-      ))}
+      {words.map((word, w) => {
+        const lower = word.toLowerCase();
+        const suffix = BREAK_BEFORE.find((sfx) => lower.endsWith(sfx) && lower.length > sfx.length + 3);
+        const cut = suffix ? word.length - suffix.length : -1;
+        return (
+          <span key={w} className='hud-word'>
+            {[...word].map((ch, i) => (
+              <span key={i}>
+                {i === cut && <wbr />}
+                <span className='hud-char' aria-hidden>{ch}</span>
+              </span>
+            ))}
+            {w < words.length - 1 && ' '}
+          </span>
+        );
+      })}
     </span>
   );
 }
@@ -118,6 +141,97 @@ export function NumbersV2({ summary, reduced }: { summary: FinaleSummary; reduce
       {callouts.map((c, i) => (
         <div key={i} className={`hud-beat${i % 2 === 1 ? ' hud-beat-right' : ''}`}>{c}</div>
       ))}
+    </section>
+  );
+}
+
+export function VerdictsV2({ summary, reduced }: { summary: FinaleSummary; reduced: boolean }) {
+  const ref = useRef<HTMLElement | null>(null);
+  useReveal(ref, reduced);
+  const rows = verdicts(summary.standings, summary.defences);
+  return (
+    <section ref={ref} className='v2-act v2-verdicts' data-act='verdicts'>
+      <p className='hud-eyebrow' data-reveal>Domen</p>
+      <h2 className='hud-h2' data-reveal>Vad riket minns om var och en</h2>
+      <ol className='hud-verdicts'>
+        {rows.map((v) => (
+          <li key={v.id} className='hud-verdict' data-reveal>
+            <span className='hud-verdict-rank'>#{v.rank}</span>
+            <span className='hud-verdict-name'>{v.name}</span>
+            <span className='hud-verdict-wins'><span className='hud-num'>{v.wins}</span> {v.wins === 1 ? 'vinst' : 'vinster'}</span>
+            <span className='hud-verdict-line'>{v.line}</span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+export function RivalryV2({ summary, reduced }: { summary: FinaleSummary; reduced: boolean }) {
+  const ref = useRef<HTMLElement | null>(null);
+  useReveal(ref, reduced);
+  const names = Object.fromEntries(summary.standings.map((s) => [s.id, s.name]));
+  const rivalry = topRivalry(summary.transfers, names);
+  const supers = superlatives(summary.standings, summary.defences, formatDuration);
+  return (
+    <section ref={ref} className='v2-act v2-rivalry' data-act='rivalry'>
+      {rivalry && (
+        <div className='hud-duel' data-reveal>
+          <p className='hud-eyebrow'>Säsongens fejd</p>
+          <p className='hud-duel-names'>
+            <span>{rivalry.a}</span>
+            <span className='hud-duel-vs'>⚔</span>
+            <span>{rivalry.b}</span>
+          </p>
+          <p className='hud-detail'>
+            Kronan bytte händer <span className='hud-num' data-counter={rivalry.total}>0</span> gånger mellan er —{' '}
+            {rivalry.a} tog den {rivalry.aToB}, {rivalry.b} tog tillbaka den {rivalry.bToA}.
+          </p>
+        </div>
+      )}
+      {supers.length > 0 && (
+        <ul className='hud-supers'>
+          {supers.map((sp) => (
+            <li key={sp.label} className='hud-super' data-reveal>
+              <span className='hud-eyebrow'>{sp.label}</span>
+              <span className='hud-super-name'>{sp.name}</span>
+              <span className='hud-super-value'>{sp.value}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+export function DepartureV2({ summary, reduced }: { summary: FinaleSummary; reduced: boolean }) {
+  const ref = useRef<HTMLElement | null>(null);
+  useReveal(ref, reduced);
+  const next = summary.nextSeason;
+  const nextTheme = next ? getTheme(next.theme) : null;
+  // Nästa temas färger som CSS-variabler på akten, så texten skiftar palett med nebulosan.
+  const vars = nextTheme
+    ? ({ '--dep-gold': nextTheme.colors.gold, '--dep-accent': nextTheme.colors.accent, '--dep-text': nextTheme.colors.text } as React.CSSProperties)
+    : undefined;
+  return (
+    <section ref={ref} className='v2-act v2-departure' data-act='departure' style={vars}>
+      <p className='hud-eyebrow' data-reveal>Riket lämnar omloppsbanan</p>
+      <h2 className='hud-title hud-title-sm' data-reveal><Split text={`Farväl, ${summary.season.name}`} /></h2>
+      {next && nextTheme ? (
+        <div className='hud-next' data-reveal>
+          <p className='hud-detail'>Nästa säsong</p>
+          <p className='hud-next-name'>{next.name}</p>
+          <p className='hud-next-tagline'>{nextTheme.tagline}</p>
+          <p className='hud-next-chips'>
+            {[nextTheme.nav.home, nextTheme.nav.players, nextTheme.nav.history, nextTheme.epithets.rank1].map((c) => (
+              <span key={c} className='hud-chip'>{c}</span>
+            ))}
+          </p>
+        </div>
+      ) : (
+        <p className='hud-detail' data-reveal>Nästa säsong väntar bortom horisonten.</p>
+      )}
+      <p className='hud-hint' data-reveal>Vad som kröns kan aldrig dö.</p>
     </section>
   );
 }

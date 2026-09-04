@@ -1,7 +1,8 @@
 'use client';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { departureT } from './scene';
 
 /**
  * Nebulosa som bakgrund: en inverterad sfär runt hela scenen med ett FBM-brus i
@@ -19,6 +20,9 @@ const vertex = /* glsl */ `
 
 const fragment = /* glsl */ `
   uniform float uTime;
+  uniform float uShift;      // 0–1: hur långt nebulosan skiftat mot nästa säsongs palett
+  uniform vec3 uTintA;       // nästa temas accent (ersätter guldet)
+  uniform vec3 uTintB;       // nästa temas sekundär (ersätter blått/lila)
   varying vec3 vDir;
 
   // Klassiskt hash/value-brus + fbm. Billigt nog för en fullskärmsbakgrund.
@@ -58,9 +62,10 @@ const fragment = /* glsl */ `
     float wisps = smoothstep(0.55, 0.9, n2);      // tunna stråk
 
     vec3 deep = vec3(0.012, 0.010, 0.030);        // nästan svart, blåsvart
-    vec3 violet = vec3(0.24, 0.10, 0.42);
-    vec3 gold = vec3(0.86, 0.66, 0.26);
-    vec3 blue = vec3(0.14, 0.32, 0.72);
+    // Under avfärden glider paletten över i nästa säsongs färger.
+    vec3 violet = mix(vec3(0.24, 0.10, 0.42), uTintB * 0.55, uShift);
+    vec3 gold = mix(vec3(0.86, 0.66, 0.26), uTintA, uShift);
+    vec3 blue = mix(vec3(0.14, 0.32, 0.72), uTintB, uShift);
 
     vec3 c = deep;
     c = mix(c, violet, veil * 0.55);
@@ -72,10 +77,17 @@ const fragment = /* glsl */ `
   }
 `;
 
-export function Nebula() {
+export function Nebula({ progressRef, nextTint }: { progressRef: { current: number }; nextTint?: { accent: string; secondary: string } | null }) {
   const material = useRef<THREE.ShaderMaterial>(null);
+  const tints = useMemo(() => ({
+    a: new THREE.Color(nextTint?.accent ?? '#e7c25c'),
+    b: new THREE.Color(nextTint?.secondary ?? '#4ea1e0'),
+  }), [nextTint?.accent, nextTint?.secondary]);
   useFrame((state) => {
-    if (material.current) material.current.uniforms.uTime.value = state.clock.elapsedTime;
+    if (!material.current) return;
+    material.current.uniforms.uTime.value = state.clock.elapsedTime;
+    // Ingen nästa säsong → ingen färgskiftning, bara warpen.
+    material.current.uniforms.uShift.value = nextTint ? departureT(progressRef.current) : 0;
   });
   return (
     <mesh scale={[400, 400, 400]} frustumCulled={false}>
@@ -84,7 +96,7 @@ export function Nebula() {
         ref={material}
         vertexShader={vertex}
         fragmentShader={fragment}
-        uniforms={{ uTime: { value: 0 } }}
+        uniforms={{ uTime: { value: 0 }, uShift: { value: 0 }, uTintA: { value: tints.a }, uTintB: { value: tints.b } }}
         side={THREE.BackSide}
         depthWrite={false}
         toneMapped={false}

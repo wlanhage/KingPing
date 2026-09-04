@@ -9,6 +9,7 @@ import { Nebula } from './space/Nebula';
 import { Sun } from './space/Sun';
 import { Galaxy } from './space/Galaxy';
 import { buildCosmos, cameraAt } from './space/scene';
+import { getTheme } from '@/lib/theme';
 
 /**
  * Den fasta fullskärmscanvasen bakom hela finalen. Scrollen driver två tal — sidans
@@ -89,6 +90,12 @@ export function CosmosCanvas({
     [summary],
   );
   const warp = useRef(0);
+  // Nästa säsongs palett styr nebulosans färgskifte under avfärden.
+  const nextTint = useMemo(() => {
+    if (!summary.nextSeason) return null;
+    const c = getTheme(summary.nextSeason.theme).colors;
+    return { accent: c.gold, secondary: c.accent };
+  }, [summary.nextSeason]);
 
   return (
     <Canvas
@@ -102,7 +109,7 @@ export function CosmosCanvas({
     >
       <color attach='background' args={['#030208']} />
       <ambientLight intensity={0.18} />
-      <Nebula />
+      <Nebula progressRef={progress} nextTint={nextTint} />
       <Starfield warp={warp} velocity={velocity} />
       <Sun />
       <Galaxy cosmos={cosmos} progressRef={progress} />
