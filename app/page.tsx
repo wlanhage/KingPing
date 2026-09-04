@@ -4,10 +4,11 @@ import { RecordWinForm } from '@/components/RecordWinForm';
 import { prisma } from '@/lib/prisma';
 import { formatDuration } from '@/lib/format';
 import { getActiveTheme } from '@/lib/theme/server';
-import { listSeasons } from '@/lib/domain/season';
+import { listSeasons, resolveSeason, winOccurredAtFilter } from '@/lib/domain/season';
 import { FinaleDoor } from '@/components/finale/FinaleDoor';
 import { FinaleIcon } from '@/components/finale/FinaleIcon';
 import { SeasonStrip } from '@/components/SeasonStrip';
+import { NationSeal } from '@/components/NationSeal';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +20,7 @@ export default async function Page() {
   const king = kingdom.currentKing;
   const players = await prisma.player.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true } });
   const lastEvent = await prisma.winEvent.findFirst({ orderBy: { occurredAt: 'desc' }, select: { occurredAt: true } });
+  const latestInSeason = await prisma.winEvent.findFirst({ where: { occurredAt: winOccurredAtFilter(await resolveSeason()) }, orderBy: { occurredAt: 'desc' }, select: { nationState: true } });
   const initial = king?.name?.trim()?.[0]?.toUpperCase() ?? '–';
 
   return (
@@ -54,6 +56,8 @@ export default async function Page() {
           <p className='dash-empty'>{`${theme.verbs.crown} den första vinnaren nedan för att starta riket.`}</p>
         )}
       </section>
+
+      {latestInSeason && <NationSeal state={latestInSeason.nationState} theme={theme} />}
 
       <section className='dash-crown-panel'>
         <h2>{theme.verbs.crown} ny vinnare</h2>

@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { formatDate } from '@/lib/format';
-import { getActiveSeason } from '@/lib/domain/season';
+import { getActiveSeason, listSeasons, seasonNumber, toRoman } from '@/lib/domain/season';
 import { getActiveTheme } from '@/lib/theme/server';
 import { CrawlChronicle } from '@/components/history/CrawlChronicle';
 
@@ -16,9 +16,10 @@ export default async function History() {
 
   if (theme.historyStyle === 'crawl') {
     const season = await getActiveSeason();
+    const eyebrow = season ? `${theme.seasonWord} ${toRoman(seasonNumber(await listSeasons(), season))} · ${season.name}` : undefined;
     return (
       <CrawlChronicle
-        eyebrow={season?.name}
+        eyebrow={eyebrow}
         title={theme.pages.history.title}
         subtitle={theme.pages.history.subtitle}
         items={events.map((e) => ({ id: e.id, date: formatDate(e.occurredAt), winner: e.winner.name, text: e.announcementText }))}

@@ -7,6 +7,10 @@ import { Starfield } from '@/components/Starfield';
 import { getActiveTheme } from '@/lib/theme/server';
 import { themeCssVars, type PageKey } from '@/lib/theme';
 import { siteUrl } from '@/lib/site-url';
+import { prisma } from '@/lib/prisma';
+import { resolveSeason, winOccurredAtFilter } from '@/lib/domain/season';
+
+const TYRANNY_STREAK = 5;
 import './globals.css';
 import './cursor.css';
 
@@ -38,12 +42,17 @@ const navOrder: [PageKey, string][] = [
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { theme } = await getActiveTheme();
+  // Sitter en tyrann på tronen (fem raka eller fler) får galaxen röd ljussabel som muspekare.
+  const season = await resolveSeason();
+  const latest = await prisma.winEvent.findFirst({ where: { occurredAt: winOccurredAtFilter(season) }, orderBy: { occurredAt: 'desc' }, select: { streakCount: true } });
+  const sith = (latest?.streakCount ?? 0) >= TYRANNY_STREAK;
 
   return (
     <html
       lang='sv'
       className={`${display.variable} ${titleFont.variable} ${body.variable}`}
       data-theme={theme.key}
+      data-sith={sith ? '1' : undefined}
       style={themeCssVars(theme.colors) as React.CSSProperties}
     >
       <body>

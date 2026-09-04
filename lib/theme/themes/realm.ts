@@ -30,6 +30,7 @@ export const realm: Theme = {
   roles: { monarch: 'Kung', monarchLower: 'kung', challenger: 'Utmanare', player: 'riddare', players: 'Riddare' },
   verbs: { crown: 'Kröna', crowning: 'kröning', crowningNow: 'Kröner…' },
   coronation: {
+    sound: 'fanfare',
     crier: 'Hör upp! 🔔',
     decree: 'har tagit det som är deras — med racket och eld 🗡️🔥',
     holdCrier: 'Tronen håller stånd ❄️🐉',
@@ -41,6 +42,17 @@ export const realm: Theme = {
   },
   badgeOverrides: {},
   announcements: withNeutral({ streakTemplates, nationIntros, fridayIntros, seasonEchoes }),
+  seasonWord: 'Säsong',
+  nationLabel: 'Rikets läge',
+  nationStates: {
+    STABLE_ERA: { name: 'Fredens tid', emoji: '🕊️', blurb: 'Lugnet vilar över riket. Ingen har utmanat på allvar.' },
+    TENSION: { name: 'Oro i riket', emoji: '⚠️', blurb: 'Flera har smakat på kronan den senaste tiden. Folket mumlar på torget.' },
+    INSTABILITY: { name: 'Tronstrider', emoji: '🌀', blurb: 'Kronan byter huvud oftare än hovet byter kläder.' },
+    DYNASTY: { name: 'Dynasti', emoji: '🏰', blurb: 'Tre raka eller fler. Murarna kring tronen växer.' },
+    TYRANNY: { name: 'Tyranni', emoji: '👁️', blurb: 'Fem raka eller fler. Oppositionen sitter i tornet.' },
+    REVOLUTION: { name: 'Revolution', emoji: '🔥', blurb: 'En dynasti har just störtats. Allt är möjligt igen.' },
+  },
+  progressTemplate: '{current} av {target} {unit}',
   colors: {
     bg: '#120d08',
     panel: '#1e1810',

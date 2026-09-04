@@ -1,4 +1,5 @@
 import { countByWeekday } from './local-time';
+import { dominance } from '../badges/player-stats';
 import { EventType, NationState } from '@prisma/client';
 import { differenceInDays, isFriday } from 'date-fns';
 import { prisma } from '../prisma';
@@ -117,7 +118,10 @@ export async function getLeaderboard(season?: SeasonWindow) {
   const players = await prisma.player.findMany({ include: { wins: { orderBy: { occurredAt: 'desc' } }, reigns: true } });
   const current = await getCurrentKing(s);
   const previous = await getPreviousSeason(s);
-  const rawRows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId, s, now, previous) })).sort((a,b)=>b.totalReignMs-a.totalReignMs);
+  // Parvis övertag kräver allas vinster i säsongen — räknas här, inte per spelare.
+  const seasonWins = players.flatMap((p) => p.wins.filter((w) => isWinInSeason(w.occurredAt, s)));
+  const dom = dominance(seasonWins);
+  const rawRows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId, s, now, previous), maxNetTakeovers: dom[p.id]?.net ?? 0, dominatedRivalId: dom[p.id]?.rivalId ?? null })).sort((a,b)=>b.totalReignMs-a.totalReignMs);
   const ranked = rawRows.map((row, i) => ({ ...row, rank: i + 1 }));
   const statMap = Object.fromEntries(ranked.map((r) => [r.id, r]));
   const globalStats = calculateGlobalStats(Object.values(statMap) as any, current?.playerId ?? null);

@@ -123,3 +123,17 @@ export async function resolveSeason(slug?: string | null): Promise<SeasonWindow>
   }
   return (await getActiveSeason()) ?? IMPLICIT_SEASON;
 }
+
+/** Säsongens ordningsnummer räknat från den första (1-baserat). */
+export function seasonNumber(seasons: SeasonWindow[], season: SeasonWindow): number {
+  const ordered = [...seasons].sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime());
+  const index = ordered.findIndex((s) => s.id === season.id);
+  return index === -1 ? ordered.length + 1 : index + 1;
+}
+
+export function toRoman(n: number): string {
+  const table: [number, string][] = [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
+  let out = '';
+  for (const [value, symbol] of table) while (n >= value) { out += symbol; n -= value; }
+  return out;
+}

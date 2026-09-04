@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { getPlayerBadges } from '../lib/badges/badge-engine';
-import { winGrowth } from '../lib/badges/player-stats';
+import { dominance, winGrowth } from '../lib/badges/player-stats';
 import type { PlayerBadgeContext, PlayerStats } from '../lib/badges/badge-types';
 
-const p = (id: string, o: Partial<PlayerStats>): PlayerStats => ({ playerId: id, totalWins: 0, totalReignMs: 0, longestReignMs: 0, currentReignMs: 0, currentStreak: 0, longestStreak: 0, fridayWins: 0, winsLast30Days: 0, winsLast7Days: 0, daysSinceLastWin: null, daysSincePreviousWin: null, streaksBroken: 0, biggestStreakBroken: 0, takeoverWins: 0, timesDethroned: 0, averageReignMs: 0, crownEfficiencyMsPerWin: 0, isCurrentKing: false, winsByWeekday: [0, 0, 0, 0, 0, 0, 0], earlyWins: 0, lunchWins: 0, lateWins: 0, maxWinsInOneDay: 0, firstWinAt: null, reignCount: 0, distinctVictims: 0, previousSeasonWins: null, ...o });
+const p = (id: string, o: Partial<PlayerStats>): PlayerStats => ({ playerId: id, totalWins: 0, totalReignMs: 0, longestReignMs: 0, currentReignMs: 0, currentStreak: 0, longestStreak: 0, fridayWins: 0, winsLast30Days: 0, winsLast7Days: 0, daysSinceLastWin: null, daysSincePreviousWin: null, streaksBroken: 0, biggestStreakBroken: 0, takeoverWins: 0, timesDethroned: 0, averageReignMs: 0, crownEfficiencyMsPerWin: 0, isCurrentKing: false, winsByWeekday: [0, 0, 0, 0, 0, 0, 0], earlyWins: 0, lunchWins: 0, lateWins: 0, maxWinsInOneDay: 0, firstWinAt: null, reignCount: 0, distinctVictims: 0, previousSeasonWins: null, maxNetTakeovers: 0, dominatedRivalId: null, ...o });
 const ctx = (players: PlayerStats[]): PlayerBadgeContext => ({ playerStats: Object.fromEntries(players.map((x) => [x.playerId, x])), globalStats: { maxTotalReignMs: Math.max(...players.map((x) => x.totalReignMs), 0), maxTotalWins: Math.max(...players.map((x) => x.totalWins), 0), maxLongestStreak: Math.max(...players.map((x) => x.longestStreak), 0), maxFridayWins: Math.max(...players.map((x) => x.fridayWins), 0), maxWinsLast30Days: Math.max(...players.map((x) => x.winsLast30Days), 0), maxStreaksBroken: Math.max(...players.map((x) => x.streaksBroken), 0), maxBiggestStreakBroken: Math.max(...players.map((x) => x.biggestStreakBroken), 0), maxCrownEfficiencyMsPerWin: Math.max(...players.map((x) => x.crownEfficiencyMsPerWin), 0), currentKingId: players.find((x) => x.isCurrentKing)?.playerId ?? null, earliestWinAt: earliest(players), secondTotalReignMs: [...new Set(players.map((x) => x.totalReignMs))].sort((a, b) => b - a)[1] ?? 0, maxWinGrowth: Math.max(0, ...players.map((x) => winGrowth(x) ?? 0)), winlessCount: players.filter((x) => x.totalWins === 0).length, minTotalReignMs: Math.min(...players.map((x) => x.totalReignMs)) } });
 const earliest = (players: PlayerStats[]) => { const t = players.flatMap((x) => (x.firstWinAt ? [x.firstWinAt.getTime()] : [])); return t.length ? new Date(Math.min(...t)) : null; };
 
@@ -183,6 +183,15 @@ describe('nya badges', () => {
     const y = p('y', { totalWins: 0 });
     expect(ids(x, [y, p('a', { totalWins: 3, totalReignMs: 100 })])).not.toContain('jar_jar');
   });
+  it('Överherren / Jag är din far: fem i övertag mot en och samma rival', () => {
+    expect(ids(p('axel', { maxNetTakeovers: 7, dominatedRivalId: 'william' }))).toContain('overlord');
+    expect(ids(p('axel', { maxNetTakeovers: 4, dominatedRivalId: 'william' }))).not.toContain('overlord');
+  });
+  it('Dagsländan / Stormtrooper: fem vinster, aldrig ett försvar', () => {
+    expect(ids(p('a', { totalWins: 5, longestStreak: 1 }))).toContain('never_defended');
+    expect(ids(p('a', { totalWins: 5, longestStreak: 2 }))).not.toContain('never_defended');
+    expect(ids(p('a', { totalWins: 4, longestStreak: 1 }))).not.toContain('never_defended');
+  });
   it('fredagsfobi: många vinster men ingen på fredag', () => {
     expect(ids(p('a', { totalWins: 8, fridayWins: 0 }))).toContain('friday_phobia');
     expect(ids(p('a', { totalWins: 8, fridayWins: 1 }))).not.toContain('friday_phobia');
@@ -203,5 +212,17 @@ describe('nya badges', () => {
     expect(ids(p('a', { timesDethroned: 3, takeoverWins: 2 }))).not.toContain('boomerang');
     expect(ids(p('a', { distinctVictims: 5, takeoverWins: 5 }))).toContain('usurper');
     expect(ids(p('a', { distinctVictims: 4, takeoverWins: 12 }))).not.toContain('usurper'); // många kronor från få offer räcker inte
+  });
+});
+
+describe('dominance', () => {
+  const w = (winnerId: string, previousKingId: string | null) => ({ winnerId, previousKingId });
+  it('räknar nettot per rival: 10 mot 3 ger 7, inte 10', () => {
+    const wins = [...Array(10)].map(() => w('axel', 'william')).concat([...Array(3)].map(() => w('william', 'axel')));
+    expect(dominance(wins).axel).toEqual({ rivalId: 'william', net: 7 });
+    expect(dominance(wins).william).toEqual({ rivalId: null, net: 0 });
+  });
+  it('försvar och tomma tronen räknas inte', () => {
+    expect(dominance([w('axel', 'axel'), w('axel', null)]).axel).toEqual({ rivalId: null, net: 0 });
   });
 });

@@ -37,6 +37,8 @@ export type Theme = {
   verbs: { crown: string; crowning: string; crowningNow: string };
   /** Kröningsceremonins texter. {streak} i holdDecree ersätts med antal raka. */
   coronation: {
+    /** 'fanfare' = rikets C-durfanfar och sorgtrombon, 'march' = galaxens marsch i moll och droidpip. */
+    sound: 'fanfare' | 'march';
     crier: string;
     decree: string;
     holdCrier: string;
@@ -54,6 +56,13 @@ export type Theme = {
     /** Tillbakablickar på förra säsongen: champion, winless, last, runnerUp, dethronedChampion, generic. */
     seasonEchoes: Record<string, string[]>;
   };
+  /** Ordet för en säsong i temats värld ("Säsong"/"Episod"), numreras med romerska siffror. */
+  seasonWord: string;
+  /** Rubriken över sigillet ('Rikets läge' / 'Galaxens läge') och lägena med temats namn. */
+  nationLabel: string;
+  nationStates: Record<NationState, { name: string; emoji: string; blurb: string }>;
+  /** Mall för "närmast att låsa upp": {current}, {target}, {left} och {unit}. */
+  progressTemplate: string;
   colors: ThemeColors;
   /** Rörlig bakgrund bakom hela sidan. Utelämnas för teman utan. */
   backdrop?: 'starfield';

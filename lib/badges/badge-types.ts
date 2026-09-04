@@ -15,7 +15,9 @@ export type PlayerStats = { playerId: string; totalWins: number; totalReignMs: n
   /** Antal olika spelare som spelaren tagit kronan ifrån. */
   distinctVictims: number;
   /** Vinster förra säsongen. null = ingen förra säsong, eller spelaren fanns inte då. */
-  previousSeasonWins: number | null };
+  previousSeasonWins: number | null;
+  /** Största övertaget mot en enskild rival: kronor tagna från denne minus kronor denne tagit tillbaka. Fylls i av tabellbygget. */
+  maxNetTakeovers: number; dominatedRivalId: string | null };
 export type GlobalStats = { maxTotalReignMs: number; maxTotalWins: number; maxLongestStreak: number; maxFridayWins: number; maxWinsLast30Days: number; maxStreaksBroken: number; maxBiggestStreakBroken: number; maxCrownEfficiencyMsPerWin: number; currentKingId: string | null; earliestWinAt: Date | null; secondTotalReignMs: number; maxWinGrowth: number;
   /** Hur många spelare som saknar vinst, och minsta trontid bland alla — för Jar Jar Binks. */
   winlessCount: number; minTotalReignMs: number };

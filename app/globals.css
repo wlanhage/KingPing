@@ -2012,3 +2012,21 @@ html:has(.crawl-track) { overflow-x: clip; }
 .royal-badge-icon .badge-icon-img { width: 1.35em; height: 1.35em; vertical-align: 0; box-shadow: 0 0 14px rgba(0,0,0,.5); }
 @media (max-width: 640px) { .crawl { text-align: left; } }
 @media (max-width: 520px) { .top-nav { margin: 0 -.75rem; padding-inline: .75rem; } }
+
+/* Rikets läge (components/NationSeal.tsx): ett sigill under tronen, färg efter läge */
+.nation-seal { display: flex; align-items: center; gap: 1rem; padding: .9rem 1.2rem; border: 1px solid var(--border); border-left: 3px solid var(--seal, var(--gold)); border-radius: 12px; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.18)), var(--panel); }
+.nation-seal-emoji { display: grid; place-items: center; width: 52px; height: 52px; flex: 0 0 auto; border: 1px solid var(--border); border-radius: 50%; font-size: 1.5rem; background: rgba(0,0,0,.25); box-shadow: 0 0 22px color-mix(in srgb, var(--seal, var(--gold)) 30%, transparent); }
+.nation-seal-eyebrow { margin: 0; font-family: var(--font-display), Georgia, serif; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.nation-seal-name { margin: .05rem 0 .15rem; font-family: var(--font-display), Georgia, serif; font-size: 1.15rem; letter-spacing: .04em; color: var(--seal, var(--gold)); }
+.nation-seal-blurb { margin: 0; color: var(--muted); font-size: .95rem; }
+.nation-stable_era { --seal: #8fbf9f; }
+.nation-tension { --seal: #e0b04e; }
+.nation-instability { --seal: #6fa8dc; }
+.nation-dynasty { --seal: var(--gold); }
+.nation-tyranny { --seal: #d05050; }
+.nation-revolution { --seal: #ff8a3d; }
+
+/* Laddningstext i temats ton — via CSS eftersom laddningsskelettet inte får fråga databasen. */
+.skeleton-text { margin: 1rem 0 0; font-family: var(--font-display), Georgia, serif; font-size: .78rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); opacity: .8; }
+.skeleton-text::after { content: 'Härolden hämtar krönikan…'; }
+html[data-theme='star-wars'] .skeleton-text::after { content: 'Hoppar till hyperrymden…'; }

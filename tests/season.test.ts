@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clampReignToSeason, clampedReignMs, isWinInSeason, previousSeasonOf, scopePlayerToSeason, type SeasonWindow } from '../lib/domain/season';
+import { clampReignToSeason, clampedReignMs, isWinInSeason, previousSeasonOf, scopePlayerToSeason, seasonNumber, toRoman, type SeasonWindow } from '../lib/domain/season';
 
 const d = (iso: string) => new Date(iso);
 const HOUR = 60 * 60 * 1000;
@@ -109,5 +109,17 @@ describe('previousSeasonOf', () => {
   });
   it('första säsongen har ingen föregångare', () => {
     expect(previousSeasonOf([s3, s2, s1], s1)).toBeNull();
+  });
+});
+
+describe('seasonNumber och toRoman', () => {
+  const mk = (id: string, start: string) => ({ id, slug: id, name: id, theme: 'realm', startedAt: new Date(start), endedAt: null });
+  const s1 = mk('s1', '2026-01-01'); const s2 = mk('s2', '2026-04-01'); const s3 = mk('s3', '2026-08-28');
+  it('numrerar i startordning oavsett listans ordning', () => {
+    expect(seasonNumber([s3, s1, s2], s2)).toBe(2);
+    expect(seasonNumber([s3, s1, s2], s3)).toBe(3);
+  });
+  it('romerska siffror', () => {
+    expect([1, 2, 4, 9, 14].map(toRoman)).toEqual(['I', 'II', 'IV', 'IX', 'XIV']);
   });
 });

@@ -46,7 +46,7 @@ export function calculatePlayerStats(player: any, currentKingId?: string | null,
   const firstWinAt = winDates.length ? new Date(Math.min(...winDates.map((d) => d.getTime()))) : null;
   const reignCount = reigns.length;
   const distinctVictims = new Set(wins.filter((w: any) => w.previousKingId && w.previousKingId !== w.winnerId).map((w: any) => w.previousKingId)).size;
-  return { playerId: player.id, totalWins, totalReignMs, longestReignMs, currentReignMs, currentStreak, longestStreak, fridayWins, winsLast30Days, winsLast7Days, daysSinceLastWin, daysSincePreviousWin, streaksBroken, biggestStreakBroken, takeoverWins, timesDethroned, averageReignMs, crownEfficiencyMsPerWin, isCurrentKing, winsByWeekday, earlyWins, lunchWins, lateWins, maxWinsInOneDay, firstWinAt, reignCount, distinctVictims, previousSeasonWins: null };
+  return { playerId: player.id, totalWins, totalReignMs, longestReignMs, currentReignMs, currentStreak, longestStreak, fridayWins, winsLast30Days, winsLast7Days, daysSinceLastWin, daysSincePreviousWin, streaksBroken, biggestStreakBroken, takeoverWins, timesDethroned, averageReignMs, crownEfficiencyMsPerWin, isCurrentKing, winsByWeekday, earlyWins, lunchWins, lateWins, maxWinsInOneDay, firstWinAt, reignCount, distinctVictims, previousSeasonWins: null, maxNetTakeovers: 0, dominatedRivalId: null };
 }
 
 export function calculateGlobalStats(stats: PlayerStats[], currentKingId: string | null): GlobalStats {
@@ -86,4 +86,33 @@ function secondHighest(values: number[]): number {
 export function winGrowth(s: Pick<PlayerStats, 'totalWins' | 'previousSeasonWins'>): number | null {
   if (s.previousSeasonWins === null) return null;
   return (s.totalWins - s.previousSeasonWins) / Math.max(1, s.previousSeasonWins);
+}
+
+type TakeoverLike = { winnerId: string; previousKingId: string | null };
+
+/**
+ * Parvis övertag: för varje spelare, den rival mot vilken skillnaden "kronor jag tagit från dig"
+ * minus "kronor du tagit från mig" är störst. Kräver allas vinster, därför räknat separat.
+ */
+export function dominance(wins: TakeoverLike[]): Record<string, { rivalId: string | null; net: number }> {
+  const taken = new Map<string, number>();
+  const players = new Set<string>();
+  for (const w of wins) {
+    players.add(w.winnerId);
+    if (!w.previousKingId || w.previousKingId === w.winnerId) continue;
+    players.add(w.previousKingId);
+    const key = `${w.winnerId}>${w.previousKingId}`;
+    taken.set(key, (taken.get(key) ?? 0) + 1);
+  }
+  const out: Record<string, { rivalId: string | null; net: number }> = {};
+  for (const me of players) {
+    let best: { rivalId: string | null; net: number } = { rivalId: null, net: 0 };
+    for (const rival of players) {
+      if (rival === me) continue;
+      const net = (taken.get(`${me}>${rival}`) ?? 0) - (taken.get(`${rival}>${me}`) ?? 0);
+      if (net > best.net) best = { rivalId: rival, net };
+    }
+    out[me] = best;
+  }
+  return out;
 }

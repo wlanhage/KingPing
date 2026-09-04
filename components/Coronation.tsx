@@ -107,6 +107,78 @@ function playSadTrombone(ctx: AudioContext, master: GainNode, at: number) {
   });
 }
 
+/* ── Galaxens ljud: en egen marsch i moll (inte Williams melodi) och droidpip för den störtade ── */
+
+function playDarkMarch(ctx: AudioContext, master: GainNode) {
+  const now = ctx.currentTime;
+  // Punkterad marschrytm i d-moll: D D F D | Bb C D — tung, långsam, ingen fanfarglädje.
+  const steps: [number, number][] = [[146.83, 0.32], [146.83, 0.32], [174.61, 0.16], [146.83, 0.48], [116.54, 0.32], [130.81, 0.16], [146.83, 1.0]];
+  let t = now;
+  for (const [freq, dur] of steps) {
+    for (const [mult, type, vol] of [[1, 'sawtooth', 0.26], [0.5, 'square', 0.1], [2, 'triangle', 0.06]] as [number, OscillatorType, number][]) {
+      const osc = ctx.createOscillator();
+      const filt = ctx.createBiquadFilter();
+      const g = ctx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq * mult;
+      filt.type = 'lowpass';
+      filt.frequency.value = 1400;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur * 0.95);
+      osc.connect(filt).connect(g).connect(master);
+      osc.start(t);
+      osc.stop(t + dur);
+    }
+    // Trumslag på varje ton: kort brusstöt genom ett bandpass.
+    const noise = ctx.createBufferSource();
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.12, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+    noise.buffer = buf;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = 180;
+    const ng = ctx.createGain();
+    ng.gain.value = 0.35;
+    noise.connect(bp).connect(ng).connect(master);
+    noise.start(t);
+    t += dur;
+  }
+  // Mörk drone under hela marschen.
+  const drone = ctx.createOscillator();
+  const dg = ctx.createGain();
+  drone.type = 'sawtooth';
+  drone.frequency.value = 36.71; // D1
+  dg.gain.setValueAtTime(0.0001, now);
+  dg.gain.exponentialRampToValueAtTime(0.09, now + 0.3);
+  dg.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+  drone.connect(dg).connect(master);
+  drone.start(now);
+  drone.stop(t + 0.5);
+}
+
+function playDroidBeeps(ctx: AudioContext, master: GainNode, at: number) {
+  // Bekymrade droidpip: korta toner som glider upp eller ner, i oregelbunden takt.
+  const freqs = [1320, 880, 1760, 990, 1480, 740, 1180];
+  let t = at;
+  freqs.forEach((f, i) => {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = i % 2 ? 'square' : 'sine';
+    const dur = 0.09 + (i % 3) * 0.04;
+    osc.frequency.setValueAtTime(f, t);
+    osc.frequency.exponentialRampToValueAtTime(f * (i % 2 ? 0.7 : 1.5), t + dur);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.09, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(g).connect(master);
+    osc.start(t);
+    osc.stop(t + dur + 0.02);
+    t += dur + 0.05 + (i % 2) * 0.07;
+  });
+}
+
 export function Coronation({ event, copy, onDone }: { event: CoronationEvent; copy: CoronationCopy; onDone: () => void }) {
   const [muted, setMuted] = useState(false);
   const [reduced, setReduced] = useState(false);
@@ -147,12 +219,13 @@ export function Coronation({ event, copy, onDone }: { event: CoronationEvent; co
     const master = ctx.createGain();
     master.gain.value = 0.6;
     master.connect(ctx.destination);
+    const march = copy.sound === 'march';
     void ctx.resume().then(() => {
-      playFanfare(ctx, master);
-      if (showDeposed) playSadTrombone(ctx, master, ctx.currentTime + 2.4);
+      if (march) playDarkMarch(ctx, master); else playFanfare(ctx, master);
+      if (showDeposed) (march ? playDroidBeeps : playSadTrombone)(ctx, master, ctx.currentTime + 2.6);
     });
     return () => { void ctx.close().catch(() => {}); audioRef.current = null; };
-  }, [muted, showDeposed]);
+  }, [muted, showDeposed, copy.sound]);
 
   // Guldkonfetti (hoppas över vid reduced-motion).
   useEffect(() => {

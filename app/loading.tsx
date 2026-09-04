@@ -5,6 +5,7 @@ export default function Loading() {
       <section>
         <div className='skeleton-line skeleton-title' />
         <div className='skeleton-line skeleton-sub' />
+        <p className='skeleton-text' />
       </section>
       <section className='grid cols-4'>
         {[0, 1, 2, 3].map((i) => <div key={i} className='card skeleton-card' />)}

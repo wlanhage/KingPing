@@ -58,6 +58,8 @@ export const BADGES = [
   { id: 'eternal_second', name: 'Den evige tvåan', emoji: '🥈', description: 'Näst mest trontid. Så nära, så länge.', rarity: 'rare', category: 'shame', tone: 'roast' },
   { id: 'steady_hand', name: 'Stadig hand', emoji: '🧱', description: 'Minst tre regeringar med ett dygn i snitt.', rarity: 'rare', category: 'meta', tone: 'prestige' },
   { id: 'boomerang', name: 'Bumerangen', emoji: '🪃', description: 'Störtad minst tre gånger — och tagit tillbaka kronan varje gång.', rarity: 'rare', category: 'chaos', tone: 'meme' },
+  { id: 'overlord', name: 'Överherren', emoji: '🗡️', description: 'Har tagit kronan från en och samma spelare minst fem gånger fler än tvärtom.', rarity: 'epic', category: 'combat', tone: 'dramatic' },
+  { id: 'never_defended', name: 'Dagsländan', emoji: '🪰', description: 'Fem kronor, aldrig ett försvar. Lever en runda i taget.', rarity: 'rare', category: 'shame', tone: 'roast' },
   { id: 'usurper', name: 'Usurpatorn', emoji: '🗡️', description: 'Har tagit kronan från minst fem olika kungar.', rarity: 'epic', category: 'combat', tone: 'dramatic' },
 ] as const satisfies readonly BadgeDefinition[];
 

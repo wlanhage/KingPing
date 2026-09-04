@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { getLeaderboard } from '@/lib/domain/riket';
-import { listSeasons, winOccurredAtFilter } from '@/lib/domain/season';
+import { listSeasons, seasonNumber, toRoman, winOccurredAtFilter } from '@/lib/domain/season';
 import { getTheme, themeCssVars } from '@/lib/theme';
 import { getActiveTheme } from '@/lib/theme/server';
 import { FinaleIcon } from '@/components/finale/FinaleIcon';
@@ -26,7 +26,7 @@ export default async function SeasonsPage() {
     const t = getTheme(s.theme);
     const wins = await prisma.winEvent.count({ where: { occurredAt: winOccurredAtFilter(s) } });
     const winner = s.endedAt ? (await getLeaderboard(s))[0]?.name ?? null : null;
-    return { s, t, wins, winner };
+    return { s, t, wins, winner, label: `${t.seasonWord} ${toRoman(seasonNumber(seasons, s))}` };
   }));
 
   return (
@@ -40,9 +40,9 @@ export default async function SeasonsPage() {
         <section className='card'><p className='muted' style={{ margin: 0 }}>Inga säsonger ännu.</p></section>
       ) : (
         <section className='archive-shelf'>
-          {books.map(({ s, t, wins, winner }) => (
+          {books.map(({ s, t, wins, winner, label }) => (
             <article key={s.slug} className={`archive-book${s.endedAt ? '' : ' is-active'}`} style={themeCssVars(t.colors) as React.CSSProperties}>
-              <p className='archive-book-eyebrow'>{s.endedAt ? `${fmt(s.startedAt)} — ${fmt(s.endedAt)}` : `Sedan ${fmt(s.startedAt)} · pågår`}</p>
+              <p className='archive-book-eyebrow'>{label} · {s.endedAt ? `${fmt(s.startedAt)} — ${fmt(s.endedAt)}` : `sedan ${fmt(s.startedAt)}, pågår`}</p>
               <h2 className='archive-book-title'>{s.name}</h2>
               <p className='archive-book-meta'>
                 <span><strong>{wins}</strong> kröningar</span>

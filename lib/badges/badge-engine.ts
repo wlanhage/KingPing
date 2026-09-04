@@ -104,6 +104,8 @@ export function getPlayerBadges(playerId: string, context: PlayerBadgeContext): 
   if (s.timesDethroned >= 3 && s.takeoverWins >= s.timesDethroned) push(res, 'boomerang', 'Kommer alltid tillbaka.');
   // Nästan varje vinst tar kronan från någon — det som skiljer usurpatorn är att offren är många.
   if (s.distinctVictims >= 5) push(res, 'usurper', 'Har störtat fem olika kungar.', s.distinctVictims);
+  if (s.maxNetTakeovers >= 5) push(res, 'overlord', 'Fem kronor i övertag mot en och samma rival.', s.maxNetTakeovers);
+  if (s.totalWins >= 5 && s.longestStreak <= 1) push(res, 'never_defended', 'Fem vinster utan ett enda försvar.');
   // TODO: eagle_has_landed kräver särskilt event/trigger i datamodell eller manuell/persisted tilldelning.
   // TODO: merge persisted earned badges here when historical badge table exists.
 
