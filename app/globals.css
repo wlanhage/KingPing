@@ -1677,7 +1677,7 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .v2-act { position: relative; z-index: 1; min-height: 100vh; display: grid; align-content: center; padding: 8vh 6vw; pointer-events: none; }
 .v2-act a, .v2-act button { pointer-events: auto; }
 .v2-coldopen { min-height: 120vh; text-align: center; }
-.v2-numbers { min-height: 160vh; }
+.v2-numbers { min-height: 240vh; display: block; padding: 6vh 0; }
 .v2-galaxy { min-height: 260vh; align-content: start; }
 .v2-coronation { min-height: 180vh; text-align: center; align-content: end; padding-bottom: 14vh; }
 /* Eftertexterna börjar först EFTER supernovans topp (progress ~0.92): toppen ligger
@@ -1694,11 +1694,20 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .hud-line { margin: 1rem 0 0; font-size: clamp(1rem, 2.2vw, 1.35rem); color: #f1e3c6; }
 .hud-num { font-family: var(--font-display), Georgia, serif; font-variant-numeric: tabular-nums; color: #ffd27a; font-weight: 700; }
 .hud-hint { margin-top: 3rem; color: #6f5a3a; font-size: .85rem; letter-spacing: .1em; }
-.hud-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; max-width: 1100px; margin: 0 auto; }
-.hud-panel { padding: 1.4rem 1.5rem; border: 1px solid rgba(231, 194, 92, .22); border-top-color: rgba(231, 194, 92, .6); background: linear-gradient(180deg, rgba(10, 8, 22, .72), rgba(3, 2, 8, .55)); backdrop-filter: blur(6px); border-radius: 6px; text-align: left; }
-.hud-panel-wide { grid-column: 1 / -1; }
-.hud-big { margin: 0; font-family: var(--font-title), Georgia, serif; font-size: clamp(2rem, 5vw, 3.6rem); color: #fff2c0; line-height: 1; }
-.hud-quote { margin: .4rem 0 .6rem; font-style: italic; font-size: 1.1rem; line-height: 1.5; color: #f1e3c6; }
+/* Siffrorna: inga lådor. Varje siffra är en annotation i rymden — en tunn guldlinje som
+   mätsticka, etikett, stor siffra, en rad detalj. Omväxlande sida så galaxen syns emellan,
+   och varje callout får hela radbredden så inget namn spränger sin ruta. */
+.hud-beat { min-height: 44vh; display: grid; align-content: center; padding: 0 8vw; }
+.hud-beat-right { justify-items: end; text-align: right; }
+.hud-callout { position: relative; max-width: 34rem; padding-left: 1.6rem; border-left: 2px solid rgba(231, 194, 92, .75); }
+.hud-beat-right .hud-callout { padding-left: 0; padding-right: 1.6rem; border-left: 0; border-right: 2px solid rgba(231, 194, 92, .75); }
+/* Mjuk mörk glöd bakom texten i stället för en låda — läsbar utan att dölja scenen. */
+.hud-callout::before { content: ''; position: absolute; inset: -2.5rem -3rem; z-index: -1; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(3, 2, 8, .78), rgba(3, 2, 8, .35) 55%, transparent 75%); filter: blur(6px); }
+.hud-callout .hud-eyebrow { margin-bottom: .45rem; }
+.hud-big { margin: 0; font-family: var(--font-title), Georgia, serif; font-size: clamp(2rem, 6.2vw, 4.6rem); line-height: 1.02; color: #fff2c0; overflow-wrap: anywhere; text-shadow: 0 0 28px rgba(231, 194, 92, .35); }
+.hud-big [data-counter] { font-variant-numeric: tabular-nums; }
+.hud-big-quote { font-family: var(--font-body), Georgia, serif; font-style: italic; font-size: clamp(1.3rem, 2.6vw, 1.9rem); line-height: 1.35; color: #f6e9c8; }
+.hud-detail { margin: .6rem 0 0; font-size: clamp(1rem, 1.9vw, 1.25rem); color: #d9c48f; }
 .hud-corner { position: sticky; top: 6vh; max-width: 420px; padding: 1rem 1.2rem; border-left: 2px solid rgba(231, 194, 92, .6); background: linear-gradient(90deg, rgba(3, 2, 8, .6), transparent); }
 .hud-credits { display: grid; gap: 2.2rem; width: min(440px, 88vw); margin: 0; padding: 2rem 2.2rem; border-radius: 10px; background: rgba(3, 2, 8, .82); backdrop-filter: blur(10px); border: 1px solid rgba(231, 194, 92, .22); border-left: 3px solid rgba(231, 194, 92, .7); box-shadow: 0 20px 60px rgba(0, 0, 0, .6); }
 .hud-credit-name { margin: 0; font-family: var(--font-display), Georgia, serif; font-size: 1.85rem; color: #fff6d8; text-shadow: 0 1px 0 rgba(0,0,0,.6); }

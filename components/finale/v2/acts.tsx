@@ -73,40 +73,51 @@ export function NumbersV2({ summary, reduced }: { summary: FinaleSummary; reduce
   const ref = useRef<HTMLElement | null>(null);
   useReveal(ref, reduced);
   const { peaks, wrapped, notes } = summary;
+
+  // Inga lådor: varje siffra är en annotation som svävar i rymden — mätlinje, etikett,
+  // stor siffra, en rad detalj — omväxlande vänster/höger så galaxen syns emellan.
+  const callouts: React.ReactNode[] = [];
+  if (peaks.longestStreak) callouts.push(
+    <div key='streak' className='hud-callout' data-reveal>
+      <p className='hud-eyebrow'>Längsta välde</p>
+      <p className='hud-big'>{peaks.longestStreak.name}</p>
+      <p className='hud-detail'><span className='hud-num' data-counter={peaks.longestStreak.streak}>0</span> raka vinster</p>
+    </div>,
+  );
+  if (peaks.biggestBreak) callouts.push(
+    <div key='break' className='hud-callout' data-reveal>
+      <p className='hud-eyebrow'>Det stora störtandet</p>
+      <p className='hud-big hud-big-quote'>&ldquo;{peaks.biggestBreak.announcementText.split('\n').pop()}&rdquo;</p>
+      <p className='hud-detail'>En dynasti på <span className='hud-num' data-counter={peaks.biggestBreak.brokenStreak}>0</span> föll för {peaks.biggestBreak.byName}</p>
+    </div>,
+  );
+  callouts.push(
+    <div key='transfers' className='hud-callout' data-reveal>
+      <p className='hud-eyebrow'>Tronskiften</p>
+      <p className='hud-big'><span data-counter={wrapped.transfers}>0</span></p>
+      <p className='hud-detail'>och <span className='hud-num' data-counter={wrapped.defences}>0</span> försvar av kronan</p>
+    </div>,
+  );
+  if (wrapped.averageReignMs !== null) callouts.push(
+    <div key='reign' className='hud-callout' data-reveal>
+      <p className='hud-eyebrow'>Regeringstid i snitt</p>
+      <p className='hud-big'>{formatDuration(wrapped.averageReignMs)}</p>
+      {wrapped.shortestReignMs !== null && <p className='hud-detail'>kortast: {formatDuration(wrapped.shortestReignMs)} 💀</p>}
+    </div>,
+  );
+  if (notes.length > 0) callouts.push(
+    <div key='note' className='hud-callout' data-reveal>
+      <p className='hud-eyebrow'>Ur loggboken</p>
+      <p className='hud-big hud-big-quote'>&ldquo;{notes[notes.length - 1].text}&rdquo;</p>
+      <p className='hud-detail'>— {notes[notes.length - 1].byName}</p>
+    </div>,
+  );
+
   return (
     <section ref={ref} className='v2-act v2-numbers' data-act='numbers'>
-      <div className='hud-grid'>
-        {peaks.longestStreak && (
-          <article className='hud-panel' data-reveal>
-            <p className='hud-eyebrow'>Längsta välde</p>
-            <p className='hud-big'>{peaks.longestStreak.name}</p>
-            <p className='hud-line'><span className='hud-num' data-counter={peaks.longestStreak.streak}>0</span> raka</p>
-          </article>
-        )}
-        {peaks.biggestBreak && (
-          <article className='hud-panel' data-reveal>
-            <p className='hud-eyebrow'>Det stora störtandet</p>
-            <p className='hud-quote'>&ldquo;{peaks.biggestBreak.announcementText.split('\n').pop()}&rdquo;</p>
-            <p className='hud-line'>En dynasti på <span className='hud-num' data-counter={peaks.biggestBreak.brokenStreak}>0</span> föll för {peaks.biggestBreak.byName}</p>
-          </article>
-        )}
-        <article className='hud-panel' data-reveal>
-          <p className='hud-eyebrow'>Tronskiften</p>
-          <p className='hud-big'><span data-counter={wrapped.transfers}>0</span></p>
-          <p className='hud-line'><span className='hud-num' data-counter={wrapped.defences}>0</span> försvar</p>
-        </article>
-        <article className='hud-panel' data-reveal>
-          <p className='hud-eyebrow'>Regeringstid</p>
-          {wrapped.averageReignMs !== null && <p className='hud-big'>{formatDuration(wrapped.averageReignMs)}</p>}
-          {wrapped.shortestReignMs !== null && <p className='hud-line'>kortast: {formatDuration(wrapped.shortestReignMs)} 💀</p>}
-        </article>
-        {notes.length > 0 && (
-          <article className='hud-panel hud-panel-wide' data-reveal>
-            <p className='hud-eyebrow'>Ur loggboken</p>
-            <p className='hud-quote'>&ldquo;{notes[notes.length - 1].text}&rdquo; — {notes[notes.length - 1].byName}</p>
-          </article>
-        )}
-      </div>
+      {callouts.map((c, i) => (
+        <div key={i} className={`hud-beat${i % 2 === 1 ? ' hud-beat-right' : ''}`}>{c}</div>
+      ))}
     </section>
   );
 }
