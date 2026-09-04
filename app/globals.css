@@ -1673,7 +1673,10 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .finale-v2 { position: relative; background: transparent; color: #f1e3c6; }
 .finale-v2[data-webgl="off"], .v2-stage { position: fixed; inset: 0; z-index: 0; }
 .v2-stage canvas { display: block; width: 100% !important; height: 100% !important; }
-.v2-cover { background: radial-gradient(circle at 50% 35%, rgba(231, 194, 92, .14), rgba(3, 2, 8, .98) 60%); }
+/* Covern är halvgenomskinlig: galaxen vävs bakom den och syns tändas — det är
+   den visuella bekräftelsen på att knappen strax låses upp. */
+.v2-cover { background: radial-gradient(circle at 50% 35%, rgba(231, 194, 92, .12), rgba(3, 2, 8, .78) 62%); backdrop-filter: blur(3px); }
+.v2-cover .crown-btn[disabled] { opacity: .55; cursor: progress; filter: saturate(.6); }
 .v2-act { position: relative; z-index: 1; min-height: 100vh; display: grid; align-content: center; padding: 8vh 6vw; pointer-events: none; }
 .v2-act a, .v2-act button { pointer-events: auto; }
 .v2-coldopen { min-height: 120vh; text-align: center; }

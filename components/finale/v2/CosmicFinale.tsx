@@ -29,6 +29,10 @@ export function CosmicFinale({ summary, cinema }: { summary: FinaleSummary; cine
   const [canvasGen, setCanvasGen] = useState(0);
   const [errorCount, setErrorCount] = useState(0);
   const [debug, setDebug] = useState(false);
+  // Galaxen vävs BAKOM covern. Knappen låses upp först när en bildruta faktiskt
+  // renderats — annars kompileras three.js-chunken mitt under skrollen och scenen
+  // hinner inte fram (eller dör i kontextförluster under den tunga starten).
+  const [sceneReady, setSceneReady] = useState(false);
   const lastError = useRef<string | null>(null);
   const lostCount = useRef(0);
   const root = useRef<HTMLDivElement | null>(null);
@@ -99,6 +103,25 @@ export function CosmicFinale({ summary, cinema }: { summary: FinaleSummary; cine
 
   useEffect(() => () => cinemaStop.current?.(), []);
 
+  // Covern ska inte gå att skrolla förbi. Lenis skapas först efter start, så det
+  // här är enda spärren under laddningen.
+  useEffect(() => {
+    if (started) return;
+    const el = document.documentElement;
+    const prev = el.style.overflow;
+    el.style.overflow = 'hidden';
+    window.scrollTo(0, 0);
+    return () => { el.style.overflow = prev; };
+  }, [started]);
+
+  // Ingen ska fastna på covern: har scenen inte hunnit rendera på 12 s släpps
+  // knappen ändå (t.ex. mycket svag GPU eller blockerad WebGL).
+  useEffect(() => {
+    if (sceneReady || reduced || !webgl) return;
+    const t = window.setTimeout(() => setSceneReady(true), 12000);
+    return () => window.clearTimeout(t);
+  }, [sceneReady, reduced, webgl]);
+
   function begin() {
     setStarted(true);
     void audioRef.current?.start();
@@ -122,37 +145,41 @@ export function CosmicFinale({ summary, cinema }: { summary: FinaleSummary; cine
     setMuted((m) => { audioRef.current?.setMuted(!m); return !m; });
   }
 
+  const canStart = sceneReady || reduced || !webgl;
   const seasonVars = useMemo(() => themeCssVars(getTheme(summary.season.theme).colors) as React.CSSProperties, [summary.season.theme]);
   const acts = { summary, reduced };
 
   return (
-    <div ref={root} className='finale finale-v2' style={seasonVars} data-reduced={reduced || undefined} data-started={started || undefined} data-webgl={webgl ? 'on' : 'off'}>
+    <div ref={root} className='finale finale-v2' style={seasonVars} data-reduced={reduced || undefined} data-started={started || undefined} data-webgl={webgl ? 'on' : 'off'} data-ready={canStart || undefined}>
       {!started && (
         <div className='finale-cover v2-cover'>
           <p className='finale-door-eyebrow'>Krönikan</p>
           <h1 className='finale-cover-title'>{summary.season.name}</h1>
-          <button type='button' className='crown-btn' onClick={begin}>Lämna omloppsbanan</button>
-          <p className='finale-cover-hint'>Skrolla genom galaxen{cinema ? ' — eller luta dig tillbaka' : ''}. Ljud rekommenderas.</p>
+          <button type='button' className='crown-btn' onClick={begin} disabled={!canStart} aria-busy={!canStart}>
+            {canStart ? 'Lämna omloppsbanan' : 'Väver galaxen…'}
+          </button>
+          <p className='finale-cover-hint'>{canStart ? `Skrolla genom galaxen${cinema ? ' — eller luta dig tillbaka' : ''}. Ljud rekommenderas.` : 'Stjärnorna tänds bakom dig.'}</p>
+        </div>
+      )}
+      {!reduced && webgl && (
+        <div className='v2-stage' aria-hidden>
+          <CosmosCanvas
+            key={canvasGen}
+            summary={summary}
+            progress={progress}
+            velocity={velocity}
+            onContextLost={handleContextLost}
+            onFirstFrame={() => setSceneReady(true)}
+            onReady={(api) => {
+              if (process.env.NODE_ENV !== 'production') {
+                (window as unknown as { __cosmos?: unknown }).__cosmos = { ...api, progress, velocity };
+              }
+            }}
+          />
         </div>
       )}
       {started && (
         <>
-          {!reduced && webgl && (
-            <div className='v2-stage' aria-hidden>
-              <CosmosCanvas
-                key={canvasGen}
-                summary={summary}
-                progress={progress}
-                velocity={velocity}
-                onContextLost={handleContextLost}
-                onReady={(api) => {
-                  if (process.env.NODE_ENV !== 'production') {
-                    (window as unknown as { __cosmos?: unknown }).__cosmos = { ...api, progress, velocity };
-                  }
-                }}
-              />
-            </div>
-          )}
           <ColdOpenV2 {...acts} />
           <NumbersV2 {...acts} />
           <GalaxyCaptionV2 {...acts} />

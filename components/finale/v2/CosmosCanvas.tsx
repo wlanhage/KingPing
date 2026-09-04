@@ -38,6 +38,17 @@ function Rig({ cosmos, progress, velocity, warp }: Refs & { cosmos: ReturnType<t
   return null;
 }
 
+/** Anropar onDone exakt en gång, efter första faktiskt renderade bildrutan. */
+function FirstFrame({ onDone }: { onDone: () => void }) {
+  const fired = useRef(false);
+  useFrame(() => {
+    if (fired.current) return;
+    fired.current = true;
+    onDone();
+  });
+  return null;
+}
+
 function Effects({ warp }: { warp: { current: number } }) {
   const aberration = useRef<{ offset: THREE.Vector2 } | null>(null);
   useFrame(() => {
@@ -60,12 +71,14 @@ export function CosmosCanvas({
   velocity,
   onContextLost,
   onReady,
+  onFirstFrame,
 }: {
   summary: FinaleSummary;
   progress: { current: number };
   velocity: { current: number };
   onContextLost?: () => void;
   onReady?: (api: { gl: THREE.WebGLRenderer; scene: THREE.Scene; camera: THREE.Camera }) => void;
+  onFirstFrame?: () => void;
 }) {
   const cosmos = useMemo(
     () => buildCosmos(
@@ -94,6 +107,7 @@ export function CosmosCanvas({
       <Sun />
       <Galaxy cosmos={cosmos} progressRef={progress} />
       <Rig cosmos={cosmos} progress={progress} velocity={velocity} warp={warp} />
+      {onFirstFrame && <FirstFrame onDone={onFirstFrame} />}
       <Effects warp={warp} />
     </Canvas>
   );
