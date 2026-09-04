@@ -7,7 +7,7 @@ import Lenis from 'lenis';
 import type { FinaleSummary } from '@/lib/domain/finale';
 import { getTheme, themeCssVars } from '@/lib/theme';
 import { createFinaleAudio } from '../finale-audio';
-import { ColdOpenV2, CoronationV2, DepartureV2, EpilogueV2, GalaxyCaptionV2, NumbersV2, RivalryV2, VerdictsV2 } from './acts';
+import { ColdOpenV2, CoronationV2, DepartureV2, EpilogueV2, GalaxyCaptionV2, NumbersV2, RivalryV2 } from './acts';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -181,7 +181,6 @@ export function CosmicFinale({ summary, cinema }: { summary: FinaleSummary; cine
       {started && (
         <>
           <ColdOpenV2 {...acts} />
-          <VerdictsV2 {...acts} />
           <RivalryV2 {...acts} />
           <NumbersV2 {...acts} />
           <GalaxyCaptionV2 {...acts} />

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { superlatives, topRivalry, verdictFor, verdicts, type VerdictRow } from '../components/finale/v2/verdicts';
+import { superlatives, topRivalry, verdictFor, winless, type VerdictRow } from '../components/finale/v2/verdicts';
 import type { WeaveTransfer } from '../lib/domain/weave';
 
 const row = (o: Partial<VerdictRow> & { id: string; rank: number }): VerdictRow => ({
@@ -36,9 +36,10 @@ describe('verdictFor', () => {
   it('sista plats med vinster får hjärtat', () => {
     expect(verdictFor(row({ id: 'x', rank: 7, totalWins: 2 }), 0, 7)).toMatch(/först i hjärtat/);
   });
-  it('domar kommer i rankordning', () => {
-    const v = verdicts([row({ id: 'b', rank: 2, totalWins: 3 }), row({ id: 'a', rank: 1, totalWins: 9 })], {});
-    expect(v.map((x) => x.id)).toEqual(['a', 'b']);
+  it('winless plockar bara de utan vinst, i rankordning', () => {
+    const w = winless([row({ id: 'b', rank: 7 }), row({ id: 'a', rank: 6 }), row({ id: 'c', rank: 1, totalWins: 9 })]);
+    expect(w.map((x) => x.id)).toEqual(['a', 'b']);
+    expect(winless([row({ id: 'c', rank: 1, totalWins: 9 })])).toEqual([]);
   });
 });
 

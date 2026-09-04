@@ -17,8 +17,6 @@ export type VerdictRow = {
   longestReignMs: number;
 };
 
-export type Verdict = { id: string; name: string; rank: number; wins: number; line: string };
-
 export function verdictFor(row: VerdictRow, defences: number, playerCount: number): string {
   if (row.totalWins === 0) return 'Riket tjänade dig inte väl. Nästa säsong är din.';
   if (row.rank === 1) return 'Härskaren. Galaxen kretsar kring dig.';
@@ -37,10 +35,9 @@ export function verdictFor(row: VerdictRow, defences: number, playerCount: numbe
   return `${row.totalWins} vinster. Ett namn i krönikan.`;
 }
 
-export function verdicts(rows: VerdictRow[], defences: Record<string, number>): Verdict[] {
-  return [...rows]
-    .sort((a, b) => a.rank - b.rank)
-    .map((r) => ({ id: r.id, name: r.name, rank: r.rank, wins: r.totalWins, line: verdictFor(r, defences[r.id] ?? 0, rows.length) }));
+/** De som gick genom säsongen utan en enda krona, i rankordning. */
+export function winless(rows: VerdictRow[]): VerdictRow[] {
+  return rows.filter((r) => r.totalWins === 0).sort((a, b) => a.rank - b.rank);
 }
 
 export type Rivalry = { a: string; b: string; aToB: number; bToA: number; total: number } | null;

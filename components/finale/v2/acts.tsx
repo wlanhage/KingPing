@@ -6,7 +6,7 @@ import type { FinaleSummary } from '@/lib/domain/finale';
 import { formatDuration } from '@/lib/format';
 import { JESTER_ROASTS } from '@/components/Coronation';
 import { getTheme } from '@/lib/theme';
-import { superlatives, topRivalry, verdicts } from './verdicts';
+import { superlatives, topRivalry, verdictFor, winless } from './verdicts';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -145,34 +145,13 @@ export function NumbersV2({ summary, reduced }: { summary: FinaleSummary; reduce
   );
 }
 
-export function VerdictsV2({ summary, reduced }: { summary: FinaleSummary; reduced: boolean }) {
-  const ref = useRef<HTMLElement | null>(null);
-  useReveal(ref, reduced);
-  const rows = verdicts(summary.standings, summary.defences);
-  return (
-    <section ref={ref} className='v2-act v2-verdicts' data-act='verdicts'>
-      <p className='hud-eyebrow' data-reveal>Domen</p>
-      <h2 className='hud-h2' data-reveal>Vad riket minns om var och en</h2>
-      <ol className='hud-verdicts'>
-        {rows.map((v) => (
-          <li key={v.id} className='hud-verdict' data-reveal>
-            <span className='hud-verdict-rank'>#{v.rank}</span>
-            <span className='hud-verdict-name'>{v.name}</span>
-            <span className='hud-verdict-wins'><span className='hud-num'>{v.wins}</span> {v.wins === 1 ? 'vinst' : 'vinster'}</span>
-            <span className='hud-verdict-line'>{v.line}</span>
-          </li>
-        ))}
-      </ol>
-    </section>
-  );
-}
-
 export function RivalryV2({ summary, reduced }: { summary: FinaleSummary; reduced: boolean }) {
   const ref = useRef<HTMLElement | null>(null);
   useReveal(ref, reduced);
   const names = Object.fromEntries(summary.standings.map((s) => [s.id, s.name]));
   const rivalry = topRivalry(summary.transfers, names);
   const supers = superlatives(summary.standings, summary.defences, formatDuration);
+  const none = winless(summary.standings);
   return (
     <section ref={ref} className='v2-act v2-rivalry' data-act='rivalry'>
       {rivalry && (
@@ -200,6 +179,15 @@ export function RivalryV2({ summary, reduced }: { summary: FinaleSummary; reduce
           ))}
         </ul>
       )}
+      {none.length > 0 && (
+        <div className='hud-winless' data-reveal>
+          <p className='hud-eyebrow'>Utan krona</p>
+          <p className='hud-super-name'>{none.map((r) => r.name).join(' · ')}</p>
+          <p className='hud-detail'>{verdictFor(none[0], 0, summary.standings.length)}</p>
+          {/* Noll vinster betyder också noll störtanden — den enda som aldrig förlorade tronen. */}
+          <p className='hud-detail hud-winless-twist'>0 vinster · 0 störtanden — obesegrad, tekniskt sett.</p>
+        </div>
+      )}
     </section>
   );
 }
@@ -222,11 +210,6 @@ export function DepartureV2({ summary, reduced }: { summary: FinaleSummary; redu
           <p className='hud-detail'>Nästa säsong</p>
           <p className='hud-next-name'>{next.name}</p>
           <p className='hud-next-tagline'>{nextTheme.tagline}</p>
-          <p className='hud-next-chips'>
-            {[nextTheme.nav.home, nextTheme.nav.players, nextTheme.nav.history, nextTheme.epithets.rank1].map((c) => (
-              <span key={c} className='hud-chip'>{c}</span>
-            ))}
-          </p>
         </div>
       ) : (
         <p className='hud-detail' data-reveal>Nästa säsong väntar bortom horisonten.</p>

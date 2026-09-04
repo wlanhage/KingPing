@@ -12,7 +12,7 @@ import { buildWeave, type WeavePlayer, type WeaveTransfer } from '@/lib/domain/w
 export const ORBIT = { INNER: 6, STEP: 3.2, TILT: 0.35 } as const;
 
 /** Sidans progress där varje station börjar. Håll i synk med planens tabell. */
-export const STATION = { COLD_OPEN: 0, NUMBERS: 0.2, GALAXY: 0.46, WARP: 0.72, SUPERNOVA: 0.83, DEPARTURE: 0.965 } as const;
+export const STATION = { COLD_OPEN: 0, NUMBERS: 0.18, GALAXY: 0.41, WARP: 0.68, SUPERNOVA: 0.8, DEPARTURE: 0.96 } as const;
 
 /** Avfärden 0–1: kameran drar sig ur galaxen i warp mot nästa säsong. */
 export function departureT(progress: number): number {

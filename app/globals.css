@@ -1728,17 +1728,6 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .hud-title-sm { font-size: clamp(2rem, 6vw, 4.6rem); }
 .hud-h2 { margin: 0 0 1.6rem; font-family: var(--font-display), Georgia, serif; font-size: clamp(1.3rem, 2.8vw, 2rem); color: #f1e3c6; font-weight: 400; }
 
-/* Domen: en rad per riddare */
-.v2-verdicts { min-height: 130vh; align-content: center; justify-items: start; padding: 10vh 8vw; text-align: left; }
-.hud-verdicts { list-style: none; margin: 0; padding: 0; display: grid; gap: .9rem; width: min(760px, 100%); }
-.hud-verdict { display: grid; grid-template-columns: 3rem minmax(7rem, auto) auto 1fr; gap: 1.1rem; align-items: baseline; padding: .7rem 1rem .7rem 0; border-bottom: 1px solid rgba(231, 194, 92, .18); position: relative; }
-.hud-verdict::before { content: ''; position: absolute; inset: -.6rem -1.4rem; z-index: -1; border-radius: 999px; background: radial-gradient(ellipse at 20% 50%, rgba(3, 2, 8, .7), transparent 70%); filter: blur(6px); }
-.hud-verdict-rank { font-family: var(--font-display), Georgia, serif; color: #b29a72; font-size: .9rem; letter-spacing: .1em; }
-.hud-verdict-name { font-family: var(--font-display), Georgia, serif; font-size: clamp(1.15rem, 2.2vw, 1.6rem); color: #fff2c0; }
-.hud-verdict-wins { color: #d9c48f; white-space: nowrap; }
-.hud-verdict-line { color: #f1e3c6; font-style: italic; }
-@media (max-width: 640px) { .hud-verdict { grid-template-columns: 2.4rem 1fr; } .hud-verdict-wins, .hud-verdict-line { grid-column: 2; } }
-
 /* Fejden + superlativ */
 .v2-rivalry { min-height: 130vh; align-content: center; justify-items: end; padding: 10vh 8vw; text-align: right; }
 .hud-duel { position: relative; max-width: 40rem; padding-right: 1.6rem; border-right: 2px solid rgba(231, 194, 92, .75); }
@@ -1750,6 +1739,11 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .hud-super .hud-eyebrow { margin: 0; font-size: .68rem; }
 .hud-super-name { font-family: var(--font-display), Georgia, serif; font-size: clamp(1.2rem, 2.4vw, 1.7rem); color: #fff2c0; }
 .hud-super-value { color: #d9c48f; }
+/* Den utan krona: ett eget ögonblick — men efter fejden, så vinnaren inte avslöjas. */
+.hud-winless { position: relative; margin-top: 3rem; max-width: 34rem; padding-right: 1.6rem; border-right: 2px solid rgba(231, 194, 92, .45); }
+.hud-winless::before { content: ''; position: absolute; inset: -1.6rem -2.4rem; z-index: -1; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(3, 2, 8, .72), transparent 72%); filter: blur(6px); }
+.hud-winless .hud-super-name { display: block; font-size: clamp(1.4rem, 3vw, 2.2rem); }
+.hud-winless-twist { color: #b29a72; font-style: italic; }
 
 /* Avfärden: paletten går över i nästa säsongs färger (variablerna sätts inline från temat) */
 .v2-departure { min-height: 150vh; text-align: center; align-content: center; --dep-gold: #e7c25c; --dep-accent: #c9a227; --dep-text: #f1e3c6; }
@@ -1757,5 +1751,3 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .hud-next { margin-top: 2.4rem; display: grid; gap: .5rem; justify-items: center; }
 .hud-next-name { margin: 0; font-family: var(--font-title), Georgia, serif; font-size: clamp(2.2rem, 7vw, 5.4rem); line-height: 1; color: var(--dep-gold); text-shadow: 0 0 46px color-mix(in srgb, var(--dep-gold) 60%, transparent); }
 .hud-next-tagline { margin: .4rem 0 0; max-width: 40ch; color: var(--dep-text); font-style: italic; }
-.hud-next-chips { margin: 1rem 0 0; display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; }
-.hud-chip { padding: .35rem .8rem; border: 1px solid color-mix(in srgb, var(--dep-gold) 55%, transparent); border-radius: 999px; font-family: var(--font-display), Georgia, serif; font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; color: var(--dep-gold); background: rgba(3, 2, 8, .5); }
