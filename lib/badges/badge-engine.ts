@@ -46,6 +46,9 @@ export function getPlayerBadges(playerId: string, context: PlayerBadgeContext): 
   if (hasTop(s.fridayWins, context.globalStats.maxFridayWins)) push(res, 'friday_champion', 'Flest fredagsvinster.', s.fridayWins);
   if (s.fridayWins >= 3) push(res, 'prime_time_player', 'Vunnit flera fredagar.', s.fridayWins);
   if (s.fridayWins >= 2 && s.fridayWins / Math.max(1, s.totalWins) >= 0.5) push(res, 'after_work_assassin', 'Extra farlig på fredagar.');
+  // Fredag ska vara spelarens bästa dag, inte bara en av dem: strikt fler än varje annan veckodag.
+  const fridayCount = s.winsByWeekday[4] ?? 0;
+  if (fridayCount >= 3 && s.winsByWeekday.every((n, i) => i === 4 || n < fridayCount)) push(res, 'best_when_it_counts', 'Flest vinster på fredagar.', fridayCount);
   if (hasTop(s.winsLast30Days, context.globalStats.maxWinsLast30Days)) push(res, 'recent_champion', 'Hetast senaste 30 dagarna.', s.winsLast30Days);
   if (s.winsLast7Days >= 2) push(res, 'hot_right_now', 'Stark form senaste veckan.', s.winsLast7Days);
   if (s.winsLast7Days >= 3) push(res, 'momentum', 'Hög fart den senaste veckan.', s.winsLast7Days);

@@ -14,6 +14,7 @@ export const BADGES = [
   { id: 'friday_champion', name: 'Fredagsmästaren', emoji: '🏟️', description: 'Flest fredagsvinster i riket.', rarity: 'epic', category: 'friday', tone: 'prestige' },
   { id: 'prime_time_player', name: 'Prime Time Player', emoji: '📺', description: 'Har vunnit flera fredagsfinaler.', rarity: 'rare', category: 'friday', tone: 'prestige' },
   { id: 'after_work_assassin', name: 'After Work Assassin', emoji: '🍻', description: 'Är oproportionerligt farlig på fredagar.', rarity: 'rare', category: 'friday', tone: 'meme' },
+  { id: 'best_when_it_counts', name: 'Bäst när det gäller', emoji: '💪', description: 'Fredag är den veckodag där flest av de egna vinsterna kommit.', rarity: 'rare', category: 'friday', tone: 'prestige' },
   { id: 'recent_champion', name: 'Nylig mästare', emoji: '📈', description: 'Flest vinster senaste 30 dagarna.', rarity: 'epic', category: 'form', tone: 'prestige' },
   { id: 'hot_right_now', name: 'Het just nu', emoji: '🔥', description: 'Har starkast form just nu.', rarity: 'rare', category: 'form', tone: 'prestige', ladder: 'recent_form', tier: 1 },
   { id: 'momentum', name: 'Momentum', emoji: '⚡', description: 'Har vunnit flera gånger den senaste veckan.', rarity: 'rare', category: 'form', tone: 'prestige', ladder: 'recent_form', tier: 2 },

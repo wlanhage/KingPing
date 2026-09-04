@@ -147,6 +147,11 @@ describe('nya badges', () => {
     expect(ids(p('a', { winsByWeekday: [2, 3, 1, 3, 1, 0, 0] }))).not.toContain('worst_when_it_counts');
     expect(ids(p('a', { winsByWeekday: [2, 3, 0, 3, 0, 0, 0] }))).not.toContain('worst_when_it_counts');
   });
+  it('Bäst när det gäller: fredag är den egna bästa dagen, strikt', () => {
+    expect(ids(p('a', { winsByWeekday: [2, 1, 0, 2, 3, 0, 0] }))).toContain('best_when_it_counts');
+    expect(ids(p('a', { winsByWeekday: [3, 1, 0, 2, 3, 0, 0] }))).not.toContain('best_when_it_counts'); // delad topp räcker inte
+    expect(ids(p('a', { winsByWeekday: [0, 0, 0, 0, 2, 0, 0] }))).not.toContain('best_when_it_counts'); // för få fredagar
+  });
   it('fredagsfobi: många vinster men ingen på fredag', () => {
     expect(ids(p('a', { totalWins: 8, fridayWins: 0 }))).toContain('friday_phobia');
     expect(ids(p('a', { totalWins: 8, fridayWins: 1 }))).not.toContain('friday_phobia');
