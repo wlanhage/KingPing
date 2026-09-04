@@ -36,9 +36,14 @@ export function CrownWeave3DAct({
   const progressRef = useRef(0);
   const [visible, setVisible] = useState(false);
   const [gaveUp, setGaveUp] = useState(false);
+  // `reduced` börjar alltid false och sätts först i en effekt hos föräldern. Utan
+  // den här grinden hinner vi skapa en pin under första rendern och måste sedan
+  // riva den igen när reduced visar sig vara true — se kommentaren om removeChild.
+  const [motionResolved, setMotionResolved] = useState(false);
+  useEffect(() => setMotionResolved(true), []);
 
   useEffect(() => {
-    if (reduced || !ref.current) return;
+    if (!motionResolved || reduced || gaveUp || !ref.current) return;
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
         trigger: ref.current,
@@ -48,11 +53,16 @@ export function CrownWeave3DAct({
         scrub: 0.4,
         onUpdate: (self) => {
           progressRef.current = self.progress;
+          // Andra vägen in: har akten börjat skrubbas är den definitivt i bild.
+          // IntersectionObserver kräver renderade frames och kan utebli.
+          if (self.progress > 0) setVisible(true);
         },
       });
     }, ref);
+    // Städningen kör ctx.revert(), vilket plockar bort pin-spacern och lämnar
+    // tillbaka sektionen till sin riktiga förälder innan React rör den.
     return () => ctx.revert();
-  }, [reduced, summary.transfers.length]);
+  }, [motionResolved, reduced, gaveUp, summary.transfers.length]);
 
   // Global felvakt kring WebGL. React-felgränser fångar BARA fel under rendering —
   // inte fel som kastas från en event-handler eller en rAF-loop, vilket är precis
@@ -92,14 +102,24 @@ export function CrownWeave3DAct({
   }, [reduced]);
 
   // Reduced motion: ingen pinning, ingen 3D — SVG-versionen är den tillgängliga vägen.
-  // Samma sak om WebGL-kontexten gått förlorad: SVG-väven finns kvar i sidan och
-  // bär innehållet, så vi degraderar tyst i stället för att visa en trasig canvas.
-  if (reduced || gaveUp) return null;
+  // Säkert att avmontera här: motionResolved-grinden garanterar att ingen pin hunnit
+  // skapas innan vi vet svaret.
+  if (reduced && motionResolved) return null;
 
+  // Vid förlorad WebGL-kontext avmonterar vi INTE sektionen. ScrollTrigger har
+  // flyttat in den i en pin-spacer, så React skulle anropa removeChild på fel
+  // förälder och kasta NotFoundError. I stället blir sektionen tom och kollapsas
+  // av CSS; effekten ovan hinner riva pinnen först. SVG-väven bär innehållet.
   return (
-    <section ref={ref} className="finale-act finale-weave3d" data-act="weave3d">
+    <section
+      ref={ref}
+      className="finale-act finale-weave3d"
+      data-act="weave3d"
+      data-collapsed={gaveUp || undefined}
+      aria-hidden={gaveUp || undefined}
+    >
       <div className="weave3d-stage">
-        {visible && (
+        {visible && !gaveUp && (
           <CanvasBoundary onError={() => setGaveUp(true)}>
             <CrownWeave3D
               summary={summary}

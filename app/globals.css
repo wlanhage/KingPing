@@ -1663,3 +1663,8 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .weave3d-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); }
 .weave3d-caption { position: absolute; left: 0; right: 0; bottom: 6vh; text-align: center; pointer-events: none; }
 .weave3d-hint { margin: .2rem 0 0; color: var(--muted); font-size: .85rem; }
+
+/* Gav 3D-akten upp (förlorad WebGL-kontext) kollapsar sektionen i stället för att
+   avmonteras: ScrollTrigger har flyttat in den i en pin-spacer, och en avmontering
+   skulle få React att anropa removeChild på fel förälder. */
+.finale-weave3d[data-collapsed] { min-height: 0; height: 0; overflow: hidden; padding: 0; }
