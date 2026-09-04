@@ -57,8 +57,6 @@ export default async function Page() {
         )}
       </section>
 
-      {latestInSeason && <NationSeal state={latestInSeason.nationState} theme={theme} />}
-
       <section className='dash-crown-panel'>
         <h2>{theme.verbs.crown} ny vinnare</h2>
         <p className='dash-crown-sub'>Välj spelaren som tog hem rundan.</p>
@@ -69,6 +67,8 @@ export default async function Page() {
           copy={{ crown: theme.verbs.crown, crowning: theme.verbs.crowning, crowningNow: theme.verbs.crowningNow, coronation: theme.coronation }}
         />
       </section>
+
+      {latestInSeason && <NationSeal state={latestInSeason.nationState} theme={theme} />}
 
       {endedSeason && (
         <>
