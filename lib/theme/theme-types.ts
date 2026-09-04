@@ -44,6 +44,8 @@ export type Theme = {
   colors: ThemeColors;
   /** Rörlig bakgrund bakom hela sidan. Utelämnas för teman utan. */
   backdrop?: 'starfield';
+  /** Historiksidans form: 'crawl' = skrollstyrd textrulle i perspektiv. Utelämnas = vanlig lista. */
+  historyStyle?: 'crawl';
 };
 
 export type { EventType };

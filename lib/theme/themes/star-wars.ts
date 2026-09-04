@@ -78,6 +78,7 @@ export const starWars: Theme = {
   },
   announcements: withNeutral({ streakTemplates: galaxyStreakTemplates, nationIntros: galaxyNationIntros, fridayIntros: galaxyFridayIntros }),
   backdrop: 'starfield',
+  historyStyle: 'crawl',
   colors: {
     bg: '#05070f',
     panel: '#0e1424',
