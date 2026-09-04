@@ -56,6 +56,7 @@ export const starWars: Theme = {
     prime_time_player: { name: 'Holonet-stjärnan', emoji: '📡', description: 'Har vunnit flera fredagsfinaler.' },
     after_work_assassin: { name: 'Sköt först', emoji: '🔫', description: 'Är oproportionerligt farlig på fredagar. Fråga inte vem som sköt först.' },
     recent_champion: { name: 'Stigande stjärna', emoji: '🌠', description: 'Flest vinster senaste 30 dagarna.' },
+    steep_curve: { name: 'Kraften växer', emoji: '🧗', description: 'Störst procentuell ökning av vinster sedan förra säsongen.' },
     hot_right_now: { name: 'Kraften är stark', emoji: '✨', description: 'Har starkast form just nu.' },
     momentum: { name: 'Hyperfart', emoji: '🚀', description: 'Har vunnit flera gånger den senaste veckan.' },
     cold: { name: 'Hoth-kall', emoji: '🥶', description: 'Har inte vunnit på 14+ dagar. Kallt som på Hoth.' },

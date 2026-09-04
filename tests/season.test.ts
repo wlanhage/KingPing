@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clampReignToSeason, clampedReignMs, isWinInSeason, scopePlayerToSeason, type SeasonWindow } from '../lib/domain/season';
+import { clampReignToSeason, clampedReignMs, isWinInSeason, previousSeasonOf, scopePlayerToSeason, type SeasonWindow } from '../lib/domain/season';
 
 const d = (iso: string) => new Date(iso);
 const HOUR = 60 * 60 * 1000;
@@ -95,5 +95,19 @@ describe('scopePlayerToSeason', () => {
     expect(scoped.wins).toHaveLength(1);
     expect(scoped.reigns).toHaveLength(1);
     expect(scoped.reigns[0].endedAt).toEqual(d('2026-04-01T02:00:00Z'));
+  });
+});
+
+describe('previousSeasonOf', () => {
+  const mk = (id: string, start: string, end: string | null) => ({ id, slug: id, name: id, theme: 'realm', startedAt: new Date(start), endedAt: end ? new Date(end) : null });
+  const s1 = mk('s1', '2026-01-01', '2026-04-01');
+  const s2 = mk('s2', '2026-04-01', '2026-08-28');
+  const s3 = mk('s3', '2026-08-28', null);
+  it('hittar säsongen som slutade närmast före', () => {
+    expect(previousSeasonOf([s3, s2, s1], s3)?.id).toBe('s2');
+    expect(previousSeasonOf([s3, s2, s1], s2)?.id).toBe('s1');
+  });
+  it('första säsongen har ingen föregångare', () => {
+    expect(previousSeasonOf([s3, s2, s1], s1)).toBeNull();
   });
 });

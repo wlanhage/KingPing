@@ -102,6 +102,16 @@ export async function listSeasons(): Promise<SeasonWindow[]> {
   return prisma.season.findMany({ orderBy: { startedAt: 'desc' } });
 }
 
+/** Säsongen som slutade närmast före den givna, eller null för den första (och den implicita). */
+export function previousSeasonOf(seasons: SeasonWindow[], season: SeasonWindow): SeasonWindow | null {
+  const before = seasons.filter((s) => s.id !== season.id && s.endedAt && s.endedAt.getTime() <= season.startedAt.getTime());
+  return before.sort((a, b) => b.endedAt!.getTime() - a.endedAt!.getTime())[0] ?? null;
+}
+
+export async function getPreviousSeason(season: SeasonWindow): Promise<SeasonWindow | null> {
+  return previousSeasonOf(await listSeasons(), season);
+}
+
 /**
  * Löser ut vilken säsong som ska visas. Utan slug: den pågående. Finns ingen Season-rad
  * alls faller vi tillbaka på hela historiken, så appen fungerar även före bootstrap.

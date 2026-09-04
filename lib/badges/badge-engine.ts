@@ -1,5 +1,6 @@
 import { BADGES, BADGE_BY_ID } from './badge-definitions';
 import type { ComputedPlayerBadge, PlayerBadgeContext, PlayerStats } from './badge-types';
+import { winGrowth } from './player-stats';
 
 const rarityRank = { mythical: 5, legendary: 4, epic: 3, rare: 2, common: 1 } as const;
 const categoryOrder = ['throne', 'streak', 'combat', 'friday', 'calendar', 'form', 'legacy', 'meta', 'chaos', 'shame'] as const;
@@ -50,6 +51,8 @@ export function getPlayerBadges(playerId: string, context: PlayerBadgeContext): 
   const fridayCount = s.winsByWeekday[4] ?? 0;
   if (fridayCount >= 3 && s.winsByWeekday.every((n, i) => i === 4 || n < fridayCount)) push(res, 'best_when_it_counts', 'Flest vinster på fredagar.', fridayCount);
   if (hasTop(s.winsLast30Days, context.globalStats.maxWinsLast30Days)) push(res, 'recent_champion', 'Hetast senaste 30 dagarna.', s.winsLast30Days);
+  const growth = winGrowth(s);
+  if (growth !== null && growth > 0 && growth === context.globalStats.maxWinGrowth) push(res, 'steep_curve', 'Störst ökning sedan förra säsongen.', `+${Math.round(growth * 100)} %`);
   if (s.winsLast7Days >= 2) push(res, 'hot_right_now', 'Stark form senaste veckan.', s.winsLast7Days);
   if (s.winsLast7Days >= 3) push(res, 'momentum', 'Hög fart den senaste veckan.', s.winsLast7Days);
   if ((s.daysSinceLastWin ?? 0) >= 14) push(res, 'cold', '14+ dagar sedan senaste vinst.', s.daysSinceLastWin ?? undefined);

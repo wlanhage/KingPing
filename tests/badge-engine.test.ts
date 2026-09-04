@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { getPlayerBadges } from '../lib/badges/badge-engine';
+import { winGrowth } from '../lib/badges/player-stats';
 import type { PlayerBadgeContext, PlayerStats } from '../lib/badges/badge-types';
 
-const p = (id: string, o: Partial<PlayerStats>): PlayerStats => ({ playerId: id, totalWins: 0, totalReignMs: 0, longestReignMs: 0, currentReignMs: 0, currentStreak: 0, longestStreak: 0, fridayWins: 0, winsLast30Days: 0, winsLast7Days: 0, daysSinceLastWin: null, daysSincePreviousWin: null, streaksBroken: 0, biggestStreakBroken: 0, takeoverWins: 0, timesDethroned: 0, averageReignMs: 0, crownEfficiencyMsPerWin: 0, isCurrentKing: false, winsByWeekday: [0, 0, 0, 0, 0, 0, 0], earlyWins: 0, lunchWins: 0, lateWins: 0, maxWinsInOneDay: 0, firstWinAt: null, reignCount: 0, distinctVictims: 0, ...o });
-const ctx = (players: PlayerStats[]): PlayerBadgeContext => ({ playerStats: Object.fromEntries(players.map((x) => [x.playerId, x])), globalStats: { maxTotalReignMs: Math.max(...players.map((x) => x.totalReignMs), 0), maxTotalWins: Math.max(...players.map((x) => x.totalWins), 0), maxLongestStreak: Math.max(...players.map((x) => x.longestStreak), 0), maxFridayWins: Math.max(...players.map((x) => x.fridayWins), 0), maxWinsLast30Days: Math.max(...players.map((x) => x.winsLast30Days), 0), maxStreaksBroken: Math.max(...players.map((x) => x.streaksBroken), 0), maxBiggestStreakBroken: Math.max(...players.map((x) => x.biggestStreakBroken), 0), maxCrownEfficiencyMsPerWin: Math.max(...players.map((x) => x.crownEfficiencyMsPerWin), 0), currentKingId: players.find((x) => x.isCurrentKing)?.playerId ?? null, earliestWinAt: earliest(players), secondTotalReignMs: [...new Set(players.map((x) => x.totalReignMs))].sort((a, b) => b - a)[1] ?? 0 } });
+const p = (id: string, o: Partial<PlayerStats>): PlayerStats => ({ playerId: id, totalWins: 0, totalReignMs: 0, longestReignMs: 0, currentReignMs: 0, currentStreak: 0, longestStreak: 0, fridayWins: 0, winsLast30Days: 0, winsLast7Days: 0, daysSinceLastWin: null, daysSincePreviousWin: null, streaksBroken: 0, biggestStreakBroken: 0, takeoverWins: 0, timesDethroned: 0, averageReignMs: 0, crownEfficiencyMsPerWin: 0, isCurrentKing: false, winsByWeekday: [0, 0, 0, 0, 0, 0, 0], earlyWins: 0, lunchWins: 0, lateWins: 0, maxWinsInOneDay: 0, firstWinAt: null, reignCount: 0, distinctVictims: 0, previousSeasonWins: null, ...o });
+const ctx = (players: PlayerStats[]): PlayerBadgeContext => ({ playerStats: Object.fromEntries(players.map((x) => [x.playerId, x])), globalStats: { maxTotalReignMs: Math.max(...players.map((x) => x.totalReignMs), 0), maxTotalWins: Math.max(...players.map((x) => x.totalWins), 0), maxLongestStreak: Math.max(...players.map((x) => x.longestStreak), 0), maxFridayWins: Math.max(...players.map((x) => x.fridayWins), 0), maxWinsLast30Days: Math.max(...players.map((x) => x.winsLast30Days), 0), maxStreaksBroken: Math.max(...players.map((x) => x.streaksBroken), 0), maxBiggestStreakBroken: Math.max(...players.map((x) => x.biggestStreakBroken), 0), maxCrownEfficiencyMsPerWin: Math.max(...players.map((x) => x.crownEfficiencyMsPerWin), 0), currentKingId: players.find((x) => x.isCurrentKing)?.playerId ?? null, earliestWinAt: earliest(players), secondTotalReignMs: [...new Set(players.map((x) => x.totalReignMs))].sort((a, b) => b - a)[1] ?? 0, maxWinGrowth: Math.max(0, ...players.map((x) => winGrowth(x) ?? 0)) } });
 const earliest = (players: PlayerStats[]) => { const t = players.flatMap((x) => (x.firstWinAt ? [x.firstWinAt.getTime()] : [])); return t.length ? new Date(Math.min(...t)) : null; };
 
 describe('badge engine', () => {
@@ -151,6 +152,18 @@ describe('nya badges', () => {
     expect(ids(p('a', { winsByWeekday: [2, 1, 0, 2, 3, 0, 0] }))).toContain('best_when_it_counts');
     expect(ids(p('a', { winsByWeekday: [3, 1, 0, 2, 3, 0, 0] }))).not.toContain('best_when_it_counts'); // delad topp räcker inte
     expect(ids(p('a', { winsByWeekday: [0, 0, 0, 0, 2, 0, 0] }))).not.toContain('best_when_it_counts'); // för få fredagar
+  });
+  it('Hög utvecklingskurva: störst procentuell ökning, noll förra säsongen räknas som en', () => {
+    const oliver = p('oliver', { totalWins: 4, previousSeasonWins: 0 });   // +400 %
+    const axel = p('axel', { totalWins: 20, previousSeasonWins: 17 });     // +18 %
+    const ny = p('ny', { totalWins: 9, previousSeasonWins: null });        // fanns inte förra säsongen
+    expect(ids(oliver, [axel, ny])).toContain('steep_curve');
+    expect(ids(axel, [oliver, ny])).not.toContain('steep_curve');
+    expect(ids(ny, [oliver, axel])).not.toContain('steep_curve');
+  });
+  it('Hög utvecklingskurva delas inte ut utan ökning eller utan förra säsong', () => {
+    expect(ids(p('a', { totalWins: 3, previousSeasonWins: 5 }), [p('b', { totalWins: 1, previousSeasonWins: 1 })])).not.toContain('steep_curve');
+    expect(ids(p('a', { totalWins: 30, previousSeasonWins: null }))).not.toContain('steep_curve');
   });
   it('fredagsfobi: många vinster men ingen på fredag', () => {
     expect(ids(p('a', { totalWins: 8, fridayWins: 0 }))).toContain('friday_phobia');

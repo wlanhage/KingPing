@@ -46,7 +46,7 @@ export function calculatePlayerStats(player: any, currentKingId?: string | null,
   const firstWinAt = winDates.length ? new Date(Math.min(...winDates.map((d) => d.getTime()))) : null;
   const reignCount = reigns.length;
   const distinctVictims = new Set(wins.filter((w: any) => w.previousKingId && w.previousKingId !== w.winnerId).map((w: any) => w.previousKingId)).size;
-  return { playerId: player.id, totalWins, totalReignMs, longestReignMs, currentReignMs, currentStreak, longestStreak, fridayWins, winsLast30Days, winsLast7Days, daysSinceLastWin, daysSincePreviousWin, streaksBroken, biggestStreakBroken, takeoverWins, timesDethroned, averageReignMs, crownEfficiencyMsPerWin, isCurrentKing, winsByWeekday, earlyWins, lunchWins, lateWins, maxWinsInOneDay, firstWinAt, reignCount, distinctVictims };
+  return { playerId: player.id, totalWins, totalReignMs, longestReignMs, currentReignMs, currentStreak, longestStreak, fridayWins, winsLast30Days, winsLast7Days, daysSinceLastWin, daysSincePreviousWin, streaksBroken, biggestStreakBroken, takeoverWins, timesDethroned, averageReignMs, crownEfficiencyMsPerWin, isCurrentKing, winsByWeekday, earlyWins, lunchWins, lateWins, maxWinsInOneDay, firstWinAt, reignCount, distinctVictims, previousSeasonWins: null };
 }
 
 export function calculateGlobalStats(stats: PlayerStats[], currentKingId: string | null): GlobalStats {
@@ -62,6 +62,7 @@ export function calculateGlobalStats(stats: PlayerStats[], currentKingId: string
     currentKingId,
     earliestWinAt: earliest(stats.map((s) => s.firstWinAt)),
     secondTotalReignMs: secondHighest(stats.map((s) => s.totalReignMs)),
+    maxWinGrowth: Math.max(0, ...stats.map((s) => winGrowth(s) ?? 0)),
   };
 }
 
@@ -73,4 +74,14 @@ function earliest(dates: (Date | null)[]): Date | null {
 /** Näst högsta DISTINKTA värdet — delar två spelare toppen finns ingen tvåa. */
 function secondHighest(values: number[]): number {
   return [...new Set(values)].sort((a, b) => b - a)[1] ?? 0;
+}
+
+/**
+ * Procentuell ökning av vinster mot förra säsongen, som kvot (1 = +100 %). Noll vinster förr
+ * räknas som en, så att den som gick från 0 till 6 hamnar före den som gick från 2 till 4.
+ * null när det inte finns någon förra säsong att jämföra med.
+ */
+export function winGrowth(s: Pick<PlayerStats, 'totalWins' | 'previousSeasonWins'>): number | null {
+  if (s.previousSeasonWins === null) return null;
+  return (s.totalWins - s.previousSeasonWins) / Math.max(1, s.previousSeasonWins);
 }

@@ -5,7 +5,7 @@ import { prisma } from '../prisma';
 import { realm } from '../theme/themes/realm';
 import { calculateGlobalStats, calculatePlayerStats } from '../badges/player-stats';
 import { getPlayerBadges } from '../badges/badge-engine';
-import { resolveSeason, scopePlayerToSeason, seasonNow, winOccurredAtFilter, type SeasonWindow } from './season';
+import { getPreviousSeason, isWinInSeason, resolveSeason, scopePlayerToSeason, seasonNow, winOccurredAtFilter, type SeasonWindow } from './season';
 import { getTheme } from '../theme';
 
 
@@ -76,11 +76,14 @@ export async function recordWin(winnerId:string,note?:string){ const now=new Dat
 // Utan säsong: oförändrat all-time-beteende (används av testerna). Med säsong: spelarens
 // vinster filtreras och regeringar klampas mot fönstret, och "nu" fryses vid säsongsslutet
 // så att rullande 7/30-dagarsfönster blir meningsfulla även historiskt.
-export function buildPlayerStats(player: any, currentKingId?: string | null, season?: SeasonWindow, now: Date = new Date()) {
+export function buildPlayerStats(player: any, currentKingId?: string | null, season?: SeasonWindow, now: Date = new Date(), previousSeason?: SeasonWindow | null) {
   const scoped = season ? scopePlayerToSeason(player, season, now) : player;
   const asOf = season ? seasonNow(season, now) : now;
   const base = calculatePlayerStats(scoped, currentKingId, asOf);
-  return { ...base, lastWinAt: scoped.wins?.[0]?.occurredAt ?? null };
+  // Bara spelare som fanns innan säsongen började kan ha en utvecklingskurva att jämföra med.
+  const existedBefore = season && player.createdAt && new Date(player.createdAt).getTime() < season.startedAt.getTime();
+  const previousSeasonWins = previousSeason && existedBefore ? (player.wins ?? []).filter((w: any) => isWinInSeason(w.occurredAt, previousSeason)).length : null;
+  return { ...base, previousSeasonWins, lastWinAt: scoped.wins?.[0]?.occurredAt ?? null };
 }
 
 export async function getLeaderboard(season?: SeasonWindow) {
@@ -90,7 +93,8 @@ export async function getLeaderboard(season?: SeasonWindow) {
   // uttryckas i en Prisma-query, och datamängden är i storleksordningen tiotal rader.
   const players = await prisma.player.findMany({ include: { wins: { orderBy: { occurredAt: 'desc' } }, reigns: true } });
   const current = await getCurrentKing(s);
-  const rawRows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId, s, now) })).sort((a,b)=>b.totalReignMs-a.totalReignMs);
+  const previous = await getPreviousSeason(s);
+  const rawRows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId, s, now, previous) })).sort((a,b)=>b.totalReignMs-a.totalReignMs);
   const ranked = rawRows.map((row, i) => ({ ...row, rank: i + 1 }));
   const statMap = Object.fromEntries(ranked.map((r) => [r.id, r]));
   const globalStats = calculateGlobalStats(Object.values(statMap) as any, current?.playerId ?? null);
@@ -122,7 +126,7 @@ export async function getPlayerStats(playerId: string, season?: SeasonWindow) {
   const current = await getCurrentKing(s);
   const player = await prisma.player.findUnique({ where: { id: playerId }, include: { wins: { orderBy: { occurredAt: 'desc' } }, reigns: true } });
   if (!player) return null;
-  const stats = buildPlayerStats(player, current?.playerId, s);
+  const stats = buildPlayerStats(player, current?.playerId, s, new Date(), await getPreviousSeason(s));
   const board = await getLeaderboard(s);
   const statMap = Object.fromEntries(board.map((r) => [r.id, r]));
   const globalStats = calculateGlobalStats(board as any, current?.playerId ?? null);
