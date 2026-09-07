@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Coronation, type CoronationCopy, type CoronationEvent } from './Coronation';
+import { Coronation, type CoronationCopy, type CoronationEvent, type LaneWords } from './Coronation';
 
-export type WinFormCopy = { crown: string; crowning: string; crowningNow: string; coronation: CoronationCopy };
+export type WinFormCopy = { crown: string; crowning: string; crowningNow: string; coronation: CoronationCopy; lane: LaneWords };
 
 function formatCountdown(ms: number) {
   const total = Math.ceil(ms / 1000);
@@ -73,6 +73,10 @@ export function RecordWinForm({ players, lastWinAt, cooldownMs, copy }: { player
         deposedName: previousKingId ? players.find((p) => p.id === previousKingId)?.name ?? null : null,
         streakCount: win?.streakCount ?? 1,
         isNewRuler,
+        eventType: win?.eventType ?? 'NEW_KING',
+        previousStreakCount: win?.previousStreakCount ?? 0,
+        isFriday: !!win?.isFridayFinal,
+        daysSinceLastWin: null,
       });
     } catch {
       setError('Kunde inte nå servern. Försök igen.');
@@ -139,7 +143,7 @@ export function RecordWinForm({ players, lastWinAt, cooldownMs, copy }: { player
         </div>
       )}
 
-      {coronation && <Coronation event={coronation} copy={copy.coronation} onDone={() => location.reload()} />}
+      {coronation && <Coronation event={coronation} copy={copy.coronation} words={copy.lane} onDone={() => location.reload()} />}
     </>
   );
 }

@@ -1,6 +1,12 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import type { Theme } from '@/lib/theme';
+import { sequenceFor } from './lane/sequence';
+import type { ClipCtx, CueName } from './lane/types';
+
+// Banan drar in three.js — laddas först när en kröning faktiskt avfyras.
+const LaneShow = dynamic(() => import('./lane/LaneShow').then((m) => m.LaneShow), { ssr: false });
 
 /**
  * THE ROYAL CORONATION SPECTACULAR™
@@ -15,7 +21,18 @@ export type CoronationEvent = {
   deposedName: string | null;
   streakCount: number;
   isNewRuler: boolean;
+  eventType: string;
+  previousStreakCount: number;
+  isFriday: boolean;
+  daysSinceLastWin: number | null;
 };
+
+/** Orden banan behöver från temat: KRÖNING/UPPHÖJELSE och TYRANNI/IMPERIET. */
+export type LaneWords = { crowning: string; tyranny: string };
+
+function hasWebGL(): boolean {
+  try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch { return false; }
+}
 
 const MUTE_KEY = 'kp-coronation-muted';
 const GOLD = ['#e7c25c', '#f3d98a', '#c9a227', '#b8901f', '#fbeec2'];
@@ -179,13 +196,58 @@ function playDroidBeeps(ctx: AudioContext, master: GainNode, at: number) {
   });
 }
 
-export function Coronation({ event, copy, onDone }: { event: CoronationEvent; copy: CoronationCopy; onDone: () => void }) {
+/* ── Banans ljud: käglor som smäller, en boll i rännan, siren och dunsar ── */
+
+function playCueSound(ctx: AudioContext, master: GainNode, cue: CueName) {
+  const now = ctx.currentTime;
+  const noise = (at: number, dur: number, freq: number, vol: number) => {
+    const src = ctx.createBufferSource();
+    const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * dur), ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+    src.buffer = buf;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = freq; bp.Q.value = 0.8;
+    const g = ctx.createGain(); g.gain.value = vol;
+    src.connect(bp).connect(g).connect(master); src.start(at);
+  };
+  const tone = (at: number, dur: number, from: number, to: number, type: OscillatorType, vol: number) => {
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.type = type; o.frequency.setValueAtTime(from, at); o.frequency.exponentialRampToValueAtTime(Math.max(20, to), at + dur);
+    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(vol, at + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(g).connect(master); o.start(at); o.stop(at + dur + 0.02);
+  };
+  switch (cue) {
+    case 'hit':
+    case 'crash':
+      noise(now, 0.3, 900, cue === 'crash' ? 0.7 : 0.5);
+      [0, 0.04, 0.09, 0.15, 0.22, 0.31].forEach((d, i) => tone(now + d, 0.05, 1400 + i * 220, 900, 'square', 0.08));
+      if (cue === 'crash') tone(now, 0.5, 90, 40, 'sine', 0.5);
+      break;
+    case 'gutter':
+      tone(now, 0.9, 320, 120, 'sawtooth', 0.14);
+      tone(now + 0.9, 0.6, 130, 70, 'sawtooth', 0.12);
+      break;
+    case 'siren':
+      for (let i = 0; i < 6; i++) tone(now + i * 0.22, 0.2, i % 2 ? 620 : 920, i % 2 ? 620 : 920, 'square', 0.06);
+      break;
+    case 'slam':
+      tone(now, 0.35, 85, 40, 'sine', 0.45);
+      noise(now, 0.12, 400, 0.3);
+      break;
+  }
+}
+
+export function Coronation({ event, copy, words, onDone }: { event: CoronationEvent; copy: CoronationCopy; words?: LaneWords; onDone: () => void }) {
   const [muted, setMuted] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [doorHeld, setDoorHeld] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const skipRef = useRef<HTMLButtonElement | null>(null);
   const audioRef = useRef<AudioContext | null>(null);
+  const masterRef = useRef<GainNode | null>(null);
+  // 'on' = tredimensionella banan, 'off' = klassiska overlayen (reduced motion, saknat WebGL eller tappad kontext).
+  const [lane, setLane] = useState<'pending' | 'on' | 'off'>('pending');
+  const [sequence] = useState(() => sequenceFor(event));
   const doorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const roast = useRef(pick(copy.roasts)).current;
   const holdDecree = copy.holdDecree.replaceAll('{streak}', String(event.streakCount));
@@ -198,16 +260,18 @@ export function Coronation({ event, copy, onDone }: { event: CoronationEvent; co
     const rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     setReduced(rm);
     setMuted(window.localStorage.getItem(MUTE_KEY) === '1');
-  }, []);
+    setLane(!rm && words && hasWebGL() ? 'on' : 'off');
+  }, [words]);
 
   // Auto-stäng + tangentbord (Esc), och fokusera hoppa-över-knappen.
   useEffect(() => {
     skipRef.current?.focus();
-    const timer = setTimeout(onDone, reduced ? 9000 : 8000);
+    // I banläget säger LaneShow till när klippen är slut; timern är bara en säkerhetslina.
+    const timer = setTimeout(onDone, lane === 'on' ? 30000 : reduced ? 9000 : 8000);
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onDone(); };
     window.addEventListener('keydown', onKey);
     return () => { clearTimeout(timer); window.removeEventListener('keydown', onKey); };
-  }, [onDone, reduced]);
+  }, [onDone, reduced, lane]);
 
   // Ljud: fanfar (+ ev. sorgtrombon för den störtade). Följer på användarens klick → tillåtet.
   useEffect(() => {
@@ -219,17 +283,28 @@ export function Coronation({ event, copy, onDone }: { event: CoronationEvent; co
     const master = ctx.createGain();
     master.gain.value = 0.6;
     master.connect(ctx.destination);
+    masterRef.current = master;
     const march = copy.sound === 'march';
     void ctx.resume().then(() => {
       if (march) playDarkMarch(ctx, master); else playFanfare(ctx, master);
       if (showDeposed) (march ? playDroidBeeps : playSadTrombone)(ctx, master, ctx.currentTime + 2.6);
     });
-    return () => { void ctx.close().catch(() => {}); audioRef.current = null; };
+    return () => { void ctx.close().catch(() => {}); audioRef.current = null; masterRef.current = null; };
   }, [muted, showDeposed, copy.sound]);
 
-  // Guldkonfetti (hoppas över vid reduced-motion).
+  const playCue = useCallback((cue: CueName) => {
+    if (muted || !audioRef.current || !masterRef.current) return;
+    playCueSound(audioRef.current, masterRef.current, cue);
+  }, [muted]);
+
+  const laneCtx: ClipCtx | null = words ? {
+    winner: event.winnerName, deposed: event.deposedName, streak: event.streakCount, previousStreak: event.previousStreakCount,
+    days: event.daysSinceLastWin, cosmic: event.isFriday, crowningWord: words.crowning, tyrannyWord: words.tyranny,
+  } : null;
+
+  // Guldkonfetti (hoppas över vid reduced-motion och i banläget).
   useEffect(() => {
-    if (reduced) return;
+    if (reduced || lane !== 'off') return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -279,7 +354,7 @@ export function Coronation({ event, copy, onDone }: { event: CoronationEvent; co
     };
     raf = requestAnimationFrame(tick);
     return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
-  }, [reduced]);
+  }, [reduced, lane]);
 
   function toggleMute() {
     setMuted((m) => {
@@ -309,14 +384,24 @@ export function Coronation({ event, copy, onDone }: { event: CoronationEvent; co
       aria-label={copy.crier}
       onClick={onDone}
     >
-      {!reduced && <canvas ref={canvasRef} className='coro-confetti' aria-hidden='true' />}
+      {lane === 'off' && !reduced && <canvas ref={canvasRef} className='coro-confetti' aria-hidden='true' />}
 
       {/* Skärmläsar-utrop */}
       <p className='coro-sr' aria-live='assertive'>
         {event.isNewRuler ? `${copy.crier} ${bannerName} ${copy.decree}` : `${bannerName} ${holdDecree}`}
       </p>
 
-      {dragonCount > 0 && (
+      {lane === 'on' && laneCtx && (
+        <div onClick={(e) => e.stopPropagation()}>
+          <LaneShow ctx={laneCtx} sequence={sequence} onDone={onDone} onCue={playCue} onFail={() => setLane('off')} />
+          <div className='coro-actions coro-actions-lane'>
+            <button type='button' className='coro-mute' onClick={toggleMute} aria-pressed={muted}>{muted ? '🔇 Ljud av' : '🔊 Ljud på'}</button>
+            <button type='button' ref={skipRef} className='coro-skip' onClick={onDone}>{copy.dismiss}</button>
+          </div>
+        </div>
+      )}
+
+      {lane === 'off' && dragonCount > 0 && (
         <div className='coro-dragons' aria-hidden='true'>
           {Array.from({ length: dragonCount }).map((_, i) => (
             <span key={i} className='coro-dragon' style={{ top: `${12 + i * 11}%`, animationDelay: `${i * 0.35}s` }}>{copy.streakCreature}</span>
@@ -324,7 +409,7 @@ export function Coronation({ event, copy, onDone }: { event: CoronationEvent; co
         </div>
       )}
 
-      <div className='coro-stage' onClick={(e) => e.stopPropagation()}>
+      {lane === 'off' && <div className='coro-stage' onClick={(e) => e.stopPropagation()}>
         {event.isNewRuler ? (
           <>
             <div className='coro-crown' aria-hidden='true'>👑</div>
@@ -357,7 +442,7 @@ export function Coronation({ event, copy, onDone }: { event: CoronationEvent; co
             {copy.dismiss}
           </button>
         </div>
-      </div>
+      </div>}
 
       {/* 🤫 hold the door */}
       <span

@@ -9,11 +9,15 @@ import { FinaleDoor } from '@/components/finale/FinaleDoor';
 import { FinaleIcon } from '@/components/finale/FinaleIcon';
 import { SeasonStrip } from '@/components/SeasonStrip';
 import { NationSeal } from '@/components/NationSeal';
+import { LaneDemo } from '@/components/lane/LaneDemo';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Page() {
+export default async function Page({ searchParams }: { searchParams: Promise<{ demo?: string; t?: string; cosmic?: string }> }) {
   const { theme } = await getActiveTheme();
+  const sp = await searchParams;
+  // Lokal förhandsvisning av banans klipp: /?demo=strike — rör ingen data.
+  if (sp.demo) return <LaneDemo clip={sp.demo} t={sp.t ? Number(sp.t) : undefined} cosmic={sp.cosmic === '1'} words={{ crowning: theme.verbs.crowning, tyranny: theme.nationStates.TYRANNY.name }} />;
   const kingdom = await getKingdomStats();
   const seasons = await listSeasons();
   const endedSeason = seasons.filter((s) => s.endedAt).sort((a, b) => b.endedAt!.getTime() - a.endedAt!.getTime())[0] ?? null;
@@ -64,7 +68,7 @@ export default async function Page() {
           players={players}
           lastWinAt={lastEvent?.occurredAt.toISOString() ?? null}
           cooldownMs={WIN_COOLDOWN_MS}
-          copy={{ crown: theme.verbs.crown, crowning: theme.verbs.crowning, crowningNow: theme.verbs.crowningNow, coronation: theme.coronation }}
+          copy={{ crown: theme.verbs.crown, crowning: theme.verbs.crowning, crowningNow: theme.verbs.crowningNow, coronation: theme.coronation, lane: { crowning: theme.verbs.crowning, tyranny: theme.nationStates.TYRANNY.name } }}
         />
       </section>
 

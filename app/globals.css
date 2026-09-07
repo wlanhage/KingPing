@@ -2036,3 +2036,24 @@ html[data-theme='star-wars'] .skeleton-text::after { content: 'Hoppar till hyper
 .badge-chip { display: inline-flex; align-items: center; gap: .45rem; padding: .35rem .7rem .35rem .45rem; border: 1px solid var(--border); border-left-width: 3px; border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.18)), var(--panel); color: var(--text); font-size: .88rem; }
 .badge-chip-icon { font-size: 1.05rem; line-height: 1; }
 .badge-chip-name { font-family: var(--font-display), Georgia, serif; font-size: .8rem; letter-spacing: .03em; }
+
+/* ===== Banan: 90-talets bowlinganimationer i 3D (components/lane) ===== */
+.lane-overlay { position: fixed; inset: 0; z-index: 131; background: #06031a; transition: opacity .25s ease; }
+.lane-canvas { width: 100% !important; height: 100% !important; display: block; }
+.coro-actions-lane { position: fixed; left: 50%; bottom: 1.4rem; transform: translateX(-50%); z-index: 140; display: flex; gap: .6rem; margin: 0; }
+.lane-demo-bar { position: fixed; left: 0; right: 0; top: 0; z-index: 140; display: flex; flex-wrap: wrap; gap: .35rem; padding: .6rem .8rem; background: linear-gradient(180deg, rgba(0,0,0,.75), rgba(0,0,0,0)); }
+.lane-demo-btn { padding: .35rem .7rem; border: 1px solid rgba(255,255,255,.35); border-radius: 999px; background: rgba(0,0,0,.45); color: #fff; font: 600 .74rem/1 var(--font-display), Georgia, serif; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+.lane-demo-btn.is-on { background: #ffe066; color: #1a1200; border-color: #ffe066; }
+.lane-demo-cosmic.is-on { background: #ff2bd6; border-color: #ff2bd6; color: #fff; }
+/* Protokollet: en CRT-skärm ovanför banan */
+.lane-scoreboard { position: absolute; left: 50%; top: 8%; transform: translateX(-50%); width: min(920px, 94vw); padding: 1rem 1.2rem 1.2rem; border: 3px solid #3c5a3c; border-radius: 14px; background: radial-gradient(120% 100% at 50% 0%, #0b2a0b, #041004 70%); color: #8dff8d; font-family: 'Courier New', Courier, monospace; text-shadow: 0 0 8px rgba(141,255,141,.7); box-shadow: 0 0 40px rgba(0,0,0,.6), inset 0 0 40px rgba(0,0,0,.6); }
+.lane-scoreboard::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 12px; background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 2px, transparent 2px 4px); }
+.lane-scoreboard-head { display: flex; justify-content: space-between; font-size: clamp(.9rem, 2vw, 1.2rem); letter-spacing: .2em; margin-bottom: .6rem; }
+.lane-scoreboard-frames { display: grid; grid-template-columns: repeat(11, 1fr); gap: .3rem; }
+.lane-frame { display: grid; gap: .2rem; padding: .3rem .2rem; border: 1px solid #3c5a3c; text-align: center; opacity: .35; }
+.lane-frame.is-on { opacity: 1; background: rgba(141,255,141,.08); }
+.lane-frame-n { font-size: .7rem; letter-spacing: .1em; }
+.lane-frame-v { min-height: 1.6em; font-size: clamp(1rem, 2.6vw, 1.7rem); font-weight: 700; }
+.lane-frame-total { border-color: #8dff8d; }
+.lane-scoreboard-over { margin: .9rem 0 0; text-align: center; font-size: clamp(1.1rem, 3vw, 1.8rem); letter-spacing: .25em; animation: lane-blink 0.7s steps(2, start) infinite; }
+@keyframes lane-blink { to { visibility: hidden; } }
