@@ -58,6 +58,7 @@ export default async function SeasonsPage() {
                   <span className='archive-book-locked'>Krönikan skrivs medan ni spelar</span>
                 )}
                 <Link href={`/leaderboard?season=${s.slug}`} className='btn-ghost'>Tabellen</Link>
+                <Link href={`/history?season=${s.slug}`} className='btn-ghost'>{t.nav.history}</Link>
               </div>
             </article>
           ))}

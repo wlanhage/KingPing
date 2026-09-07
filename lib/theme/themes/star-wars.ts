@@ -22,7 +22,7 @@ export const starWars: Theme = {
   pages: {
     home: { title: 'Tronrummet', subtitle: 'Vem härskar över galaxen — och vem vågar utmana?' },
     leaderboard: { title: 'Galaxens främsta', subtitle: 'Rankat efter total tid på tronen.' },
-    history: { title: 'Arkiven', subtitle: 'De senaste 50 händelserna i galaxen.' },
+    history: { title: 'Arkiven', subtitle: 'Säsongens händelser i galaxen, senaste först.' },
     players: { title: 'Jediriddare', subtitle: 'Galaxens utmanare. Klicka in på en riddare för full profil.' },
     badges: { title: 'Utmärkelser', subtitle: 'Alla {count} bragder en jedi kan förtjäna i galaxen.' },
     archive: { title: 'Tidsvalvet', subtitle: 'Säsongerna som varit — och den som pågår.' },

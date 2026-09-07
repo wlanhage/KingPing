@@ -19,7 +19,7 @@ export const realm: Theme = {
   pages: {
     home: { title: 'Tronsalen', subtitle: 'Vem härskar över riket — och vem vågar utmana?' },
     leaderboard: { title: 'Rikets främsta', subtitle: 'Rankat efter total tid på tronen.' },
-    history: { title: 'Historik', subtitle: 'De senaste 50 händelserna i riket.' },
+    history: { title: 'Historik', subtitle: 'Säsongens händelser i riket, senaste först.' },
     players: { title: 'Riddare', subtitle: 'Rikets utmanare. Klicka in på en riddare för full profil.' },
     badges: { title: 'Utmärkelser', subtitle: 'Alla {count} bragder en riddare kan förtjäna i riket.' },
     archive: { title: 'Arkivet', subtitle: 'Säsongerna som varit — och den som pågår.' },
