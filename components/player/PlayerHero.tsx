@@ -61,19 +61,19 @@ function OrbitBadge({ badge, position }: { badge: ComputedPlayerBadge; position:
   );
 }
 
-function reignLine(stats: any): string {
+function reignLine(stats: any, copy: Theme['profile']): string {
   if (stats?.isCurrentKing) {
     const reign = stats?.currentReignMs ? formatDuration(stats.currentReignMs) : null;
-    return reign ? `Regerar just nu · ${reign} på tronen` : 'Regerar just nu';
+    return reign ? `${copy.reigning} · ${reign} på tronen` : copy.reigning;
   }
-  if (stats?.totalWins) return 'Vilar från tronen — men vakten är uppe';
-  return 'Har ännu inte bestigit tronen';
+  if (stats?.totalWins) return copy.resting;
+  return copy.never;
 }
 
 export function PlayerHero({ player, stats, theme }: { player: any; stats: any; theme: Theme }) {
   const initials = player.name.split(' ').map((s: string) => s[0]).join('').slice(0, 1).toUpperCase();
   const title = stats?.isCurrentKing ? `Nuvarande ${theme.roles.monarchLower}` : stats?.totalWins ? `Tidigare ${theme.roles.monarchLower}` : theme.roles.challenger;
-  const line = stats?.isCurrentKing ? 'Historien skrivs fortfarande.' : stats?.fridayWins ? 'Fredagarna fruktar detta namn.' : stats?.totalWins ? 'En gång kung. Alltid farlig.' : 'Denna spelare väntar fortfarande på sin första krona.';
+  const line = stats?.isCurrentKing ? theme.profile.quoteKing : stats?.fridayWins ? theme.profile.quoteFriday : stats?.totalWins ? theme.profile.quoteFormer : theme.profile.quoteNever;
   const badges: ComputedPlayerBadge[] = stats?.badges ?? [];
   const topBadges = sortBadges(badges).slice(0, 8);
 
@@ -103,7 +103,7 @@ export function PlayerHero({ player, stats, theme }: { player: any; stats: any; 
         <div className='royal-player-identity'>
           <h1>{player.name}</h1>
           <p className='royal-player-title'>{title}</p>
-          <p className='royal-player-reign'>{reignLine(stats)}</p>
+          <p className='royal-player-reign'>{reignLine(stats, theme.profile)}</p>
           <p className='royal-player-quote'>&ldquo;{line}&rdquo;</p>
         </div>
 

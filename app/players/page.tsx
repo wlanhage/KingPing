@@ -16,9 +16,9 @@ export default async function Players() {
       </section>
 
       <section className='card add-knight-panel'>
-        <h2 style={{ margin: '0 0 .2rem' }}>Dubba en ny riddare</h2>
-        <p className='muted' style={{ margin: '0 0 1rem' }}>Lägg till en ny spelare i riket.</p>
-        <AddPlayerForm />
+        <h2 style={{ margin: '0 0 .2rem' }}>{theme.profile.addTitle}</h2>
+        <p className='muted' style={{ margin: '0 0 1rem' }}>{theme.profile.addSubtitle}</p>
+        <AddPlayerForm copy={{ placeholder: theme.profile.addPlaceholder, button: theme.profile.addButton, busy: theme.profile.addBusy, duplicate: theme.profile.addDuplicate }} />
       </section>
 
       <section className='grid cols-3'>
@@ -26,7 +26,7 @@ export default async function Players() {
           <Link className='card knight-card' key={player.id} href={`/players/${player.id}`}>
             <span className='knight-initial' aria-hidden>{player.name.trim()[0]?.toUpperCase() ?? '–'}</span>
             <h3 style={{ margin: 0 }}>{player.name}</h3>
-            <p className='muted' style={{ marginBottom: 0 }}>Visa profil →</p>
+            <p className='muted' style={{ marginBottom: 0 }}>{theme.profile.viewProfile}</p>
           </Link>
         ))}
       </section>

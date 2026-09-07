@@ -38,7 +38,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
   return (
     <main className='page-stack'>
       <div className='profile-topbar'>
-        <Link href='/players' className='royal-back-link'>← Tillbaka till spelare</Link>
+        <Link href='/players' className='royal-back-link'>{theme.profile.back}</Link>
         <AllBadgesButton badges={s.badges ?? []} />
       </div>
       {season.endedAt && (
@@ -60,12 +60,12 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
         { label: 'Snittregering', value: formatShortDuration(s.averageReignMs) },
       ]}
       >
-        <PlayerNemesis nemesis={profile.nemesis} playerName={profile.player.name} />
+        <PlayerNemesis nemesis={profile.nemesis} playerName={profile.player.name} copy={theme.profile} />
       </StatsGrid>
       <PlayerNextBadges items={nextBadges(s)} theme={theme} />
       <PlayerWeekdayChart counts={weekdayWins} />
-      <PlayerRankComparison stats={s} />
-      <PlayerTimeline items={profile.timeline} />
+      <PlayerRankComparison stats={s} copy={theme.profile} />
+      <PlayerTimeline items={profile.timeline} copy={theme.profile} />
     </main>
   );
 }

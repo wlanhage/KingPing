@@ -1,4 +1,7 @@
 import Link from 'next/link';
+import type { Theme } from '@/lib/theme';
+
+type FeudCopy = Theme['profile'];
 
 type Nemesis = {
   rival: { id: string; name: string };
@@ -7,18 +10,18 @@ type Nemesis = {
   total: number;
 };
 
-function verdict(stolenFrom: number, stolenBy: number): string {
-  if (stolenFrom > stolenBy) return 'Övertaget är ditt — för nu.';
-  if (stolenBy > stolenFrom) return 'Rivalen har övertaget. Hämnden väntar.';
-  return 'Dödläge. Varje krona är ett krig.';
+function verdict(stolenFrom: number, stolenBy: number, copy: FeudCopy): string {
+  if (stolenFrom > stolenBy) return copy.feudLead;
+  if (stolenBy > stolenFrom) return copy.feudBehind;
+  return copy.feudTie;
 }
 
-export function PlayerNemesis({ nemesis, playerName }: { nemesis: Nemesis | null; playerName: string }) {
+export function PlayerNemesis({ nemesis, playerName, copy }: { nemesis: Nemesis | null; playerName: string; copy: FeudCopy }) {
   if (!nemesis) {
     return (
       <article className='royal-feud-cell is-empty'>
-        <p className='royal-feud-title'>⚔️ Ärkefiende</p>
-        <p className='royal-feud-empty'>Ingen rival ännu. Byt kronan fram och tillbaka med någon så uppstår en fejd.</p>
+        <p className='royal-feud-title'>{copy.feudTitle}</p>
+        <p className='royal-feud-empty'>{copy.feudEmpty}</p>
       </article>
     );
   }
@@ -29,7 +32,7 @@ export function PlayerNemesis({ nemesis, playerName }: { nemesis: Nemesis | null
 
   return (
     <article className='royal-feud-cell'>
-      <p className='royal-feud-title'>⚔️ Ärkefiende</p>
+      <p className='royal-feud-title'>{copy.feudTitle}</p>
 
       <div className='royal-feud-arena'>
         <div className='royal-feud-side'>
@@ -48,15 +51,15 @@ export function PlayerNemesis({ nemesis, playerName }: { nemesis: Nemesis | null
       <div className='royal-feud-tally'>
         <div className={`royal-feud-stat${leadFrom ? ' is-lead' : ''}`}>
           <span className='royal-feud-num'>{stolenFrom}</span>
-          <span className='royal-feud-label'>kronor du snott</span>
+          <span className='royal-feud-label'>{copy.feudTaken}</span>
         </div>
         <div className={`royal-feud-stat${!leadFrom ? ' is-lead' : ''}`}>
           <span className='royal-feud-num'>{stolenBy}</span>
-          <span className='royal-feud-label'>kronor snodda från dig</span>
+          <span className='royal-feud-label'>{copy.feudLost}</span>
         </div>
       </div>
 
-      <p className='royal-feud-verdict'>{verdict(stolenFrom, stolenBy)}</p>
+      <p className='royal-feud-verdict'>{verdict(stolenFrom, stolenBy, copy)}</p>
     </article>
   );
 }

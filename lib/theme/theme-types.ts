@@ -63,6 +63,18 @@ export type Theme = {
   nationStates: Record<NationState, { name: string; emoji: string; blurb: string }>;
   /** Mall för "närmast att låsa upp": {current}, {target}, {left} och {unit}. */
   progressTemplate: string;
+  /** Texterna på spelarsidorna: listan, rekryteringen och profilen. */
+  profile: {
+    addTitle: string; addSubtitle: string; addPlaceholder: string; addButton: string; addBusy: string; addDuplicate: string;
+    viewProfile: string; back: string;
+    reigning: string; resting: string; never: string;
+    quoteKing: string; quoteFriday: string; quoteFormer: string; quoteNever: string;
+    rankTitle: string; rankSubtitle: string; rankTop: [string, string, string];
+    timelineTitle: string; timelineSubtitle: string; timelineEmpty: string;
+    /** Etikett per EventType i spelarens tidslinje. */
+    events: Record<string, string>;
+    feudTitle: string; feudEmpty: string; feudTaken: string; feudLost: string; feudLead: string; feudBehind: string; feudTie: string;
+  };
   colors: ThemeColors;
   /** Rörlig bakgrund bakom hela sidan. Utelämnas för teman utan. */
   backdrop?: 'starfield';

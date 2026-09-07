@@ -1,7 +1,9 @@
 'use client';
 import { useState } from 'react';
 
-export function AddPlayerForm() {
+export type AddPlayerCopy = { placeholder: string; button: string; busy: string; duplicate: string };
+
+export function AddPlayerForm({ copy }: { copy: AddPlayerCopy }) {
   const [name, setName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +24,7 @@ export function AddPlayerForm() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.error?.includes('Unique') ? 'En riddare med det namnet finns redan.' : (data.error ?? 'Något gick fel.'));
+        setError(data.error?.includes('Unique') ? copy.duplicate : (data.error ?? 'Något gick fel.'));
         setSubmitting(false);
         return;
       }
@@ -37,13 +39,13 @@ export function AddPlayerForm() {
     <form className='add-knight-form' onSubmit={submit}>
       <input
         className='crown-input'
-        placeholder='Namnge en ny riddare…'
+        placeholder={copy.placeholder}
         value={name}
         onChange={(e) => setName(e.target.value)}
-        aria-label='Namn på ny riddare'
+        aria-label={copy.placeholder}
       />
       <button className='crown-btn' disabled={submitting}>
-        {submitting ? 'Dubbar…' : 'Dubba riddare'}
+        {submitting ? copy.busy : copy.button}
       </button>
       {error && <p className='crown-error' style={{ flexBasis: '100%' }}>{error}</p>}
     </form>
