@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Coronation, type CoronationCopy, type CoronationEvent } from './Coronation';
 
 export type WinFormCopy = { crown: string; crowning: string; crowningNow: string; coronation: CoronationCopy };
@@ -40,7 +40,12 @@ export function RecordWinForm({ players, lastWinAt, cooldownMs, copy }: { player
     return () => window.removeEventListener('keydown', onKey);
   }, [confirming, submitting]);
 
+  // Två klick i samma ögonblick hinner före Reacts omrendering av disabled — refen stoppar det andra.
+  const inFlight = useRef(false);
+
   async function submit() {
+    if (inFlight.current) return;
+    inFlight.current = true;
     setSubmitting(true);
     setError(null);
     try {
@@ -54,6 +59,7 @@ export function RecordWinForm({ players, lastWinAt, cooldownMs, copy }: { player
         setError(data.error ?? 'Något gick fel. Försök igen.');
         setConfirming(false);
         setSubmitting(false);
+        inFlight.current = false;
         return;
       }
       // Läs ut kröningen ur svaret och avfyra THE ROYAL CORONATION SPECTACULAR™.
@@ -72,6 +78,7 @@ export function RecordWinForm({ players, lastWinAt, cooldownMs, copy }: { player
       setError('Kunde inte nå servern. Försök igen.');
       setConfirming(false);
       setSubmitting(false);
+      inFlight.current = false;
     }
   }
 
