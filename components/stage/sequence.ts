@@ -14,10 +14,10 @@ export type StageEvent = {
 
 /**
  * Vilka scener en händelse får. Tom lista = ingen 3D-scen, den klassiska ceremonin visas.
- * Fem raka eller fler: templet, strax före Order 66.
+ * Varje upphöjelse (ny regent) spelar templet, liksom fem raka eller fler.
  */
 export function sequenceFor(ev: StageEvent): SceneKey[] {
-  if (!ev.isNewRuler && ev.streakCount >= 5) return ['temple'];
+  if (ev.isNewRuler || ev.streakCount >= 5) return ['temple'];
   return [];
 }
 

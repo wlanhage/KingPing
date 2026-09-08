@@ -22,10 +22,11 @@ describe('anim', () => {
 
 describe('sequenceFor', () => {
   const base = { eventType: 'NEW_KING', winnerName: 'Axel', deposedName: 'Lanhage', streakCount: 1, previousStreakCount: 1, isNewRuler: true, isFriday: false, daysSinceLastWin: null };
-  it('fem raka eller fler ger templet, annat ger ingen scen än', () => {
+  it('varje upphöjelse och fem raka ger templet; ett vanligt försvar ger ingen scen än', () => {
+    expect(sequenceFor(base)).toEqual(['temple']);
+    expect(sequenceFor({ ...base, eventType: 'FIRST_WIN', deposedName: null })).toEqual(['temple']);
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 5 })).toEqual(['temple']);
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 2 })).toEqual([]);
-    expect(sequenceFor(base)).toEqual([]);
   });
   it('locate hittar rätt scen och lokal tid', () => {
     expect(locate([{ duration: 2 }, { duration: 3 }], 2.5)).toMatchObject({ index: 1, local: 0.5, total: 5 });

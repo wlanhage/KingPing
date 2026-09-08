@@ -55,7 +55,7 @@ export const temple: Scene = {
   words: (ctx) => [
     { at: 3.0, until: 5.0, text: `Mäster ${ctx.winner}… det är för många av dem. Vad ska vi göra?`, style: 'subtitle' },
     { at: 9.0, text: 'ORDER 66', size: 2.4, color: '#ff3b3b' },
-    { at: 9.7, text: `${ctx.winner} · ${ctx.streak} raka`, style: 'name', size: 0.9 },
+    { at: 9.7, text: ctx.streak >= 2 ? `${ctx.winner} · ${ctx.streak} raka` : `${ctx.winner} · ${ctx.crowningWord}`, style: 'name', size: 0.9 },
   ],
   cues: [{ at: IGNITE, cue: 'ignite' }, { at: 9.0, cue: 'slam' }],
   fade: (t) => Math.max(1 - span(t, 0, 1.4), span(t, 8.9, 9.5) * 0.92),
