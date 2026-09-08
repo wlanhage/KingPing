@@ -168,10 +168,11 @@ export const senate: Scene = {
     { at: 5.9, until: 6.8, text: 'Då är det… förräderi.', style: 'subtitle' },
     { at: 7.4, until: 8.4, text: 'MAKT!', size: 1.4, color: '#bfe0ff' },
     { at: 8.5, until: 10.4, text: 'OBEGRÄNSAD MAKT!', size: 2.2, color: '#cfe8ff' },
+    { at: FLING + 0.05, until: 10.3, text: 'AAAAAAAAAAaaaaaaah…!', style: 'subtitle' },
     { at: 12.4, text: 'OBEGRÄNSAD MAKT', size: 2.0, color: '#cfe8ff' },
     { at: 12.9, text: `${ctx.winner} · ${ctx.streak} raka`, style: 'name', size: 0.9 },
   ],
-  cues: [{ at: IGNITE, cue: 'ignite' }, { at: ZAP, cue: 'lightning' }, { at: 7.5, cue: 'lightning' }, { at: 8.1, cue: 'lightning' }, { at: FLING, cue: 'blast' }, { at: FLING + 0.05, cue: 'smash' }, { at: 8.5, cue: 'slam' }, { at: 12.4, cue: 'slam' }],
+  cues: [{ at: IGNITE, cue: 'ignite' }, { at: ZAP, cue: 'lightning' }, { at: 7.5, cue: 'lightning' }, { at: 8.1, cue: 'lightning' }, { at: FLING, cue: 'blast' }, { at: FLING + 0.05, cue: 'smash' }, { at: FLING + 0.1, cue: 'scream' }, { at: 8.5, cue: 'slam' }, { at: 12.4, cue: 'slam' }],
   fade: (t) => Math.max(1 - span(t, 0, 0.6), span(t, 12.1, 12.6) * 0.94),
   camera: (t) => {
     if (t < 3.0) {

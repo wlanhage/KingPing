@@ -18,7 +18,7 @@ export type SceneCtx = {
 
 /** Ett ord i HUD-lagret, `at` i verklig tid. subtitle = undertext längst ner, slam = stort, name = namnskylt. */
 export type Word = { at: number; until?: number; text: string; size?: number; color?: string; style?: 'slam' | 'name' | 'subtitle' };
-export type CueName = 'ignite' | 'slam' | 'hum' | 'door' | 'sizzle' | 'smash' | 'boom' | 'breath' | 'blast' | 'lightning';
+export type CueName = 'ignite' | 'slam' | 'hum' | 'door' | 'sizzle' | 'smash' | 'boom' | 'breath' | 'blast' | 'lightning' | 'scream';
 export type Cue = { at: number; cue: CueName };
 /** snap = klipp (ingen mjukning), annars glider kameran mot posen. */
 export type CameraPose = { position: Vec3; lookAt: Vec3; fov?: number; shake?: number; snap?: boolean };

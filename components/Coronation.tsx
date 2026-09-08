@@ -266,6 +266,13 @@ function playCueSound(ctx: AudioContext, master: GainNode, cue: CueName) {
       noise(now, 0.9, 3200, 0.22);
       noise(now + 0.1, 0.6, 900, 0.1);
       break;
+    case 'scream':
+      // skriket när han flyger ut: stiger, spricker och faller bort med avståndet
+      tone(now, 0.3, 380, 640, 'sawtooth', 0.16, 0.03);
+      tone(now + 0.3, 1.3, 640, 260, 'sawtooth', 0.16, 0.01);
+      tone(now + 0.3, 1.3, 960, 390, 'square', 0.05, 0.01);
+      noise(now + 0.05, 0.5, 1600, 0.06);
+      break;
     case 'lightning':
       // kraftblixtar: sprakande stötar och ett elektriskt surr under
       for (let i = 0; i < 6; i++) noise(now + i * 0.09, 0.12, 2600 + (i % 2) * 900, 0.22);
