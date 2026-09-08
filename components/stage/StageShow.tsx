@@ -8,22 +8,24 @@ import type { CameraPose, CueName, SceneCtx, SceneKey } from './types';
 const REST: CameraPose = { position: [0.8, 1.4, -1.5], lookAt: [0, 1, -6], fov: 40 };
 
 /** Klockan: sekunder sedan start, eller fryst vid frozenT (stillbilder i demoläget). */
-function useClock(frozenT?: number) {
+function useClock(frozenT?: number, run = 0) {
   const [t, setT] = useState(frozenT ?? 0);
   useEffect(() => {
     if (frozenT !== undefined) { setT(frozenT); return; }
+    setT(0);
     let raf = 0;
     const start = performance.now();
     const tick = () => { setT((performance.now() - start) / 1000); raf = requestAnimationFrame(tick); };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [frozenT]);
+  }, [frozenT, run]);
   return t;
 }
 
 export function StageShow({ ctx, sequence, onDone, onCue, onFail, frozenT }: { ctx: SceneCtx; sequence: SceneKey[]; onDone?: () => void; onCue?: (cue: CueName) => void; onFail?: () => void; frozenT?: number }) {
   const scenes = useMemo(() => sequence.map((k) => SCENES[k]), [sequence]);
-  const raw = useClock(frozenT);
+  const [run, setRun] = useState(0);
+  const raw = useClock(frozenT, run);
   const totalLength = scenes.reduce((a, c) => a + c.duration, 0);
   // Sista bildrutan (svärta + ord) står kvar tills man klickar vidare.
   const ended = raw >= totalLength;
@@ -47,6 +49,7 @@ export function StageShow({ ctx, sequence, onDone, onCue, onFail, frozenT }: { c
   }, [scene, index, local, onCue]);
 
   const finish = () => { if (done.current) return; done.current = true; onDone?.(); };
+  const replay = (e: React.MouseEvent) => { e.stopPropagation(); fired.current.clear(); done.current = false; setRun((r) => r + 1); };
 
   const words = scene ? scene.words(ctx).filter((w) => local >= w.at && (w.until === undefined || local < w.until)) : [];
   const black = scene ? (scene.fade?.(local) ?? 0) : 1;
@@ -62,7 +65,12 @@ export function StageShow({ ctx, sequence, onDone, onCue, onFail, frozenT }: { c
           <div key={`${index}:${w.at}:${w.text}`} className={`stage-word stage-word-${w.style ?? 'slam'}`} style={{ '--size': `${w.size ?? 2}`, ...(w.color ? { '--word': w.color } : {}) } as React.CSSProperties}>{w.text}</div>
         ))}
       </div>
-      {ended && frozenT === undefined && <p className='stage-continue'>Klicka för att fortsätta</p>}
+      {ended && frozenT === undefined && (
+        <div className='stage-end'>
+          <button type='button' className='stage-replay' onClick={replay}>↻ Spela igen</button>
+          <p className='stage-continue'>Klicka för att fortsätta</p>
+        </div>
+      )}
     </div>
   );
 }

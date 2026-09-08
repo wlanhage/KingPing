@@ -14,9 +14,12 @@ import type { Scene, Vec3 } from '../types';
 
 const DOOR_Z = -14;
 // Han går längs mitten; de fallna ligger vid väggarna så han aldrig kliver igenom någon.
-const DEPOSED: Vec3 = [0.9, 0.36, -4.9];
-const CROWN_FLOOR: Vec3 = [1.7, 0.14, -4.6];
+// Den störtade ligger nästan fyra enheter från honom: lyftet ska se ut som kraften, inte som en hand.
+const DEPOSED: Vec3 = [1.2, 0.36, -3.6];
+const CROWN_FLOOR: Vec3 = [2.0, 0.14, -3.2];
 const STAND: Vec3 = [0, 0, -7.2];
+/** Där han slår i väggen efter kastet. */
+const WALL_HIT: Vec3 = [2.35, 2.0, -1.6];
 const BLAST = 0.6;
 const CHOKE = 6.6, FLING = 7.9;
 
@@ -60,7 +63,7 @@ export const tantive: Scene = {
     { at: 9.9, text: `${ctx.crowningWord.toUpperCase()}!`, size: 2.2, color: '#c9d8ff' },
     { at: 10.5, text: `${ctx.winner} · ${ctx.crowningWord}`, style: 'name', size: 0.9 },
   ],
-  cues: [{ at: BLAST, cue: 'boom' }, { at: 2.0, cue: 'breath' }, { at: 4.0, cue: 'breath' }, { at: 6.0, cue: 'breath' }, { at: FLING, cue: 'slam' }, { at: 9.9, cue: 'slam' }],
+  cues: [{ at: BLAST, cue: 'boom' }, { at: 2.0, cue: 'breath' }, { at: 4.0, cue: 'breath' }, { at: 6.0, cue: 'breath' }, { at: FLING + 0.22, cue: 'slam' }, { at: 9.9, cue: 'slam' }],
   fade: (t) => Math.max(1 - span(t, 0, 0.5), span(t, 9.4, 9.9) * 0.94),
   camera: (t) => {
     if (t < 3.2) {
@@ -71,8 +74,9 @@ export const tantive: Scene = {
       const p = ease(span(t, 3.2, 5.4), 'inOut');
       return { position: lerp3([2.9, 0.9, -5.0], [2.5, 0.9, -5.5], p), lookAt: [-0.3, 0.9, -7.8], fov: 38, snap: true };
     }
-    if (t < FLING) return { position: [1.2, 0.5, -3.9], lookAt: [0.1, 1.2, -7.0], fov: 34, snap: true };
-    return { position: [2.6, 1.7, -2.2], lookAt: [0.3, 0.9, -6.6], fov: 42, snap: true, shake: decay(t - FLING, 0.03, 0.4) };
+    // lyftet och kastet: utzoomat från sidan så avståndet mellan handen och den svävande syns
+    if (t < FLING) return { position: [3.4, 1.2, -2.2], lookAt: [0.5, 1.3, -5.5], fov: 46, snap: true };
+    return { position: [3.6, 2.0, -0.8], lookAt: [0.8, 1.1, -5.4], fov: 50, snap: true, shake: decay(t - FLING - 0.22, 0.05, 0.5) };
   },
   Scene: ({ t }) => {
     const blast = Math.max(0, t - BLAST);
@@ -80,12 +84,15 @@ export const tantive: Scene = {
     const vader: Vec3 = lerp3([0, 0, DOOR_Z + 0.6], STAND, walk);
     const walking = t > 1.8 && t < 4.6;
     const turn = ease(span(t, 5.6, 6.4), 'inOut') * Math.atan2(DEPOSED[0] - STAND[0], DEPOSED[2] - STAND[2]);
-    // strypgreppet: den störtade lyfts, kippar, slängs in i väggen
-    const lift = span(t, CHOKE, 7.6);
+    // kraftgreppet: den störtade lyfts högt och svävar sprattlande på avstånd, slungas sedan i väggen och faller
+    const lift = ease(span(t, CHOKE, 7.4), 'out');
+    const hover: Vec3 = [DEPOSED[0], DEPOSED[1] + lift * 1.9 + (lift > 0 ? Math.sin(t * 28) * 0.05 : 0), DEPOSED[2]];
     const flung = Math.max(0, t - FLING);
-    const flungFall = ballistic(flung, 1.4, 2.5, 16, 0.36, 0.3, 2);
-    const deposedPos: Vec3 = flung > 0 ? [DEPOSED[0] + Math.min(flung, 0.6) * 3.2, flungFall.y, DEPOSED[2] - Math.min(flung, 0.6) * 2.5] : [DEPOSED[0], DEPOSED[1] + lift * 1.1 + (lift > 0 ? Math.sin(t * 30) * 0.03 : 0), DEPOSED[2]];
-    const deposedRot: Vec3 = flung > 0 ? [-Math.PI / 2 + 0.3, 0, 0.6 + flung * 3] : [-Math.PI / 2 * (1 - lift), 0.6 * (1 - lift), lift > 0 ? Math.sin(t * 40) * 0.05 : 0];
+    const throwP = Math.min(1, flung / 0.22);
+    const afterWall = Math.max(0, flung - 0.22);
+    const wallFall = ballistic(afterWall, WALL_HIT[1], 1.0, 18, 0.36, 0.3, 2);
+    const deposedPos: Vec3 = flung > 0 ? (throwP < 1 ? lerp3(hover, WALL_HIT, throwP) : [WALL_HIT[0] - Math.min(afterWall, 0.5) * 0.6, wallFall.y, WALL_HIT[2] - Math.min(afterWall, 0.5) * 0.8]) : hover;
+    const deposedRot: Vec3 = flung > 0 ? [-Math.PI / 2 + 0.3, 0, 0.6 + flung * 14] : [-Math.PI / 2 * (1 - lift), 0.6 * (1 - lift), lift > 0 ? Math.sin(t * 40) * 0.08 : 0];
     // kronan stiger från golvet till vinnarens huvud
     const rise = span(t, 8.3, 9.1);
     const crownPos: Vec3 = [CROWN_FLOOR[0] + (vader[0] - CROWN_FLOOR[0]) * rise, CROWN_FLOOR[1] + (2.12 - CROWN_FLOOR[1]) * rise + Math.sin(rise * Math.PI) * 0.6, CROWN_FLOOR[2] + (vader[2] - 0.05 - CROWN_FLOOR[2]) * rise];
@@ -100,7 +107,7 @@ export const tantive: Scene = {
         <Racket position={deposedPos} rotation={deposedRot} color='#cfd6e6' mood={lift > 0 ? 'shock' : 'sad'} scale={0.95} />
         {rise < 1 && <Crown position={crownPos} rotation={[rise * 4, rise * 6, (1 - rise) * 1.3]} scale={0.8} />}
         {/* vinnaren: in genom röken, tunga steg, vänd mot den störtade */}
-        {t > 1.6 && <Racket position={[vader[0], walking ? Math.abs(Math.sin(t * 7)) * 0.05 : 0, vader[2]]} rotation={[0, turn, walking ? Math.sin(t * 7) * 0.03 : 0]} color='#b3202a' helmet arm={kf(t, [[CHOKE - 0.2, 0], [CHOKE + 0.3, 0.8, 'out'], [FLING, 0.8], [FLING + 0.4, 0, 'in']])} crown={rise >= 1} />}
+        {t > 1.6 && <Racket position={[vader[0], walking ? Math.abs(Math.sin(t * 7)) * 0.05 : 0, vader[2]]} rotation={[0, turn, walking ? Math.sin(t * 7) * 0.03 : 0]} color='#b3202a' helmet arm={kf(t, [[CHOKE - 0.2, 0], [CHOKE + 0.3, 1.1, 'out'], [FLING, 1.1], [FLING + 0.15, 1.4, 'out'], [FLING + 0.6, 0, 'in']])} crown={rise >= 1} />}
       </>
     );
   },
