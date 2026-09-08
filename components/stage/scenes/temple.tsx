@@ -17,7 +17,7 @@ import type { Scene, Vec3 } from '../types';
 
 // Han startar bakom dörrarna (som sitter vid z = -10,5) och går in i salen när de glidit isär.
 const DOOR: Vec3 = [0, 0, -11.3];
-const STAND: Vec3 = [0, 0, -4.6];
+const STAND: Vec3 = [0, 0, -8.2];
 const ENTER_FROM = 1.7, ENTER_TO = 3.4;
 const IGNITE = 6.8;
 const KIDS: { p: Vec3; c: string }[] = [
@@ -76,21 +76,21 @@ function Chamber({ doors, red }: { doors: number; red: number }) {
         {[-2.2, 2.2].map((x) => <mesh key={x} position={[x, 1.8, -2]}><boxGeometry args={[0.4, 3.6, 4]} /><meshStandardMaterial color='#2c3550' roughness={0.9} /></mesh>)}
       </group>
       {/* sabelns rödsken på pelare och väggar */}
-      {red > 0 && <pointLight position={[0.5, 2.5, -4]} intensity={30 * red} color='#ff2a2a' distance={14} decay={2} />}
+      {red > 0 && <pointLight position={[0.5, 2.5, -7.6]} intensity={30 * red} color='#ff2a2a' distance={14} decay={2} />}
       <Sparkles count={160} scale={[12, 5, 14]} position={[0, 2.5, -3]} size={1.2} speed={0.1} opacity={0.3} color='#aab6ff' />
     </group>
   );
 }
 
 export const temple: Scene = {
-  key: 'temple', duration: 11.6,
+  key: 'temple', duration: 10.4,
   words: (ctx) => [
     { at: 4.2, until: 6.2, text: `Mäster ${ctx.winner}… det är för många av dem. Vad ska vi göra?`, style: 'subtitle' },
-    { at: 10.2, text: 'ORDER 66', size: 2.4, color: '#ff3b3b' },
-    { at: 10.8, text: ctx.streak >= 2 ? `${ctx.winner} · ${ctx.streak} raka` : `${ctx.winner} · ${ctx.crowningWord}`, style: 'name', size: 0.9 },
+    { at: 9.4, text: 'ORDER 66', size: 2.4, color: '#ff3b3b' },
+    { at: 10.0, text: ctx.streak >= 2 ? `${ctx.winner} · ${ctx.streak} raka` : `${ctx.winner} · ${ctx.crowningWord}`, style: 'name', size: 0.9 },
   ],
-  cues: [{ at: 0.7, cue: 'door' }, { at: IGNITE, cue: 'ignite' }, { at: 10.2, cue: 'slam' }],
-  fade: (t) => Math.max(1 - span(t, 0, 0.8), span(t, 10.0, 10.6) * 0.92),
+  cues: [{ at: 0.7, cue: 'door' }, { at: IGNITE, cue: 'ignite' }, { at: 9.4, cue: 'slam' }],
+  fade: (t) => Math.max(1 - span(t, 0, 0.8), span(t, 9.2, 9.7) * 0.92),
   camera: (t) => {
     if (t < 3.6) {
       // inifrån salen, lågt över emblemet, valvet i mitten; sakta in mot honom
@@ -100,23 +100,22 @@ export const temple: Scene = {
     if (t < 5.8) {
       // hans blick: ynglingarna underifrån
       const p = ease(span(t, 3.6, 5.8), 'inOut');
-      return { position: lerp3([0.2, 1.35, -4.7], [0.8, 1.15, -4.2], p), lookAt: [KID_CENTER[0], 0.7, KID_CENTER[2]], fov: 34, snap: true };
+      return { position: lerp3([0.2, 1.35, -8.3], [0.7, 1.2, -7.6], p), lookAt: [KID_CENTER[0], 0.7, KID_CENTER[2]], fov: 34, snap: true };
     }
     if (t < 8.2) {
       // honom: halvnära från ynglingarnas sida, lätt underifrån
       const p = ease(span(t, 5.8, 8.2), 'inOut');
-      return { position: lerp3([3.0, 0.8, -1.4], [2.5, 0.85, -1.9], p), lookAt: [0.15, 1.0, -4.5], fov: 36, snap: true, shake: decay(t - IGNITE, 0.012, 0.5) };
+      return { position: lerp3([2.9, 0.8, -4.6], [2.4, 0.85, -5.2], p), lookAt: [0.15, 1.0, -8.1], fov: 36, snap: true, shake: decay(t - IGNITE, 0.012, 0.5) };
     }
-    if (t < 9.2) return { position: [0.5, 1.35, -4.3], lookAt: [KID_CENTER[0], 0.8, KID_CENTER[2]], fov: 34, snap: true };
-    const p = ease(span(t, 9.2, 10.6), 'in');
-    return { position: lerp3([-1.4, 0.9, -7.2], [-0.6, 0.85, -5.6], p), lookAt: [KID_CENTER[0], 0.9, KID_CENTER[2]], fov: 40, snap: true };
+    // ynglingarna i rött ljus, sakta in, tills svart
+    const p = ease(span(t, 8.2, 9.7), 'inOut');
+    return { position: lerp3([0.5, 1.3, -7.9], [1.2, 1.1, -6.6], p), lookAt: [KID_CENTER[0], 0.75, KID_CENTER[2]], fov: 34, snap: true };
   },
   Scene: ({ t }) => {
     const doors = kf(t, [[0.7, 0], [1.9, 1, 'inOut']]);
     const enter = ease(span(t, ENTER_FROM, ENTER_TO), 'inOut');
-    const walk = span(t, 9.3, 10.6);
-    const himPos: Vec3 = walk > 0 ? lerp3(STAND, [1.4, 0, -3.4], ease(walk, 'in')) : lerp3(DOOR, STAND, enter);
-    const moving = (t > ENTER_FROM && t < ENTER_TO) || walk > 0;
+    const himPos: Vec3 = lerp3(DOOR, STAND, enter);
+    const moving = t > ENTER_FROM && t < ENTER_TO;
     const step = moving ? Math.abs(Math.sin(t * 11)) * 0.04 : 0;
     const sith = span(t, 6.1, 6.7);
     // bladet växer från fästet ner mot golvet; 0,95 lämnar spetsen strax ovanför stenen

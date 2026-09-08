@@ -85,7 +85,7 @@ export function Racket({ position = [0, 0, 0] as Vec3, rotation = [0, 0, 0] as V
       <mesh position={[0, 1.05, 0]} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[0.72, 0.035, 10, 40]} /><meshStandardMaterial color='#1c1410' roughness={0.5} /></mesh>
       <mesh position={[0, 0.22, 0]}><boxGeometry args={[0.22, 0.5, 0.12]} /><meshStandardMaterial color='#b08a5a' roughness={0.6} /></mesh>
       <Face mood={mood} position={[0, 1.05, 0.06]} eyes={eyes} glow={eyeGlow} />
-      {saber !== undefined && <Saber length={saber} color={saberColor} flicker={flicker} position={[0.9, 0.95, 0.25]} rotation={[-0.45, 0, 0.12]} />}
+      {saber !== undefined && <Saber length={saber} color={saberColor} flicker={flicker} position={[0.9, 0.95, 0.3]} rotation={[-0.95, 0, 0.1]} />}
     </group>
   );
 }
