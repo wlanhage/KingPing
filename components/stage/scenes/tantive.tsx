@@ -19,7 +19,7 @@ const DEPOSED: Vec3 = [1.2, 0.36, -3.6];
 const CROWN_FLOOR: Vec3 = [2.0, 0.14, -3.2];
 const STAND: Vec3 = [0, 0, -7.2];
 /** Där han slår i väggen efter kastet. */
-const WALL_HIT: Vec3 = [2.35, 2.0, -1.6];
+const WALL_HIT: Vec3 = [2.05, 2.0, -1.6];
 const BLAST = 0.6;
 const CHOKE = 6.6, FLING = 7.9;
 
@@ -72,11 +72,12 @@ export const tantive: Scene = {
     }
     if (t < 5.4) {
       const p = ease(span(t, 3.2, 5.4), 'inOut');
-      return { position: lerp3([2.9, 0.9, -5.0], [2.5, 0.9, -5.5], p), lookAt: [-0.3, 0.9, -7.8], fov: 38, snap: true };
+      // korridoren är 4,6 bred: alla kameror håller sig innanför ±2,1
+      return { position: lerp3([2.0, 0.9, -3.4], [1.8, 0.9, -3.9], p), lookAt: [-0.4, 0.9, -7.8], fov: 42, snap: true };
     }
     // lyftet och kastet: utzoomat från sidan så avståndet mellan handen och den svävande syns
-    if (t < FLING) return { position: [3.4, 1.2, -2.2], lookAt: [0.5, 1.3, -5.5], fov: 46, snap: true };
-    return { position: [3.6, 2.0, -0.8], lookAt: [0.8, 1.1, -5.4], fov: 50, snap: true, shake: decay(t - FLING - 0.22, 0.05, 0.5) };
+    if (t < FLING) return { position: [-1.9, 1.2, -1.6], lookAt: [0.7, 1.3, -5.6], fov: 50, snap: true };
+    return { position: [-1.8, 1.6, -0.4], lookAt: [1.0, 1.2, -4.8], fov: 54, snap: true, shake: decay(t - FLING - 0.22, 0.05, 0.5) };
   },
   Scene: ({ t }) => {
     const blast = Math.max(0, t - BLAST);
