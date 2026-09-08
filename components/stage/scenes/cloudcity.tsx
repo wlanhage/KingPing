@@ -39,6 +39,22 @@ function Shaft() {
       <mesh position={[0, 0.35, -3.8]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.06, 0.06, 2.6, 12]} /><meshStandardMaterial color='#8a93a8' metalness={0.8} roughness={0.3} /></mesh>
       <mesh position={[0, 0.35, -4.8]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.04, 0.04, 0.6, 8]} /><meshStandardMaterial color='#8a93a8' metalness={0.8} roughness={0.3} /></mesh>
       <mesh position={[0, 0.45, -3.2]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.02, 0.02, 1.2, 6]} /><meshStandardMaterial color='#c9d0dd' metalness={0.8} roughness={0.3} /></mesh>
+      {/* räcken, konsol och lampor längs plattformskanten; gångbroar längre ner för skala */}
+      <mesh position={[0, 0.6, 0]} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[3.2, 0.03, 6, 48, Math.PI * 1.3]} /><meshStandardMaterial color='#9aa4b8' metalness={0.8} roughness={0.3} /></mesh>
+      {[0.5, 0.9, 1.3, 1.7, 2.1, 2.5, 2.9, 3.3, 3.7, 4.1].map((a) => (
+        <mesh key={a} position={[Math.sin(a) * 3.2, 0.3, Math.cos(a) * 3.2]}><cylinderGeometry args={[0.025, 0.025, 0.6, 6]} /><meshStandardMaterial color='#9aa4b8' metalness={0.8} roughness={0.3} /></mesh>
+      ))}
+      {[0.7, 1.4, 2.2, 3.0, 3.8].map((a) => (
+        <group key={a} position={[Math.sin(a) * 3.35, 0.45, Math.cos(a) * 3.35]}>
+          <mesh><boxGeometry args={[0.12, 0.12, 0.12]} /><meshBasicMaterial color='#ff9a3a' toneMapped={false} /></mesh>
+          <pointLight intensity={4} color='#ff9a3a' distance={4} decay={2} />
+        </group>
+      ))}
+      <mesh position={[2.2, 0.45, 1.4]} rotation={[0, -0.6, 0]}><boxGeometry args={[1.1, 0.9, 0.5]} /><meshStandardMaterial color='#3a4256' roughness={0.6} metalness={0.4} /></mesh>
+      <mesh position={[2.2, 0.75, 1.15]} rotation={[0.4, -0.6, 0]}><boxGeometry args={[0.8, 0.02, 0.3]} /><meshBasicMaterial color='#6fa8ff' toneMapped={false} /></mesh>
+      {[[-6, -6, -6, 0.4], [7, -11, -2, -0.5], [-5, -17, -8, 0.9]].map(([x, y, z, r], i) => (
+        <mesh key={i} position={[x, y, z]} rotation={[0, r, 0]}><boxGeometry args={[5, 0.3, 1.2]} /><meshStandardMaterial color='#2a3040' roughness={0.7} metalness={0.3} /></mesh>
+      ))}
       {/* ånga och vind */}
       <Sparkles count={260} scale={[14, 30, 14]} position={[0, -12, -4]} size={2.5} speed={2.2} opacity={0.45} color='#dbe6ff' />
       <Sparkles count={80} scale={[6, 3, 6]} position={[-2.5, 0.5, 1]} size={4} speed={0.6} opacity={0.35} color='#ffffff' />
@@ -59,20 +75,21 @@ export const cloudcity: Scene = {
   fade: (t) => Math.max(1 - span(t, 0, 0.8), span(t, 10.4, 10.9) * 0.94),
   camera: (t) => {
     if (t < 2.4) {
+      // från sidan, lite ovanifrån: plattformen, antennen, den hängande och vinnaren i samma bild
       const p = ease(span(t, 0, 2.4), 'out');
-      return { position: lerp3([3.4, -2.6, -5.6], [2.8, -2.0, -5.0], p), lookAt: [0.2, 0.1, -3.4], fov: 42, snap: true };
+      return { position: lerp3([7.2, 1.9, -2.4], [6.2, 1.5, -3.0], p), lookAt: [0, -0.3, -3.2], fov: 46, snap: true };
     }
     if (t < 4.6) {
       const p = ease(span(t, 2.4, 4.6), 'inOut');
-      return { position: lerp3([1.5, 0.8, -4.4], [1.2, 0.9, -3.9], p), lookAt: [0, 1.15, -1.6], fov: 34, snap: true };
+      return { position: lerp3([2.9, 1.0, -5.0], [2.5, 1.0, -4.6], p), lookAt: [0, 1.0, -1.8], fov: 40, snap: true };
     }
     if (t < LETGO) {
       const p = ease(span(t, 4.6, LETGO), 'inOut');
-      return { position: lerp3([1.7, -0.8, -6.4], [1.3, -0.6, -6.0], p), lookAt: [0, -0.55, -4.8], fov: 34, snap: true };
+      return { position: lerp3([2.8, -0.2, -6.8], [2.3, -0.3, -6.3], p), lookAt: [0, -0.5, -4.6], fov: 40, snap: true };
     }
-    if (t < 8.4) return { position: [1.7, 1.9, -2.4], lookAt: [0, -3.5, -4.9], fov: 48, snap: true };
+    if (t < 8.4) return { position: [5.0, 1.4, -3.6], lookAt: [0, -2.4, -4.6], fov: 50, snap: true };
     const p = ease(span(t, 8.4, 10.6), 'inOut');
-    return { position: lerp3([2.4, 0.7, -5.6], [2.0, 0.9, -5.0], p), lookAt: [0, 1.0, -1.8], fov: 36, snap: true };
+    return { position: lerp3([3.2, 1.0, -5.8], [2.7, 1.0, -5.2], p), lookAt: [0, 0.9, -1.9], fov: 40, snap: true };
   },
   Scene: ({ t }) => {
     const sway = Math.sin(t * 1.7) * 0.12 + Math.sin(t * 0.7) * 0.05;
@@ -90,7 +107,7 @@ export const cloudcity: Scene = {
       <>
         <Shaft />
         {/* vinnaren i svart hjälm på plattformen, vänd mot antennen */}
-        <Racket position={VADER} rotation={[0, Math.PI, 0]} color='#111116' helmet arm={arm} saber={blade} saberColor='#ff2a2a' flicker={0.5 + 0.5 * Math.sin(t * 57)} crown={t >= 8.3} />
+        <Racket position={VADER} rotation={[0, Math.PI, 0]} color='#b3202a' helmet arm={arm} saber={blade} saberColor='#ff2a2a' flicker={0.5 + 0.5 * Math.sin(t * 57)} crown={t >= 8.3} />
         {/* den störtade hänger från antennens spets och svajar */}
         <group position={TIP} rotation={[0, 0, sway]}>
           <group position={[0, fallY, 0]} scale={fallScale}>

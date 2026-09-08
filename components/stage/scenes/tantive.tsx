@@ -100,7 +100,7 @@ export const tantive: Scene = {
         <Racket position={deposedPos} rotation={deposedRot} color='#cfd6e6' mood={lift > 0 ? 'shock' : 'sad'} scale={0.95} />
         {rise < 1 && <Crown position={crownPos} rotation={[rise * 4, rise * 6, (1 - rise) * 1.3]} scale={0.8} />}
         {/* vinnaren: in genom röken, tunga steg, vänd mot den störtade */}
-        {t > 1.6 && <Racket position={[vader[0], walking ? Math.abs(Math.sin(t * 7)) * 0.05 : 0, vader[2]]} rotation={[0, turn, walking ? Math.sin(t * 7) * 0.03 : 0]} color='#111116' helmet arm={kf(t, [[CHOKE - 0.2, 0], [CHOKE + 0.3, 0.8, 'out'], [FLING, 0.8], [FLING + 0.4, 0, 'in']])} crown={rise >= 1} />}
+        {t > 1.6 && <Racket position={[vader[0], walking ? Math.abs(Math.sin(t * 7)) * 0.05 : 0, vader[2]]} rotation={[0, turn, walking ? Math.sin(t * 7) * 0.03 : 0]} color='#b3202a' helmet arm={kf(t, [[CHOKE - 0.2, 0], [CHOKE + 0.3, 0.8, 'out'], [FLING, 0.8], [FLING + 0.4, 0, 'in']])} crown={rise >= 1} />}
       </>
     );
   },

@@ -97,15 +97,28 @@ function Cloak() {
  * framsidan (+z). `hood` ger jedimanteln. `saber` ger en sabel i högerhanden, i handhöjd och
  * lätt framåtlutad så spetsen svävar strax över golvet.
  */
-/** Vaders hjälm: blank svart kupol över bladet och en mask med andningsgaller under ögonlinserna. */
+/**
+ * Vaders utstyrsel på en racket: en svart kupolmössa som bara täcker bladets överdel så det
+ * röda gummit syns, linser och andningsmask på gummit, bröstpanel med lampor, och en cape som
+ * hänger bakom i stället för att gömma handtaget.
+ */
 function Helmet() {
+  const black = <meshPhysicalMaterial color='#0b0b10' roughness={0.25} clearcoat={1} clearcoatRoughness={0.1} />;
   return (
     <group>
-      <mesh position={[0, 1.3, -0.05]}><sphereGeometry args={[0.86, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.55]} /><meshPhysicalMaterial color='#0b0b10' roughness={0.25} clearcoat={1} clearcoatRoughness={0.1} /></mesh>
-      <mesh position={[0, 0.98, 0.09]}><boxGeometry args={[0.62, 0.42, 0.14]} /><meshStandardMaterial color='#1a1a22' roughness={0.5} metalness={0.4} /></mesh>
-      {[-0.2, 0.2].map((x) => <mesh key={x} position={[x, 1.22, 0.1]} rotation={[0, 0, x < 0 ? 0.3 : -0.3]}><boxGeometry args={[0.24, 0.16, 0.06]} /><meshPhysicalMaterial color='#05050a' roughness={0.1} clearcoat={1} /></mesh>)}
-      <mesh position={[0, 0.9, 0.17]}><boxGeometry args={[0.2, 0.18, 0.04]} /><meshStandardMaterial color='#444' metalness={0.6} roughness={0.4} /></mesh>
-      <mesh position={[0, 0.55, -0.35]}><coneGeometry args={[1.0, 1.4, 28, 1, true]} /><meshStandardMaterial color='#0d0d12' roughness={0.9} side={2} /></mesh>
+      {/* kupolen: sitter som en mössa på bladets överkant */}
+      <mesh position={[0, 1.36, -0.02]}><sphereGeometry args={[0.8, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.36]} />{black}</mesh>
+      <mesh position={[0, 1.6, 0]} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[0.78, 0.05, 8, 40]} />{black}</mesh>
+      {/* linser och mask på gummit */}
+      {[-0.22, 0.22].map((x) => <mesh key={x} position={[x, 1.2, 0.09]} rotation={[0, 0, x < 0 ? 0.35 : -0.35]}><boxGeometry args={[0.26, 0.15, 0.06]} /><meshPhysicalMaterial color='#05050a' roughness={0.08} clearcoat={1} /></mesh>)}
+      <mesh position={[0, 0.86, 0.09]}><coneGeometry args={[0.3, 0.42, 3]} /><meshStandardMaterial color='#1a1a22' roughness={0.5} metalness={0.4} /></mesh>
+      <mesh position={[0, 0.78, 0.17]}><boxGeometry args={[0.2, 0.14, 0.04]} /><meshStandardMaterial color='#444' metalness={0.6} roughness={0.4} /></mesh>
+      {/* bröstpanelen: på handtagets överdel, med lampor */}
+      <mesh position={[0, 0.42, 0.1]}><boxGeometry args={[0.36, 0.22, 0.08]} /><meshStandardMaterial color='#2a2a33' metalness={0.6} roughness={0.4} /></mesh>
+      <mesh position={[-0.1, 0.45, 0.15]}><boxGeometry args={[0.06, 0.06, 0.02]} /><meshBasicMaterial color='#ff3030' toneMapped={false} /></mesh>
+      <mesh position={[0.06, 0.45, 0.15]}><boxGeometry args={[0.06, 0.06, 0.02]} /><meshBasicMaterial color='#40ff60' toneMapped={false} /></mesh>
+      {/* capen: bara den bakre halvan, så handtaget och bladet syns framifrån */}
+      <mesh position={[0, 0.95, -0.15]}><coneGeometry args={[1.05, 1.95, 28, 1, true, Math.PI / 2, Math.PI]} /><meshStandardMaterial color='#0d0d12' roughness={0.95} side={2} /></mesh>
     </group>
   );
 }
