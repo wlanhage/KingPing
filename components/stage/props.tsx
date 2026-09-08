@@ -116,7 +116,8 @@ export function Racket({ position = [0, 0, 0] as Vec3, rotation = [0, 0, 0] as V
     <group position={position} rotation={rotation} scale={scale}>
       {hood && <Cloak />}
       {helmet && <Helmet />}
-      {crown && <Crown position={[0, 1.78, 0]} scale={0.8} />}
+      {/* kronan sitter ovanpå hjälmkupolen när det finns en, annars direkt på bladet */}
+      {crown && <Crown position={helmet ? [0, 2.12, -0.05] : [0, 1.78, 0]} scale={0.8} />}
       {/* utsträckt hand: en mörk arm som växer framåt ur högersidan */}
       {arm > 0.01 && <mesh position={[0.6, 0.95, 0.15 + arm / 2]}><boxGeometry args={[0.16, 0.16, arm]} /><meshStandardMaterial color='#15151a' roughness={0.8} /></mesh>}
       {arm > 0.01 && <mesh position={[0.6, 0.95, 0.15 + arm + 0.08]}><sphereGeometry args={[0.13, 12, 12]} /><meshStandardMaterial color='#15151a' roughness={0.8} /></mesh>}

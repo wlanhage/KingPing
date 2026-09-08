@@ -13,9 +13,10 @@ import type { Scene, Vec3 } from '../types';
  */
 
 const DOOR_Z = -14;
-const DEPOSED: Vec3 = [0.8, 0.36, -5.2];
-const CROWN_FLOOR: Vec3 = [1.6, 0.14, -4.9];
-const STAND: Vec3 = [0, 0, -6.4];
+// Han går längs mitten; de fallna ligger vid väggarna så han aldrig kliver igenom någon.
+const DEPOSED: Vec3 = [0.9, 0.36, -4.9];
+const CROWN_FLOOR: Vec3 = [1.7, 0.14, -4.6];
+const STAND: Vec3 = [0, 0, -7.2];
 const BLAST = 0.6;
 const CHOKE = 6.6, FLING = 7.9;
 
@@ -68,10 +69,10 @@ export const tantive: Scene = {
     }
     if (t < 5.4) {
       const p = ease(span(t, 3.2, 5.4), 'inOut');
-      return { position: lerp3([2.8, 0.9, -5.2], [2.4, 0.9, -5.6], p), lookAt: [-0.3, 0.9, -7.2], fov: 38, snap: true };
+      return { position: lerp3([2.9, 0.9, -5.0], [2.5, 0.9, -5.5], p), lookAt: [-0.3, 0.9, -7.8], fov: 38, snap: true };
     }
-    if (t < FLING) return { position: [1.1, 0.5, -4.2], lookAt: [0.1, 1.2, -6.3], fov: 34, snap: true };
-    return { position: [2.5, 1.7, -2.4], lookAt: [0.3, 0.9, -6.2], fov: 42, snap: true, shake: decay(t - FLING, 0.03, 0.4) };
+    if (t < FLING) return { position: [1.2, 0.5, -3.9], lookAt: [0.1, 1.2, -7.0], fov: 34, snap: true };
+    return { position: [2.6, 1.7, -2.2], lookAt: [0.3, 0.9, -6.6], fov: 42, snap: true, shake: decay(t - FLING, 0.03, 0.4) };
   },
   Scene: ({ t }) => {
     const blast = Math.max(0, t - BLAST);
@@ -87,14 +88,14 @@ export const tantive: Scene = {
     const deposedRot: Vec3 = flung > 0 ? [-Math.PI / 2 + 0.3, 0, 0.6 + flung * 3] : [-Math.PI / 2 * (1 - lift), 0.6 * (1 - lift), lift > 0 ? Math.sin(t * 40) * 0.05 : 0];
     // kronan stiger från golvet till vinnarens huvud
     const rise = span(t, 8.3, 9.1);
-    const crownPos: Vec3 = [CROWN_FLOOR[0] + (vader[0] - CROWN_FLOOR[0]) * rise, CROWN_FLOOR[1] + (1.78 - CROWN_FLOOR[1]) * rise + Math.sin(rise * Math.PI) * 0.6, CROWN_FLOOR[2] + (vader[2] - CROWN_FLOOR[2]) * rise];
+    const crownPos: Vec3 = [CROWN_FLOOR[0] + (vader[0] - CROWN_FLOOR[0]) * rise, CROWN_FLOOR[1] + (2.12 - CROWN_FLOOR[1]) * rise + Math.sin(rise * Math.PI) * 0.6, CROWN_FLOOR[2] + (vader[2] - 0.05 - CROWN_FLOOR[2]) * rise];
     return (
       <>
         <Corridor blast={blast} />
         {/* fallna rebeller i korridoren */}
-        <Racket position={[-1.3, 0.36, -8.4]} rotation={[-Math.PI / 2 + 0.2, 0, -0.4]} color='#e6e8ee' mood='sad' scale={0.9} />
-        <Racket position={[-0.6, 0.36, -3.4]} rotation={[-Math.PI / 2 + 0.25, 0, 0.9]} color='#d8dde8' mood='sad' scale={0.9} />
-        <Racket position={[1.7, 0.36, -9.8]} rotation={[-Math.PI / 2 + 0.15, 0, -1.2]} color='#e6e8ee' mood='sad' scale={0.9} />
+        <Racket position={[-2.0, 0.36, -8.6]} rotation={[-Math.PI / 2 + 0.2, 0, -0.4]} color='#e6e8ee' mood='sad' scale={0.85} />
+        <Racket position={[-1.9, 0.36, -3.2]} rotation={[-Math.PI / 2 + 0.25, 0, 0.9]} color='#d8dde8' mood='sad' scale={0.85} />
+        <Racket position={[1.9, 0.36, -10.0]} rotation={[-Math.PI / 2 + 0.15, 0, -1.2]} color='#e6e8ee' mood='sad' scale={0.85} />
         {/* den störtade, med kronan bredvid sig */}
         <Racket position={deposedPos} rotation={deposedRot} color='#cfd6e6' mood={lift > 0 ? 'shock' : 'sad'} scale={0.95} />
         {rise < 1 && <Crown position={crownPos} rotation={[rise * 4, rise * 6, (1 - rise) * 1.3]} scale={0.8} />}
