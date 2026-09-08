@@ -280,11 +280,11 @@ export function Coronation({ event, copy, words, onDone }: { event: CoronationEv
   // Auto-stäng + tangentbord (Esc), och fokusera hoppa-över-knappen.
   useEffect(() => {
     skipRef.current?.focus();
-    // I scenläget säger StageShow till när scenerna är slut; timern är bara en säkerhetslina.
-    const timer = setTimeout(onDone, lane === 'on' ? 30000 : reduced ? 9000 : 8000);
+    // I scenläget stannar slutbilden tills man klickar; ingen timer alls där.
+    const timer = lane === 'on' ? null : setTimeout(onDone, reduced ? 9000 : 8000);
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onDone(); };
     window.addEventListener('keydown', onKey);
-    return () => { clearTimeout(timer); window.removeEventListener('keydown', onKey); };
+    return () => { if (timer) clearTimeout(timer); window.removeEventListener('keydown', onKey); };
   }, [onDone, reduced, lane]);
 
   // Ljud: fanfar (+ ev. sorgtrombon för den störtade). Följer på användarens klick → tillåtet.

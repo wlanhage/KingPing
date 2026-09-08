@@ -80,12 +80,17 @@ function Mustafar() {
       <pointLight position={[-6, 1.0, -14]} intensity={60} color='#ffb060' distance={30} decay={2} />
       <spotLight position={[3, 8, 2]} angle={0.7} penumbra={0.9} intensity={40} color='#ffd0a0' />
       {/* lavahavet */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.35, -20]}>
-        <planeGeometry args={[120, 90]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.35, -40]}>
+        <planeGeometry args={[140, 72]} />
         <meshStandardMaterial map={lava} emissiveMap={lava} emissive='#ff6a00' emissiveIntensity={1.9} color='#ff9a3a' roughness={0.9} />
       </mesh>
       {/* banken: svart sten, kanten mot lavan vid z ≈ -4,2 */}
-      <mesh position={[0, -0.36, 0.2]}><boxGeometry args={[18, 0.72, 8.8]} /><meshStandardMaterial color='#17100e' roughness={1} /></mesh>
+      <mesh position={[0, -0.36, 8.8]}><boxGeometry args={[34, 0.72, 26]} /><meshStandardMaterial color='#17100e' roughness={1} /></mesh>
+      {/* bergen bakom: så att det är sten och inte lava bakom den som vänder sig om */}
+      <mesh position={[0, 3.5, 14]}><boxGeometry args={[36, 8, 4]} /><meshStandardMaterial color='#140e0c' roughness={1} /></mesh>
+      {[[-9, 4.5, 9, 5], [-3, 3.2, 11, 4], [3.5, 5.2, 10, 6], [9.5, 3.8, 8.5, 4.5], [-13, 2.6, 6, 3.4], [13.5, 3.0, 6.5, 3.8]].map(([x, h, z, r], i) => (
+        <mesh key={i} position={[x, h / 2 - 0.3, z]}><coneGeometry args={[r, h, 7]} /><meshStandardMaterial color='#171110' roughness={1} flatShading /></mesh>
+      ))}
       <mesh position={[0, -0.3, -4.3]} rotation={[0.35, 0, 0]}><boxGeometry args={[18, 0.5, 1.4]} /><meshStandardMaterial color='#1c1310' roughness={1} emissive='#ff4a00' emissiveIntensity={0.12} /></mesh>
       {/* klipphyllan: vinnaren står högre än lavan och blocket */}
       <mesh position={[0, LEDGE_H / 2 - 0.02, -1.2]}><boxGeometry args={[6.5, LEDGE_H, 4.4]} /><meshStandardMaterial color='#1a1210' roughness={1} /></mesh>
@@ -169,7 +174,8 @@ export const mustafar: Scene = {
       return { position: [2.6, 2.3, hp[2] + 1.6], lookAt: [hp[0], hp[1] - 0.2, hp[2]], fov: 38, snap: true, shake: decay(t - HIT, 0.03, 0.4) };
     }
     const p = ease(span(t, 9.8, 11.6), 'inOut');
-    return { position: lerp3([2.3, LEDGE_H + 0.5, -4.0], [2.0, LEDGE_H + 0.8, -3.6], p), lookAt: lerp3([0.1, LEDGE_H + 0.35, -2.7], [0, LEDGE_H + 1.0, -1.0], p), fov: 34, snap: true };
+    // slutbilden: snett ovanifrån så halvorna och vinnaren syns tillsammans, med berget bakom honom
+    return { position: lerp3([2.8, LEDGE_H + 2.8, -4.6], [2.3, LEDGE_H + 2.4, -4.0], p), lookAt: lerp3([0.1, LEDGE_H + 0.3, -2.6], [0, LEDGE_H + 0.9, -1.2], p), fov: 36, snap: true };
   },
   Scene: ({ t, ctx }) => {
     const jump = span(t, JUMP_FROM, JUMP_TO);
