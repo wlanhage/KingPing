@@ -15,9 +15,11 @@ export type StageEvent = {
 /**
  * Vilka scener en händelse får. Tom lista = ingen 3D-scen, den klassiska ceremonin visas.
  * Tre raka eller fler: rådssalen, strax före Order 66.
+ * Någon störtar en mästare med tre raka eller mer: Mustafar, höjdövertaget.
  */
 export function sequenceFor(ev: StageEvent): SceneKey[] {
   if (!ev.isNewRuler && ev.streakCount >= 3) return ['temple'];
+  if (ev.isNewRuler && ev.deposedName && ev.previousStreakCount >= 3) return ['mustafar'];
   return [];
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ballistic, ease, kf } from '../components/stage/anim';
+import { ballistic, ease, kf, warpHit } from '../components/stage/anim';
 import { SCENES, SCENE_KEYS } from '../components/stage/scenes';
 import { locate, sequenceFor } from '../components/stage/sequence';
 import type { SceneCtx } from '../components/stage/types';
@@ -15,6 +15,9 @@ describe('anim', () => {
   it('easing börjar i 0 och slutar i 1', () => {
     for (const k of ['linear', 'in', 'out', 'inOut', 'back', 'bounce', 'elastic'] as const) { expect(ease(0, k)).toBeCloseTo(0); expect(ease(1, k)).toBeCloseTo(1); }
   });
+  it('warpHit fryser vid träffen och går sedan i ultrarapid', () => {
+    expect(warpHit(1, 2)).toBe(1); expect(warpHit(2.05, 2, 0.1, 0.3, 1)).toBe(2); expect(warpHit(2.6, 2, 0.1, 0.3, 1)).toBeCloseTo(2.15); expect(warpHit(4, 2, 0.1, 0.3, 1)).toBeCloseTo(3.2);
+  });
   it('ballistic landar och stannar', () => {
     expect(ballistic(5, 0.35, 5, 20, 0.35)).toMatchObject({ moving: false });
   });
@@ -27,6 +30,11 @@ describe('sequenceFor', () => {
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 6 })).toEqual(['temple']);
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 2 })).toEqual([]);
     expect(sequenceFor(base)).toEqual([]);
+  });
+  it('störtar man en mästare med tre raka eller mer blir det Mustafar', () => {
+    expect(sequenceFor({ ...base, previousStreakCount: 3 })).toEqual(['mustafar']);
+    expect(sequenceFor({ ...base, previousStreakCount: 6 })).toEqual(['mustafar']);
+    expect(sequenceFor({ ...base, previousStreakCount: 3, deposedName: null })).toEqual([]);
   });
   it('locate hittar rätt scen och lokal tid', () => {
     expect(locate([{ duration: 2 }, { duration: 3 }], 2.5)).toMatchObject({ index: 1, local: 0.5, total: 5 });

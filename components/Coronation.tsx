@@ -236,6 +236,17 @@ function playCueSound(ctx: AudioContext, master: GainNode, cue: CueName) {
       tone(now, 0.35, 85, 40, 'sine', 0.45);
       noise(now, 0.12, 400, 0.3);
       break;
+    case 'smash':
+      // pingisbollen som träffar: kort torr smäll och ett "pok"
+      noise(now, 0.08, 2400, 0.5);
+      tone(now, 0.12, 900, 300, 'square', 0.18);
+      tone(now + 0.02, 0.3, 120, 50, 'sine', 0.35);
+      break;
+    case 'sizzle':
+      // sabeln i lavan: väsande ånga
+      noise(now, 0.9, 3200, 0.22);
+      noise(now + 0.1, 0.6, 900, 0.1);
+      break;
   }
 }
 

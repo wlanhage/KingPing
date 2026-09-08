@@ -30,7 +30,9 @@ export function StageShow({ ctx, sequence, onDone, onCue, onFail, frozenT }: { c
   const fired = useRef(new Set<string>());
   const done = useRef(false);
 
-  if (scene) poseRef.current = scene.camera(local, ctx);
+  // Kameran och scenen lever i scenens (eventuellt förvrängda) tid; ord och cues i verklig.
+  const sceneT = scene ? (scene.warp ? scene.warp(local) : local) : 0;
+  if (scene) poseRef.current = scene.camera(sceneT, ctx);
 
   useEffect(() => {
     if (!scene || !onCue) return;
@@ -52,7 +54,7 @@ export function StageShow({ ctx, sequence, onDone, onCue, onFail, frozenT }: { c
   return (
     <div className='stage-overlay'>
       <StageCanvas poseRef={poseRef} onContextLost={onFail}>
-        {scene && <scene.Scene t={local} ctx={ctx} />}
+        {scene && <scene.Scene t={sceneT} ctx={ctx} />}
       </StageCanvas>
       <div className='stage-black' style={{ opacity: black }} />
       <div className='stage-words' aria-live='polite'>
