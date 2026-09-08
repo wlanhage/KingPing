@@ -1,34 +1,46 @@
 'use client';
-import { Ball, DiscoBall, Pins, Racket } from '../props';
-import { decay, kf, rng, span } from '../anim';
+import { Ball, Confetti, DiscoBall, Impact, Pins, Racket, SpeedLines } from '../props';
+import { decay, kf, rng, span, warpHit } from '../anim';
 import type { Clip, Vec3 } from '../types';
 
 const wide = (shake = 0) => ({ position: [0, 3.2, 7] as Vec3, lookAt: [0, 1, -12] as Vec3, fov: 48, shake });
 const BOUNCES = [1.3, 1.8, 2.3, 2.8, 3.2];
 
-/** BUMPER BOWLING: kantskydden fälls upp, bollen zickzackar mellan dem och träffar ändå. */
+/** BUMPER BOWLING: kantskydden fälls upp, bollen studsar sicksack mellan dem med kameran bakom, och träffar ändå. */
+const BH = 3.4;
+const bumperZ = (s: number) => kf(s, [[0.9, 1.6], [BH, -15.6, 'linear']]);
+const bumperX = (s: number) => kf(s, [[0.9, 0], [1.3, 1.3, 'out'], [1.8, -1.3, 'inOut'], [2.3, 1.3, 'inOut'], [2.8, -1.3, 'inOut'], [3.2, 0.6, 'inOut'], [BH, 0, 'out']]);
 export const bumper: Clip = {
-  key: 'bumper', duration: 5.6,
-  words: (ctx) => [{ at: 3.6, text: 'NYBÖRJARTUR', size: 1.5, color: '#9dff2b' }, { at: 4.6, text: ctx.winner.toUpperCase(), size: 1, y: 3.8, color: '#ffffff' }],
-  cues: [{ at: 3.4, cue: 'hit' }],
-  camera: (t) => wide(decay(t - 3.4, 0.05, 0.5)),
-  Scene: ({ t, ctx }) => {
-    const up = kf(t, [[0.2, 0.01], [0.8, 1, 'bounce']]);
-    const z = kf(t, [[0.9, 1], [3.4, -15.6, 'linear']]);
-    const x = kf(t, [[0.9, 0], [1.3, 1.3, 'out'], [1.8, -1.3, 'inOut'], [2.3, 1.3, 'inOut'], [2.8, -1.3, 'inOut'], [3.2, 0.6, 'inOut'], [3.4, 0, 'out']]);
-    const flash = (side: number) => BOUNCES.some((b, i) => Math.abs(t - b) < 0.12 && (i % 2 === 0 ? 1 : -1) === side);
+  key: 'bumper', duration: 6.2,
+  warp: (t) => warpHit(t, BH, 0.1, 0.35, 0.6),
+  words: (ctx) => [{ at: 3.55, text: 'NYBÖRJARTUR', style: 'blink', size: 1.7, color: '#9dff2b' }, { at: 4.4, text: 'STRIKE!', size: 2 }, { at: 5.0, text: ctx.winner, style: 'name', size: 1 }],
+  cues: [...BOUNCES.map((at) => ({ at, cue: 'slam' as const })), { at: BH, cue: 'hit' }],
+  camera: (s) => {
+    if (s < BH) { const z = bumperZ(s); const x = bumperX(s); return { position: [x * 0.4, 1.2, z + 3.4], lookAt: [x * 0.6, 0.5, z - 4], fov: 52 }; }
+    const kick = decay(s - BH, 1, 0.6);
+    return { position: [0, 3.0, 5], lookAt: [0, 0.9, -13], fov: 46 - kick * 8, shake: kick * 0.1 };
+  },
+  Scene: ({ t: s, ctx }) => {
+    const up = kf(s, [[0.2, 0.01], [0.8, 1, 'bounce']]);
+    const z = bumperZ(s); const x = bumperX(s);
+    const speed = s > 0.9 && s < BH ? 11 : 0;
+    const flash = (side: number) => BOUNCES.some((b, i) => Math.abs(s - b) < 0.12 && (i % 2 === 0 ? 1 : -1) === side);
+    const dance = s > BH ? Math.sin(s * 12) * 0.25 : 0;
     return (
       <>
-        <Racket position={[-1.1, 0, 2.4]} rotation={[0, 0.4, kf(t, [[0.5, 0.9], [0.9, -1.5, 'in'], [1.4, 0, 'out']])]} mood='happy' color='#2ecc71' />
+        <Racket position={[-1.0, 0, 2.6]} rotation={[0, 0.35, kf(s, [[0.4, 0.2], [0.75, 1.2, 'inOut'], [0.95, -1.6, 'in'], [1.5, 0, 'out']]) + dance]} color='#2ecc71' />
         {[1, -1].map((side) => (
           <mesh key={side} position={[side * 1.55, 0.3 * up, -8]} scale={[1, up, 1]}>
             <boxGeometry args={[0.24, 0.6, 24]} />
-            <meshStandardMaterial color={ctx.cosmic ? '#2bf0ff' : '#f2c94c'} emissive={ctx.cosmic ? '#2bf0ff' : '#f2c94c'} emissiveIntensity={flash(side) ? 2.5 : 0.25} />
+            <meshStandardMaterial color={ctx.cosmic ? '#2bf0ff' : '#f2c94c'} emissive={ctx.cosmic ? '#2bf0ff' : '#f2c94c'} emissiveIntensity={flash(side) ? 3 : 0.3} />
           </mesh>
         ))}
-        {t < 3.45 && <Ball position={[x, 0.45, z]} rotation={[-z * 2.2, 0, x * 2]} glow={ctx.cosmic} />}
-        <Pins hitAt={3.4} t={t} cosmic={ctx.cosmic} crown={t < 3.4} seed={17} />
-        {ctx.cosmic && <DiscoBall position={[0, 6, -8]} t={t} />}
+        {BOUNCES.map((b, i) => <Impact key={b} at={b} t={s} position={[(i % 2 === 0 ? 1 : -1) * 1.42, 0.45, bumperZ(b)]} size={0.35} color={ctx.cosmic ? '#2bf0ff' : '#ffe066'} />)}
+        {s < BH + 0.05 && <group><Ball position={[x, 0.45, z]} rotation={[-z * 2.4, 0, x * 2]} glow={ctx.cosmic} squash={s > 0.85 && s < 1.05 ? Math.sin(span(s, 0.85, 1.05) * Math.PI) * 0.5 : 0} /><SpeedLines position={[x, 0, z]} speed={speed} /></group>}
+        <Pins hitAt={BH} t={s} cosmic={ctx.cosmic} crown={s < BH} seed={17} />
+        <Impact at={BH} t={s} position={[0, 0.4, -16.2]} size={1.3} />
+        <Confetti at={BH} t={s} position={[0, 0.6, -16.3]} count={50} />
+        {ctx.cosmic && <DiscoBall position={[0, 6, -8]} t={s} />}
       </>
     );
   },

@@ -2057,3 +2057,18 @@ html[data-theme='star-wars'] .skeleton-text::after { content: 'Hoppar till hyper
 .lane-frame-total { border-color: #8dff8d; }
 .lane-scoreboard-over { margin: .9rem 0 0; text-align: center; font-size: clamp(1.1rem, 3vw, 1.8rem); letter-spacing: .25em; animation: lane-blink 0.7s steps(2, start) infinite; }
 @keyframes lane-blink { to { visibility: hidden; } }
+
+/* Banans HUD-ord: chunky 90-talstypografi som slår in ovanpå bilden och alltid syns. */
+.lane-words { position: absolute; left: 0; right: 0; top: 14%; z-index: 135; display: flex; flex-direction: column; align-items: center; gap: .35rem; pointer-events: none; padding: 0 1rem; }
+.lane-word { --word: #ffe066; font-family: Impact, 'Arial Black', 'Franklin Gothic Medium', 'Helvetica Neue', Arial, sans-serif; font-size: clamp(2rem, calc(var(--size) * 3.4vw), calc(var(--size) * 4.2rem)); font-style: italic; font-weight: 900; letter-spacing: .02em; line-height: 1; text-transform: uppercase; text-align: center;
+  color: var(--word); background: linear-gradient(180deg, #fffbe6 0%, var(--word) 42%, #b8741a 58%, #fff0a8 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 2px #2a1200) drop-shadow(3px 4px 0 #2a1200) drop-shadow(0 0 22px rgba(255, 224, 102, .55)); transform-origin: center; }
+.lane-word-slam { animation: lane-slam .5s cubic-bezier(.2, 1.4, .3, 1) both; }
+.lane-word-name { --word: #ffffff; font-family: var(--font-display), Georgia, serif; font-style: normal; font-weight: 700; letter-spacing: .18em; background: none; -webkit-text-fill-color: #fff; color: #fff; filter: drop-shadow(0 2px 0 #000) drop-shadow(0 0 16px rgba(255,255,255,.5)); animation: lane-rise .5s ease-out both; }
+.lane-word-sad { --word: #9fb3c8; background: linear-gradient(180deg, #e6eef7, #9fb3c8 50%, #5c6f84); font-style: normal; animation: lane-droop 1.2s ease-out both; }
+.lane-word-blink { animation: lane-slam .5s cubic-bezier(.2, 1.4, .3, 1) both, lane-blink .55s steps(2, start) .6s infinite; }
+.lane-words.is-cosmic .lane-word { --word: #7df9ff; background: linear-gradient(180deg, #ffffff 0%, #7df9ff 45%, #ff2bd6 100%); filter: drop-shadow(0 0 2px #0a0020) drop-shadow(3px 4px 0 #1a0044) drop-shadow(0 0 26px rgba(125, 249, 255, .7)); }
+@keyframes lane-slam { 0% { transform: scale(3.2) rotate(-6deg); opacity: 0; } 55% { transform: scale(.94) rotate(1deg); opacity: 1; } 100% { transform: scale(1) rotate(-2deg); opacity: 1; } }
+@keyframes lane-rise { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes lane-droop { 0% { transform: scale(1.6) translateY(-10px); opacity: 0; } 30% { transform: scale(1) translateY(0); opacity: 1; } 100% { transform: scale(1) translateY(18px) rotate(-3deg); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .lane-word { animation: none !important; } }

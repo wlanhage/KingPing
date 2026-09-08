@@ -68,3 +68,16 @@ export function ballistic(dt: number, y0: number, vy: number, g = 20, radius = 0
 
 /** Skakning som klingar av: amplitud vid tiden t efter start. */
 export const decay = (t: number, from: number, life: number) => (t < 0 || t > life ? 0 : from * (1 - t / life) * (1 - t / life));
+
+/**
+ * Slagets tidskänsla: bilden fryser ett ögonblick vid träffen (hit-stop), går sedan i
+ * ultrarapid en stund och återgår till normal fart. Returnerar scenens tid för den
+ * verkliga tiden t. Klippens längder anges i verklig tid.
+ */
+export function warpHit(t: number, hitAt: number, stop = 0.12, slow = 0.3, slowFor = 0.8): number {
+  if (t <= hitAt) return t;
+  const afterStop = t - hitAt - stop;
+  if (afterStop <= 0) return hitAt;
+  if (afterStop <= slowFor) return hitAt + afterStop * slow;
+  return hitAt + slowFor * slow + (afterStop - slowFor);
+}

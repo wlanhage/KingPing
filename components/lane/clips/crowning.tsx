@@ -1,33 +1,50 @@
 'use client';
-import { Ball, Crown, DiscoBall, Flashes, Racket, Pins, lerp3 } from '../props';
-import { decay, ease, kf, rng, span } from '../anim';
+import { Ball, Confetti, Crown, DiscoBall, Flashes, Impact, Racket, Pins, SpeedLines, lerp3 } from '../props';
+import { decay, ease, kf, rng, span, warpHit } from '../anim';
 import type { CameraPose, Clip, Vec3 } from '../types';
 
 export const wide = (shake = 0): CameraPose => ({ position: [0, 3.2, 7], lookAt: [0, 1, -12], fov: 48, shake });
 const lerp = (a: number, b: number, p: number) => a + (b - a) * p;
 
-/** STRIKE: racketen svingar, bollen träffar pyramiden, kronan seglar till vinnaren. */
+/** STRIKE: uppladdning, bollen skjuts iväg med kameran tätt bakom, hit-stop, ultrarapid, kronan seglar till vinnaren som hoppar av glädje. */
+const HIT = 1.9;
+const strikeZ = (s: number) => kf(s, [[0.62, 1.6], [HIT, -15.6, 'in']]);
 export const strike: Clip = {
-  key: 'strike', duration: 5.2,
-  words: (ctx) => [{ at: 2.1, text: 'STRIKE!', size: 2.4 }, { at: 3.5, text: ctx.winner.toUpperCase(), size: 1.1, y: 3.7, color: '#ffffff' }],
-  cues: [{ at: 2.0, cue: 'hit' }],
-  camera: (t) => {
-    const p = ease(span(t, 2.2, 4.2), 'inOut');
-    return { position: lerp3([0, 3.2, 7], [1.8, 2.4, -3], p), lookAt: lerp3([0, 1, -12], [0.8, 1.4, -12], p), fov: 48, shake: decay(t - 2.0, 0.06, 0.5) };
+  key: 'strike', duration: 6.0,
+  warp: (t) => warpHit(t, HIT, 0.12, 0.28, 0.9),
+  words: (ctx) => [{ at: 2.0, text: 'STRIKE!', size: 2.6 }, { at: 3.9, text: ctx.winner, style: 'name', size: 1 }],
+  cues: [{ at: HIT, cue: 'hit' }, { at: 4.0, cue: 'slam' }],
+  camera: (s) => {
+    if (s < 0.62) return { position: [0.9, 1.0, 4.2], lookAt: [0, 0.6, -6], fov: 46 };
+    if (s < HIT) { const z = strikeZ(s); return { position: [0.8, 1.1, z + 3.2], lookAt: [0, 0.5, z - 4], fov: 52 }; }
+    const kick = decay(s - HIT, 1, 0.6);
+    const p = ease(span(s, 2.7, 3.3), 'inOut');
+    return { position: lerp3([3.2, 2.6, -9], [3.8, 2.2, -4.5], p), lookAt: lerp3([0, 0.9, -16], [2.4, 1.4, -8.5], p), fov: 42 - kick * 10, shake: kick * 0.12 };
   },
-  Scene: ({ t, ctx }) => {
-    const z = kf(t, [[0.6, 1], [2.0, -15.6, 'in']]);
-    const swing = kf(t, [[0.15, 0.9], [0.55, -1.5, 'in'], [1.1, 0, 'out']]);
-    const fly = span(t, 2.0, 3.3);
-    const crownPos: Vec3 = [lerp(0, 2.3, fly), 2.5 + Math.sin(fly * Math.PI) * 3, lerp(-16, -8, fly)];
+  Scene: ({ t: s, ctx }) => {
+    const z = strikeZ(s);
+    const speed = s > 0.62 && s < HIT ? (strikeZ(s - 0.05) - z) / 0.05 : 0;
+    const swing = kf(s, [[0, 0.2], [0.5, 1.3, 'inOut'], [0.68, -1.6, 'in'], [1.2, -0.2, 'out']]);
+    const squash = s > 0.55 && s < 0.8 ? Math.sin(span(s, 0.55, 0.8) * Math.PI) * 0.6 : 0;
+    const fly = span(s, HIT + 0.15, HIT + 1.35);
+    const crownPos: Vec3 = [lerp(0, 2.4, fly), 0.9 + (1.85 - 0.9) * fly + Math.sin(fly * Math.PI) * 3.5, lerp(-16, -8.5, fly)];
+    const joy = s > HIT + 1.35 ? Math.abs(Math.sin((s - HIT - 1.35) * 9)) * decay(s - HIT - 1.35, 0.45, 1.6) : 0;
     return (
       <>
-        <Racket position={[-1.1, 0, 2.4]} rotation={[0, 0.4, swing]} />
-        {t < 2.05 && <Ball position={[0, 0.45, z]} rotation={[-z * 2.2, 0, 0]} glow={ctx.cosmic} />}
-        <Pins hitAt={2.0} t={t} cosmic={ctx.cosmic} crown={t < 2.0} />
-        <Racket position={[2.3, 0, -8]} rotation={[0, -0.3, 0]} color='#2b7de9' crown={fly >= 1} />
-        {t >= 2.0 && fly < 1 && <Crown position={crownPos} rotation={[0, fly * 8, fly * 6]} scale={0.8} />}
-        {ctx.cosmic && <DiscoBall position={[0, 6, -8]} t={t} />}
+        <Racket position={[-1.0, 0, 2.6]} rotation={[0, 0.35, swing]} />
+        {s < HIT + 0.05 && (
+          <group>
+            <Ball position={[z * 0.01, 0.45, z]} rotation={[-z * 2.4, 0, 0]} glow={ctx.cosmic} squash={squash} />
+            <SpeedLines position={[0, 0, z]} speed={speed} />
+          </group>
+        )}
+        <Pins hitAt={HIT} t={s} cosmic={ctx.cosmic} crown={s < HIT} />
+        <Impact at={HIT} t={s} position={[0, 0.4, -16.2]} size={1.4} />
+        <Confetti at={HIT} t={s} position={[0, 0.6, -16.3]} count={60} spread={1.2} />
+        <Racket position={[2.4, joy, -8.5]} rotation={[0, -0.35, Math.sin(s * 9) * joy * 0.4]} color='#2b7de9' crown={fly >= 1} />
+        {s >= HIT + 0.15 && fly < 1 && <Crown position={crownPos} rotation={[0, fly * 9, fly * 6]} scale={0.8} />}
+        {fly >= 1 && <Impact at={HIT + 1.35} t={s} position={[2.4, 1.9, -8.5]} size={0.5} color='#ffe066' />}
+        {ctx.cosmic && <DiscoBall position={[0, 6, -8]} t={s} />}
       </>
     );
   },

@@ -1,31 +1,48 @@
 'use client';
-import { Ball, DiscoBall, Pedestal, Pins, Racket, PIN_BASE, PIN_R } from '../props';
+import { Ball, Confetti, DiscoBall, Impact, Pedestal, Pins, Racket, SpeedLines, PIN_BASE, PIN_R } from '../props';
 import { ballistic, decay, kf, rng, span } from '../anim';
 import type { Clip, Vec3 } from '../types';
 
 const wide = (shake = 0) => ({ position: [0, 3.2, 7] as Vec3, lookAt: [0, 1, -12] as Vec3, fov: 48, shake });
 
-/** SPARE: två kast, och den sista käglan vinglar i en evighet innan den faller. */
+/** SPARE: första kastet tar nio, sista käglan får panik i närbild, andra kastet — och så vinglar den i en evighet. */
+const H1 = 1.5, H2 = 3.9, FALL = 5.3;
+const LAST = PIN_BASE[9];
 export const spare: Clip = {
-  key: 'spare', duration: 5.6,
-  words: () => [{ at: 4.9, text: 'SPARE', size: 2.2 }],
-  cues: [{ at: 1.6, cue: 'hit' }, { at: 3.6, cue: 'hit' }, { at: 4.75, cue: 'slam' }],
-  camera: (t) => (t > 3.7 && t < 4.9 ? { position: [2.2, 1.2, -13.5], lookAt: [1.65, 0.4, -17.65], fov: 34 } : wide(decay(t - 1.6, 0.05, 0.4) + decay(t - 3.6, 0.05, 0.4))),
+  key: 'spare', duration: 6.8,
+  words: () => [{ at: 4.5, text: 'vinglar…', style: 'name', size: 0.9 }, { at: 5.75, text: 'SPARE!', size: 2.6 }],
+  cues: [{ at: H1, cue: 'hit' }, { at: H2, cue: 'hit' }, { at: FALL + 0.4, cue: 'slam' }],
+  camera: (t) => {
+    if (t < 1.9) return { position: [0.8, 1.1, kf(t, [[0.3, 4.8], [H1, -12, 'in']])], lookAt: [0, 0.5, -16], fov: 50, shake: decay(t - H1, 0.08, 0.5) };
+    if (t < 2.6) return { position: [2.8, 1.0, -15.2], lookAt: [LAST[0], 0.45, LAST[2]], fov: 32 - span(t, 1.9, 2.6) * 4 };
+    if (t < H2) return { position: [1.0, 1.4, kf(t, [[2.6, 5], [H2, -13, 'in']])], lookAt: [LAST[0], 0.4, LAST[2]], fov: 46 };
+    if (t < FALL + 0.5) return { position: [2.9, 0.9, -15.6], lookAt: [LAST[0], 0.5, LAST[2]], fov: 30, shake: decay(t - H2, 0.06, 0.4) };
+    return { position: [0, 3.2, 7], lookAt: [0, 1, -12], fov: 48 };
+  },
   Scene: ({ t, ctx }) => {
-    const z1 = kf(t, [[0.3, 1], [1.6, -15.6, 'in']]);
-    const z2 = kf(t, [[2.3, 1], [3.6, -16.4, 'in']]);
-    const wobble = t < 3.6 ? Math.sin((t - 1.6) * 14) * 0.06 * Math.max(0, 1 - (t - 1.6)) : Math.sin((t - 3.6) * 9) * 0.32 * Math.min(1, (t - 3.6) / 0.9);
-    const fallen = span(t, 4.5, 4.9);
-    const last = PIN_BASE[9];
+    const z1 = kf(t, [[0.3, 1.6], [H1, -15.6, 'in']]);
+    const z2 = kf(t, [[2.6, 1.6], [H2, -16.8, 'in']]);
+    const x2 = kf(t, [[2.6, 1.1], [H2, 1.62, 'inOut']]);
+    const scared = t > H1;
+    const wobble1 = t > H1 && t < H2 ? Math.sin((t - H1) * 16) * 0.05 * Math.max(0, 1 - (t - H1) / 1.2) : 0;
+    const wobble2 = t > H2 && t < FALL ? Math.sin((t - H2) * 7.5) * 0.5 * Math.min(1, (t - H2) / 1.3) : 0;
+    const tilt = t >= FALL ? kf(t, [[FALL, wobble2 || 0.3], [FALL + 0.45, 1.58, 'in']]) : wobble1 + wobble2;
+    const sweat = ((t * 1.4) % 1);
     return (
       <>
-        <Racket position={[-1.1, 0, 2.4]} rotation={[0, 0.4, kf(t, [[0.05, 0.9], [0.3, -1.5, 'in'], [0.9, 0, 'out'], [2.0, 0.9], [2.3, -1.5, 'in'], [2.9, 0, 'out']])]} />
-        {t < 1.65 && <Ball position={[0, 0.45, z1]} rotation={[-z1 * 2.2, 0, 0]} glow={ctx.cosmic} />}
-        {t > 2.2 && t < 3.65 && <Ball position={[1.2, 0.45, z2]} rotation={[-z2 * 2.2, 0, 0]} glow={ctx.cosmic} />}
-        <Pins hitAt={1.6} t={t} cosmic={ctx.cosmic} hidden={[9]} />
-        <group position={[last[0], last[1], last[2]]} rotation={[fallen * 1.5, 0, wobble + fallen * 0.6]}>
-          <Ball position={[0, 0, 0]} radius={PIN_R} glow={ctx.cosmic} color={ctx.cosmic ? '#ff6b2b' : '#fff7e3'} />
+        <Racket position={[-1.0, 0, 2.6]} rotation={[0, 0.35, kf(t, [[0, 0.2], [0.2, 1.2, 'inOut'], [0.36, -1.6, 'in'], [0.9, 0, 'out'], [2.3, 1.2, 'inOut'], [2.62, -1.6, 'in'], [3.2, 0, 'out']])]} />
+        {t < H1 + 0.05 && <group><Ball position={[0, 0.45, z1]} rotation={[-z1 * 2.4, 0, 0]} glow={ctx.cosmic} /><SpeedLines position={[0, 0, z1]} speed={t > 0.4 ? 12 : 0} /></group>}
+        {t > 2.6 && t < H2 + 0.05 && <group><Ball position={[x2, 0.45, z2]} rotation={[-z2 * 2.4, 0, 0]} glow={ctx.cosmic} /><SpeedLines position={[x2, 0, z2]} speed={t > 2.9 ? 12 : 0} /></group>}
+        <Pins hitAt={H1} t={t} cosmic={ctx.cosmic} hidden={[9]} />
+        <Impact at={H1} t={t} position={[-0.3, 0.4, -16.3]} size={1.2} />
+        <Confetti at={H1} t={t} position={[-0.3, 0.6, -16.4]} count={30} />
+        {/* sista käglan: vrids kring kontaktpunkten mot banan, så den tippar i stället för att snurra */}
+        <group position={[LAST[0], 0, LAST[2]]} rotation={[0, 0, tilt]}>
+          <Ball position={[0, PIN_R, 0]} radius={PIN_R} glow={ctx.cosmic} color={ctx.cosmic ? '#ff6b2b' : '#fff7e3'} mood={scared ? (t >= FALL + 0.3 ? 'sad' : 'shock') : 'none'} />
+          {scared && t < FALL && <mesh position={[0.28, PIN_R + 0.3 - sweat * 0.35, 0.2]}><sphereGeometry args={[0.045, 8, 8]} /><meshStandardMaterial color='#7fd0ff' emissive='#7fd0ff' emissiveIntensity={0.6} /></mesh>}
         </group>
+        <Impact at={H2} t={t} position={[1.5, 0.4, -17.3]} size={0.8} />
+        <Impact at={FALL + 0.4} t={t} position={[2.4, 0.2, -17.6]} size={0.6} color='#ffe066' />
         {ctx.cosmic && <DiscoBall position={[0, 6, -8]} t={t} />}
       </>
     );

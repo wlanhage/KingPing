@@ -5,33 +5,35 @@ import type { Clip, Vec3 } from '../types';
 
 const wide = (shake = 0) => ({ position: [0, 3.2, 7] as Vec3, lookAt: [0, 1, -12] as Vec3, fov: 48, shake });
 
-/** GUTTER: den störtades boll rullar sorgset ner i rännan medan käglorna står och gäspar. */
+/** GUTTER: den störtades boll kryper ner i rännan, käglorna gäspar, en tumbleweed rullar förbi. */
 export const gutter: Clip = {
-  key: 'gutter', duration: 4.8,
-  words: (ctx) => [{ at: 3.7, text: 'GUTTER', size: 2, color: '#9fb3c8' }, ...(ctx.deposed ? [{ at: 4.2, text: ctx.deposed.toUpperCase(), size: 0.9, y: 3.7, color: '#c7d3de' }] : [])],
-  cues: [{ at: 3.7, cue: 'gutter' }],
+  key: 'gutter', duration: 5.6,
+  words: (ctx) => [{ at: 3.9, text: 'gutter…', style: 'sad', size: 2.2 }, ...(ctx.deposed ? [{ at: 4.5, text: ctx.deposed, style: 'name' as const, size: 0.9 }] : [])],
+  cues: [{ at: 3.9, cue: 'gutter' }],
   camera: (t) => {
-    const z = kf(t, [[0.4, 1], [3.6, -14.5, 'linear']]);
-    const x = kf(t, [[0.4, 0], [2.0, 1.85, 'inOut']]);
-    return t < 3.6 ? { position: [x - 0.7, 1.2, z + 3], lookAt: [x, 0.4, z - 4], fov: 44 } : wide();
+    const z = kf(t, [[0.5, 1.6], [4.0, -14.8, 'linear']]);
+    const x = kf(t, [[0.5, 0], [2.2, 1.85, 'inOut']]);
+    if (t < 3.8) return { position: [x - 0.9, 0.9, z + 2.6], lookAt: [x + 0.3, 0.3, z - 5], fov: 42 };
+    return { position: [0.5, 1.4, 4.9], lookAt: [0, 0.95, 2.6], fov: 30 };
   },
   Scene: ({ t, ctx }) => {
-    const z = kf(t, [[0.4, 1], [3.6, -14.5, 'linear']]);
-    const x = kf(t, [[0.4, 0], [2.0, 1.85, 'inOut']]);
-    const y = 0.45 - span(t, 1.6, 2.2) * 0.2;
+    const z = kf(t, [[0.5, 1.6], [4.0, -14.8, 'linear']]);
+    const x = kf(t, [[0.5, 0], [2.2, 1.85, 'inOut']]);
+    const y = 0.45 - span(t, 1.8, 2.4) * 0.2;
     const tear = ((t * 0.8) % 1);
+    const slump = span(t, 0.8, 4.2) * 0.35;
+    const weedX = kf(t, [[2.6, -7], [4.6, 7, 'linear']]);
     return (
       <>
-        <Racket position={[-1.1, 0, 2.4]} rotation={[0, 0.5, 0]} mood='sad' color='#6b7b8c' />
-        <mesh position={[-1.32, 1.05 - tear * 0.6, 2.5]}><sphereGeometry args={[0.06, 8, 8]} /><meshStandardMaterial color='#7fd0ff' emissive='#7fd0ff' emissiveIntensity={0.5} /></mesh>
-        <Ball position={[x, y, z]} rotation={[-z * 1.4, 0, 0]} glow={ctx.cosmic} />
-        <group>
-          {PIN_BASE.map((p, i) => (
-            <group key={i} position={p} rotation={[Math.sin(t * 1.3 + i) * 0.05, 0, Math.cos(t * 1.1 + i) * 0.05]}>
-              <Ball position={[0, 0, 0]} radius={PIN_R} glow={ctx.cosmic} />
-            </group>
-          ))}
-        </group>
+        <Racket position={[0, 0, 2.6]} rotation={[slump, 0.15, 0]} mood='sad' color='#6b7b8c' />
+        <mesh position={[-0.22, 1.05 - tear * 0.6, 2.75]}><sphereGeometry args={[0.06, 8, 8]} /><meshStandardMaterial color='#7fd0ff' emissive='#7fd0ff' emissiveIntensity={0.6} /></mesh>
+        <Ball position={[x, y, z]} rotation={[-z * 1.4, 0, 0]} glow={ctx.cosmic} mood={t > 1.6 ? 'sad' : 'none'} />
+        <Pins hitAt={99} t={t} cosmic={ctx.cosmic} faces />
+        {t > 2.6 && t < 4.6 && (
+          <group position={[weedX, 0.5, -10]} rotation={[0, 0, -weedX * 1.4]}>
+            {[0, 1, 2].map((i) => <mesh key={i} rotation={[i * 1.05, i * 0.7, 0]}><torusGeometry args={[0.42, 0.03, 6, 14]} /><meshStandardMaterial color='#a58a55' roughness={0.9} /></mesh>)}
+          </group>
+        )}
         {ctx.cosmic && <DiscoBall position={[0, 6, -8]} t={t} />}
       </>
     );

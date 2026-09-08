@@ -21,7 +21,8 @@ export type ClipCtx = {
   frames?: string[];
 };
 
-export type Word = { at: number; text: string; size?: number; color?: string; y?: number; hold?: number };
+/** Ett ord i HUD-lagret. `at` i verklig tid. Stilar: slam (standard), name, sad, blink. */
+export type Word = { at: number; text: string; size?: number; color?: string; style?: 'slam' | 'name' | 'sad' | 'blink'; y?: number; hold?: number };
 export type CueName = 'hit' | 'gutter' | 'siren' | 'slam' | 'crash';
 export type Cue = { at: number; cue: CueName };
 export type CameraPose = { position: Vec3; lookAt: Vec3; fov?: number; shake?: number };
@@ -31,6 +32,8 @@ export type Clip = {
   duration: number;
   words: (ctx: ClipCtx) => Word[];
   cues?: Cue[];
+  /** Verklig tid → scenens tid (hit-stop, ultrarapid). Utelämnad = 1:1. */
+  warp?: (t: number) => number;
   camera: (t: number, ctx: ClipCtx) => CameraPose;
   Scene: (props: { t: number; ctx: ClipCtx }) => ReactNode;
 };

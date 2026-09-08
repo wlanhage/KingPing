@@ -5,10 +5,10 @@ import { CLIP_KEYS } from './clips';
 import type { ClipCtx, ClipKey } from './types';
 
 const LABEL: Record<ClipKey, string> = {
-  strike: 'Strike', slowmo: 'Ultrarapid', jackpot: 'Jackpot', redcarpet: 'Röda mattan',
-  spare: 'Spare', turkey: 'Turkey', hammer: 'Hammaren', statues: 'Statyhallen',
-  gutter: 'Gutter', crownflies: 'Kronan flyger', split: 'Splitten', sweeper: 'Bansoparen',
-  bumper: 'Bumper', dusty: 'Dammiga bollen', scoreboard: 'Protokollet',
+  strike: '★ Strike', slowmo: 'Ultrarapid', jackpot: 'Jackpot', redcarpet: 'Röda mattan',
+  spare: '★ Spare', turkey: 'Turkey', hammer: 'Hammaren', statues: 'Statyhallen',
+  gutter: '★ Gutter', crownflies: 'Kronan flyger', split: 'Splitten', sweeper: 'Bansoparen',
+  bumper: '★ Bumper', dusty: 'Dammiga bollen', scoreboard: 'Protokollet',
 };
 const STREAK: Partial<Record<ClipKey, number>> = { spare: 2, turkey: 3, hammer: 4, statues: 6 };
 const PREV: Partial<Record<ClipKey, number>> = { split: 5, sweeper: 3 };

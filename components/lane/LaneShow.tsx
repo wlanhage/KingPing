@@ -1,11 +1,10 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Title3D } from '@/components/finale/v2/space/Title3D';
 import { LaneCanvas } from './rig';
 import { CLIPS } from './clips';
 import { DEMO_FRAMES } from './clips/special';
 import { locate } from './sequence';
-import { kf, span } from './anim';
+import { span } from './anim';
 import type { CameraPose, ClipCtx, ClipKey, CueName, Word } from './types';
 
 const WIDE: CameraPose = { position: [0, 3.2, 7], lookAt: [0, 1, -12], fov: 48 };
@@ -23,19 +22,6 @@ function useClock(frozenT?: number) {
     return () => cancelAnimationFrame(raf);
   }, [frozenT]);
   return t;
-}
-
-/** Ordet som slår in: stort, studsar på plats, står kvar till klippets slut. */
-function SlamWord({ word, local, cosmic }: { word: Word; local: number; cosmic: boolean }) {
-  const d = local - word.at;
-  if (d < 0) return null;
-  const scale = kf(d, [[0, 2.8], [0.22, 0.92, 'in'], [0.42, 1, 'out']]);
-  const color = word.color ?? (cosmic ? '#7df9ff' : '#ffe9a8');
-  return (
-    <group position={[0, word.y ?? 2.9, -9]} scale={scale}>
-      <Title3D size={word.size ?? 2} layers={12} depth={0.05} color={color} sideColor={cosmic ? '#1a3a5a' : '#8a6a1f'} opacity={Math.min(1, d / 0.08)}>{word.text}</Title3D>
-    </group>
-  );
 }
 
 /** Protokollet ovanför banan: rutorna fylls i takt med säsongen, sen frågan alla bowlinghallar ställer. */
@@ -65,7 +51,9 @@ export function LaneShow({ ctx, sequence, onDone, onCue, onFail, frozenT }: { ct
   const fired = useRef(new Set<string>());
   const done = useRef(false);
 
-  if (clip) poseRef.current = clip.camera(local, ctx);
+  // Scenen och kameran lever i klippets förvrängda tid (hit-stop, ultrarapid); HUD och cues i verklig.
+  const scene = clip ? (clip.warp ? clip.warp(local) : local) : 0;
+  if (clip) poseRef.current = clip.camera(scene, ctx);
 
   useEffect(() => {
     if (!clip || !onCue) return;
@@ -87,9 +75,13 @@ export function LaneShow({ ctx, sequence, onDone, onCue, onFail, frozenT }: { ct
   return (
     <div className='lane-overlay' style={{ opacity: clip ? 0.35 + 0.65 * fade : 0 }}>
       <LaneCanvas cosmic={ctx.cosmic} poseRef={poseRef} onContextLost={onFail}>
-        {clip && <clip.Scene t={local} ctx={ctx} />}
-        {words.map((w) => <SlamWord key={`${index}:${w.at}:${w.text}`} word={w} local={local} cosmic={ctx.cosmic} />)}
+        {clip && <clip.Scene t={scene} ctx={ctx} />}
       </LaneCanvas>
+      <div className={`lane-words${ctx.cosmic ? ' is-cosmic' : ''}`} aria-live='polite'>
+        {words.filter((w) => local >= w.at).map((w) => (
+          <div key={`${index}:${w.at}:${w.text}`} className={`lane-word lane-word-${w.style ?? 'slam'}`} style={{ '--size': `${w.size ?? 2}`, ...(w.color ? { '--word': w.color } : {}) } as React.CSSProperties}>{w.text}</div>
+        ))}
+      </div>
       {clip?.key === 'scoreboard' && <Scoreboard local={local} frames={ctx.frames ?? DEMO_FRAMES} name={ctx.winner} />}
     </div>
   );
