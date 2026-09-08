@@ -43,3 +43,8 @@ npx tsx --env-file=.env.local scripts/restore-db.ts "$(ls -t backups/*.json | he
 npx tsx --env-file=.env.local scripts/season.ts bootstrap
 npx tsx --env-file=.env.local scripts/season.ts new --slug s2 --name "Ett nytt hopp" --theme star-wars --yes
 ```
+
+## Kröna i följd lokalt
+
+Lägg `WIN_COOLDOWN_MS=0` i `.env.local` så försvinner 20-minutersspärren mellan vinnare i dev.
+Variabeln läses bara när `NODE_ENV` inte är `production`, så den kan inte påverka Vercel.

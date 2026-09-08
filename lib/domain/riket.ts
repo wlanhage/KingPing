@@ -12,7 +12,11 @@ import { getTheme } from '../theme';
 
 
 // Hur länge efter en kröning man måste vänta innan en ny vinnare kan sättas (skydd mot dubbelsättningar).
-export const WIN_COOLDOWN_MS = 20 * 60 * 1000;
+const DEFAULT_COOLDOWN_MS = 20 * 60 * 1000;
+// Lokalt kan cooldownen sättas till 0 i .env.local (WIN_COOLDOWN_MS=0) för att testa kröningar
+// i följd. Överstyrningen gäller aldrig i produktion, hur miljön än är satt.
+const cooldownOverride = process.env.NODE_ENV !== 'production' ? Number(process.env.WIN_COOLDOWN_MS) : NaN;
+export const WIN_COOLDOWN_MS = Number.isFinite(cooldownOverride) ? cooldownOverride : DEFAULT_COOLDOWN_MS;
 
 // För en pågående säsong: den som sitter på tronen nu. För en avslutad säsong: den som
 // satt på tronen när säsongen tog slut.
