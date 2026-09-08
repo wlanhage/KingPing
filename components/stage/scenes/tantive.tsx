@@ -56,15 +56,15 @@ function Corridor({ blast }: { blast: number }) {
 }
 
 export const tantive: Scene = {
-  key: 'tantive', duration: 11.0,
+  key: 'tantive', duration: 13.2,
   words: (ctx) => [
     { at: 5.7, until: 7.0, text: 'Var är kronan? Vad har ni gjort med den?', style: 'subtitle' },
     { at: 7.1, until: 8.2, text: 'Vi… har ingen krona. Det här är ett diplomatiskt uppdrag.', style: 'subtitle' },
-    { at: 9.9, text: `${ctx.crowningWord.toUpperCase()}!`, size: 2.2, color: '#c9d8ff' },
-    { at: 10.5, text: `${ctx.winner} · ${ctx.crowningWord}`, style: 'name', size: 0.9 },
+    { at: 12.1, text: `${ctx.crowningWord.toUpperCase()}!`, size: 2.2, color: '#c9d8ff' },
+    { at: 12.7, text: `${ctx.winner} · ${ctx.crowningWord}`, style: 'name', size: 0.9 },
   ],
-  cues: [{ at: BLAST, cue: 'boom' }, { at: 2.0, cue: 'breath' }, { at: 4.0, cue: 'breath' }, { at: 6.0, cue: 'breath' }, { at: FLING + 0.22, cue: 'slam' }, { at: 9.9, cue: 'slam' }],
-  fade: (t) => Math.max(1 - span(t, 0, 0.5), span(t, 9.4, 9.9) * 0.94),
+  cues: [{ at: BLAST, cue: 'boom' }, { at: 2.0, cue: 'breath' }, { at: 4.0, cue: 'breath' }, { at: 6.0, cue: 'breath' }, { at: FLING + 0.22, cue: 'slam' }, { at: 9.1, cue: 'slam' }, { at: 10.4, cue: 'breath' }, { at: 12.1, cue: 'slam' }],
+  fade: (t) => Math.max(1 - span(t, 0, 0.5), span(t, 11.6, 12.1) * 0.94),
   camera: (t) => {
     if (t < 3.2) {
       const p = ease(span(t, 0, 3.2), 'inOut');
@@ -77,7 +77,10 @@ export const tantive: Scene = {
     }
     // lyftet och kastet: utzoomat från sidan så avståndet mellan handen och den svävande syns
     if (t < FLING) return { position: [-1.9, 1.2, -1.6], lookAt: [0.7, 1.3, -5.6], fov: 50, snap: true };
-    return { position: [-1.8, 1.6, -0.4], lookAt: [1.0, 1.2, -4.8], fov: 54, snap: true, shake: decay(t - FLING - 0.22, 0.05, 0.5) };
+    if (t < 9.0) return { position: [-1.8, 1.6, -0.4], lookAt: [1.0, 1.2, -4.8], fov: 54, snap: true, shake: decay(t - FLING - 0.22, 0.05, 0.5) };
+    // kronan sätter sig: sakta inzoomning på honom, och bilden hålls kvar
+    const p = ease(span(t, 9.0, 11.6), 'inOut');
+    return { position: lerp3([-1.2, 1.5, -3.4], [-0.5, 1.7, -5.0], p), lookAt: [0, 1.7, STAND[2]], fov: 40 - p * 10, snap: true };
   },
   Scene: ({ t }) => {
     const blast = Math.max(0, t - BLAST);
@@ -95,7 +98,7 @@ export const tantive: Scene = {
     const deposedPos: Vec3 = flung > 0 ? (throwP < 1 ? lerp3(hover, WALL_HIT, throwP) : [WALL_HIT[0] - Math.min(afterWall, 0.5) * 0.6, wallFall.y, WALL_HIT[2] - Math.min(afterWall, 0.5) * 0.8]) : hover;
     const deposedRot: Vec3 = flung > 0 ? [-Math.PI / 2 + 0.3, 0, 0.6 + flung * 14] : [-Math.PI / 2 * (1 - lift), 0.6 * (1 - lift), lift > 0 ? Math.sin(t * 40) * 0.08 : 0];
     // kronan stiger från golvet till vinnarens huvud
-    const rise = span(t, 8.3, 9.1);
+    const rise = ease(span(t, 8.3, 9.1), 'inOut');
     const crownPos: Vec3 = [CROWN_FLOOR[0] + (vader[0] - CROWN_FLOOR[0]) * rise, CROWN_FLOOR[1] + (2.12 - CROWN_FLOOR[1]) * rise + Math.sin(rise * Math.PI) * 0.6, CROWN_FLOOR[2] + (vader[2] - 0.05 - CROWN_FLOOR[2]) * rise];
     return (
       <>
