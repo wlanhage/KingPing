@@ -64,8 +64,8 @@ export function Racket({ position = [0, 0, 0] as Vec3, rotation = [0, 0, 0] as V
     <group position={position} rotation={rotation} scale={scale}>
       {hood && (
         <>
-          <mesh position={[0, 1.0, -0.45]}><coneGeometry args={[1.05, 2.3, 28]} /><meshStandardMaterial color='#111016' roughness={0.95} /></mesh>
-          <mesh position={[0, 1.42, -0.12]} rotation={[0.35, 0, 0]}><sphereGeometry args={[0.86, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshStandardMaterial color='#111016' roughness={0.95} /></mesh>
+          <mesh position={[0, 1.0, -0.45]}><coneGeometry args={[1.05, 2.3, 28]} /><meshStandardMaterial color='#1f1c2b' roughness={0.95} /></mesh>
+          <mesh position={[0, 1.42, -0.12]} rotation={[0.35, 0, 0]}><sphereGeometry args={[0.86, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshStandardMaterial color='#1f1c2b' roughness={0.95} /></mesh>
         </>
       )}
       <mesh position={[0, 1.05, 0]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.72, 0.72, 0.1, 40]} /><Plastic color={color} /></mesh>

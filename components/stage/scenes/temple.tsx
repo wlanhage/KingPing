@@ -29,19 +29,22 @@ function Temple({ red }: { red: number }) {
   const columns = Array.from({ length: 7 }, (_, i) => -2 + i * -3.4);
   return (
     <group>
-      <fog attach='fog' args={['#03030a', 6, 30]} />
-      <ambientLight intensity={0.06} color='#5a6bd8' />
-      {/* månljus genom ett högt fönster, kallt och smalt */}
-      <spotLight position={[3, 12, -2]} target-position={HIM} angle={0.32} penumbra={0.9} intensity={90} color='#6a84e0' />
-      <spotLight position={[-4, 9, -12]} angle={0.5} penumbra={1} intensity={30} color='#3a4a9a' />
+      <fog attach='fog' args={['#03030a', 9, 42]} />
+      <ambientLight intensity={0.2} color='#6b7fe0' />
+      {/* månljus genom ett högt fönster: kallt, brett nog att nå honom och golvet runt honom */}
+      <spotLight position={[2.5, 11, -1]} angle={0.5} penumbra={0.8} intensity={220} color='#7d95ea' />
+      {/* kantljus framför honom så kåpans siluett tecknas när kameran står bakom */}
+      <spotLight position={[1.5, 5, -10]} angle={0.7} penumbra={1} intensity={90} color='#8fa8ff' />
+      <pointLight position={[-3.5, 3, -7]} intensity={26} color='#4a5fc0' distance={16} />
+      <pointLight position={[4, 2.5, -11]} intensity={22} color='#5a70d0' distance={14} />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -8]}>
         <planeGeometry args={[40, 60]} />
-        <MeshReflectorMaterial blur={[400, 120]} resolution={512} mixBlur={1} mixStrength={2.2} roughness={0.7} depthScale={1.1} minDepthThreshold={0.4} maxDepthThreshold={1.4} color='#0a0a14' metalness={0.2} mirror={0} />
+        <MeshReflectorMaterial blur={[400, 120]} resolution={512} mixBlur={1} mixStrength={1.6} roughness={0.6} depthScale={1.1} minDepthThreshold={0.4} maxDepthThreshold={1.4} color='#15152a' metalness={0.2} mirror={0} />
       </mesh>
       {columns.map((z) => [-4.6, 4.6].map((x) => (
         <group key={`${x}:${z}`} position={[x, 0, z]}>
-          <mesh position={[0, 5, 0]}><cylinderGeometry args={[0.55, 0.65, 10, 20]} /><meshStandardMaterial color='#15141f' roughness={0.9} emissive='#ff2a2a' emissiveIntensity={red * 0.08} /></mesh>
-          <mesh position={[0, 0.25, 0]}><boxGeometry args={[1.5, 0.5, 1.5]} /><meshStandardMaterial color='#1a1926' roughness={0.9} /></mesh>
+          <mesh position={[0, 5, 0]}><cylinderGeometry args={[0.55, 0.65, 10, 20]} /><meshStandardMaterial color='#232130' roughness={0.85} emissive='#ff2a2a' emissiveIntensity={red * 0.08} /></mesh>
+          <mesh position={[0, 0.25, 0]}><boxGeometry args={[1.5, 0.5, 1.5]} /><meshStandardMaterial color='#2a2838' roughness={0.9} /></mesh>
         </group>
       )))}
       <mesh position={[0, 5, -24]}><boxGeometry args={[40, 10, 1]} /><meshStandardMaterial color='#0d0c16' roughness={1} /></mesh>
@@ -58,7 +61,7 @@ export const temple: Scene = {
     { at: 9.7, text: ctx.streak >= 2 ? `${ctx.winner} · ${ctx.streak} raka` : `${ctx.winner} · ${ctx.crowningWord}`, style: 'name', size: 0.9 },
   ],
   cues: [{ at: IGNITE, cue: 'ignite' }, { at: 9.0, cue: 'slam' }],
-  fade: (t) => Math.max(1 - span(t, 0, 1.4), span(t, 8.9, 9.5) * 0.92),
+  fade: (t) => Math.max(1 - span(t, 0, 0.9), span(t, 8.9, 9.5) * 0.92),
   camera: (t) => {
     if (t < 2.4) {
       // bakom honom, lågt, sakta in
@@ -71,9 +74,9 @@ export const temple: Scene = {
       return { position: lerp3([0.4, 1.35, -4.4], [1.2, 1.1, -5.6], p), lookAt: [KID_CENTER[0], 0.7, KID_CENTER[2]], fov: 34, snap: true };
     }
     if (t < 7.2) {
-      // tillbaka på honom: nära, underifrån, sabeln i bild
+      // tillbaka på honom: halvnära, lätt underifrån, hela överkroppen och sabeln i bild
       const p = ease(span(t, 4.8, 7.2), 'inOut');
-      return { position: lerp3([1.7, 0.45, -6.6], [1.3, 0.55, -6.0], p), lookAt: [0.15, 1.05, -4], fov: 30, snap: true, shake: decay(t - IGNITE, 0.012, 0.5) };
+      return { position: lerp3([2.7, 0.75, -8.4], [2.2, 0.8, -7.6], p), lookAt: [0.1, 1.0, -4.2], fov: 36, snap: true, shake: decay(t - IGNITE, 0.012, 0.5) };
     }
     if (t < 8.2) {
       return { position: [0.5, 1.35, -4.6], lookAt: [KID_CENTER[0], 0.8, KID_CENTER[2]], fov: 34, snap: true };
@@ -94,7 +97,7 @@ export const temple: Scene = {
     return (
       <>
         <Temple red={red} />
-        <Racket position={[himPos[0], step, himPos[2]]} rotation={[0, himFacesKids, Math.sin(walk * 22) * 0.03]} color='#2c2a33' hood mood='grim' eyes={sith > 0 ? '#ffb020' : '#111111'} eyeGlow={sith * 1.6} saber={blade} flicker={flicker} />
+        <Racket position={[himPos[0], step, himPos[2]]} rotation={[0, himFacesKids, Math.sin(walk * 22) * 0.03]} color='#3a3745' hood mood='grim' eyes={sith > 0 ? '#ffb020' : '#111111'} eyeGlow={sith * 1.6} saber={blade} flicker={flicker} />
         {KIDS.map((k, i) => (
           <Racket key={i} position={k.p} rotation={[scared ? 0.05 : -0.28, faceHim(k.p) + (scared ? Math.sin(t * 9 + i) * 0.08 : Math.sin(t * 1.3 + i) * 0.04), 0]} scale={0.42} color={k.c} mood={scared ? 'shock' : 'hope'} />
         ))}
