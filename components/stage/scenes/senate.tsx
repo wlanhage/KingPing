@@ -14,13 +14,13 @@ import type { Scene, Vec3 } from '../types';
  *  10.5–13.0 Utifrån: kanslern kliver fram till hålet i fönstret, huvan uppe, gula ögon.
  */
 
-const WIN: Vec3 = [-1.4, 0, -5.2];
-const JEDI_START: Vec3 = [2.6, 0, -0.8];
-const JEDI: Vec3 = [1.6, 0, -4.4];
+const WIN: Vec3 = [-2.0, 0, -5.4];
+const JEDI_START: Vec3 = [3.2, 0, -0.6];
+const JEDI: Vec3 = [2.4, 0, -4.0];
 const WINDOW_Z = -9.2;
 /** Där glaset går sönder, och dit kanslern går efteråt. */
-const HOLE: Vec3 = [2.5, 1.8, WINDOW_Z];
-const STAND_END: Vec3 = [2.2, 0, -8.0];
+const HOLE: Vec3 = [3.3, 1.8, WINDOW_Z];
+const STAND_END: Vec3 = [3.0, 0, -8.0];
 const IGNITE = 0.9, ZAP = 6.9, FLING = 8.4;
 const FLING_DIR: Vec3 = [0.184, 0, -0.983];
 const FLING_SPEED = 6;
@@ -98,7 +98,7 @@ function Office({ broken, t }: { broken: number; t: number }) {
       {[[-3.35, 3.3], [0, 3.3], [3.35, 3.3]].map(([x, w], i) => (
         (i < 2 || broken <= 0) && <mesh key={i} position={[x, 2.6, WINDOW_Z]}><planeGeometry args={[w, 4.6]} /><meshBasicMaterial color='#9ec5ff' transparent opacity={0.1} side={2} /></mesh>
       ))}
-      {broken > 0 && [[1.85, 0.5], [4.85, 0.5], [2.4, 4.7], [3.6, 4.7], [4.6, 4.7]].map(([x, y], i) => (
+      {broken > 0 && [[2.4, 4.7], [3.6, 4.7], [4.6, 4.7]].map(([x, y], i) => (
         <mesh key={i} position={[x, y, WINDOW_Z]} rotation={[0, 0, (i % 2 ? 1 : -1) * 0.6]}><planeGeometry args={[0.3, 0.45]} /><meshBasicMaterial color='#9ec5ff' transparent opacity={0.1} side={2} /></mesh>
       ))}
       {broken > 0 && broken < 1.8 && SHARDS.map((s, i) => {
@@ -117,32 +117,44 @@ function Office({ broken, t }: { broken: number; t: number }) {
   );
 }
 
-/** Kraftblixtar: fyra taggiga strålar från handen till målet, omritade många gånger i sekunden. */
+/** En taggig stråle mellan två punkter, omritad varje tick. `amp` är hur vilt den slingrar. */
+function jagged(r: () => number, from: Vec3, to: Vec3, steps: number, amp: number): Vec3[] {
+  return Array.from({ length: steps + 1 }, (_, i) => {
+    const p = i / steps, base = lerp3(from, to, p), a = amp * Math.sin(Math.PI * p);
+    return [base[0] + (r() - 0.5) * a * 2, base[1] + (r() - 0.5) * a * 2, base[2] + (r() - 0.5) * a * 2] as Vec3;
+  });
+}
+
+/** Kraftblixtar: sex tjocka strålar från handen mot målet, några slår förbi, varje med en gren. */
 function Lightning({ from, to, t, power }: { from: Vec3; to: Vec3; t: number; power: number }) {
   if (power <= 0) return null;
   const tick = Math.floor(t * 28);
   const flick = 0.6 + 0.4 * Math.abs(Math.sin(tick * 7.3));
-  const bolts = [0, 1, 2, 3].map((b) => {
+  const beyond = lerp3(from, to, 1.35);
+  const bolts = [0, 1, 2, 3, 4, 5].flatMap((b) => {
     const r = rng(tick * 131 + b * 977 + 7);
-    return Array.from({ length: 11 }, (_, i) => {
-      const p = i / 10, base = lerp3(from, to, p), amp = 0.4 * Math.sin(Math.PI * p) * power;
-      return [base[0] + (r() - 0.5) * amp * 2, base[1] + (r() - 0.5) * amp * 2, base[2] + (r() - 0.5) * amp * 2] as Vec3;
-    });
+    const end: Vec3 = b < 2 ? beyond : [to[0] + (r() - 0.5) * 1.2, to[1] + (r() - 0.5) * 1.2, to[2] + (r() - 0.5) * 1.2];
+    const main = jagged(r, from, end, 14, 0.55 * power);
+    const forkAt = main[4 + Math.floor(r() * 6)];
+    const fork = jagged(r, forkAt, [forkAt[0] + (r() - 0.5) * 2, forkAt[1] + (r() - 0.5) * 2, forkAt[2] + (r() - 0.5) * 2], 5, 0.25 * power);
+    return [main, fork];
   });
   return (
     <group>
       {bolts.flatMap((pts, b) => pts.slice(1).map((q, i) => {
         const p = pts[i], dir = new THREE.Vector3(q[0] - p[0], q[1] - p[1], q[2] - p[2]), len = dir.length();
         const rot = new THREE.Quaternion().setFromUnitVectors(UP, dir.normalize());
+        const thick = b % 2 === 0 ? 1 : 0.6;
         return (
           <group key={`${b}:${i}`} position={[(p[0] + q[0]) / 2, (p[1] + q[1]) / 2, (p[2] + q[2]) / 2]} quaternion={rot}>
-            <mesh><cylinderGeometry args={[0.018, 0.018, len, 5]} /><meshBasicMaterial color='#eaf4ff' toneMapped={false} /></mesh>
-            <mesh><cylinderGeometry args={[0.055, 0.055, len, 5]} /><meshBasicMaterial color='#7fb4ff' transparent opacity={0.35} toneMapped={false} /></mesh>
+            <mesh><cylinderGeometry args={[0.034 * thick, 0.034 * thick, len, 6]} /><meshBasicMaterial color='#eaf4ff' toneMapped={false} /></mesh>
+            <mesh><cylinderGeometry args={[0.1 * thick, 0.1 * thick, len, 6]} /><meshBasicMaterial color='#7fb4ff' transparent opacity={0.4} toneMapped={false} /></mesh>
+            <mesh><cylinderGeometry args={[0.2 * thick, 0.2 * thick, len, 6]} /><meshBasicMaterial color='#5a8cff' transparent opacity={0.12} toneMapped={false} /></mesh>
           </group>
         );
       }))}
-      <pointLight position={from} intensity={(30 + 50 * flick) * power} color='#9ec5ff' distance={10} decay={2} />
-      <pointLight position={to} intensity={(40 + 60 * flick) * power} color='#bcd8ff' distance={10} decay={2} />
+      <pointLight position={from} intensity={(40 + 60 * flick) * power} color='#9ec5ff' distance={12} decay={2} />
+      <pointLight position={to} intensity={(60 + 80 * flick) * power} color='#bcd8ff' distance={12} decay={2} />
     </group>
   );
 }
@@ -176,7 +188,7 @@ export const senate: Scene = {
       return { position: lerp3([2.3, 1.25, -1.9], [2.1, 1.2, -2.1], p), lookAt: [WIN[0], 1.05, WIN[2]], fov: 36, snap: true };
     }
     // blixtarna från sidan: båda i bild, staden bakom
-    if (t < FLING) return { position: [0.2, 1.7, -0.4], lookAt: [0.1, 1.15, -5.2], fov: 46, snap: true, shake: 0.012 + 0.01 * Math.sin(t * 40) };
+    if (t < FLING) return { position: [0.2, 1.7, 0.2], lookAt: [0.2, 1.15, -5.0], fov: 50, snap: true, shake: 0.012 + 0.01 * Math.sin(t * 40) };
     if (t < 9.3) {
       const m = flight(t);
       return { position: [0.6, 2.0, -1.6], lookAt: [m[0], Math.max(0.8, m[1]), m[2]], fov: 52, snap: true, shake: decay(t - FLING, 0.06, 0.6) };
@@ -194,7 +206,7 @@ export const senate: Scene = {
     const jediStep = walking ? Math.abs(Math.sin(t * 11)) * 0.04 : 0;
     const jediHeading = walking ? faceTo(JEDI_START, JEDI) : faceTo(JEDI, WIN);
     const blade = kf(t, [[IGNITE, 0], [IGNITE + 0.35, 0.95, 'out']]) * (t < FLING - 0.1 ? 1 : 0);
-    const power = flung ? 1 - span(t, FLING, FLING + 0.35) : kf(t, [[ZAP, 0], [ZAP + 0.25, 0.7, 'out'], [FLING - 0.2, 1.0, 'in']]);
+    const power = flung ? 1 - span(t, FLING, FLING + 0.7) : kf(t, [[ZAP, 0], [ZAP + 0.25, 0.7, 'out'], [FLING - 0.2, 1.0, 'in']]);
     const flicker = blade > 0 ? 0.5 + 0.5 * Math.sin(t * 61) * Math.sin(t * 23) + power * Math.sin(t * 90) : 0;
     // kanslern: gula ögon, armen ut, ansiktet som bleknar av kraften
     const sith = span(t, 5.6, 6.6);
