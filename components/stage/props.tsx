@@ -135,7 +135,8 @@ export function Racket({ position = [0, 0, 0] as Vec3, rotation = [0, 0, 0] as V
       {arm > 0.01 && <mesh position={[0.6, 0.95, 0.15 + arm / 2]}><boxGeometry args={[0.16, 0.16, arm]} /><meshStandardMaterial color='#15151a' roughness={0.8} /></mesh>}
       {arm > 0.01 && <mesh position={[0.6, 0.95, 0.15 + arm + 0.08]}><sphereGeometry args={[0.13, 12, 12]} /><meshStandardMaterial color='#15151a' roughness={0.8} /></mesh>}
       <mesh position={[0, 1.05, 0]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.72, 0.72, 0.1, 40]} /><Plastic color={color} /></mesh>
-      <mesh position={[0, 1.05, 0]} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[0.72, 0.035, 10, 40]} /><meshStandardMaterial color='#1c1410' roughness={0.5} /></mesh>
+      {/* kantbandet: torusen ligger redan i bladets plan, så den ska inte vridas som skivan */}
+      <mesh position={[0, 1.05, 0]}><torusGeometry args={[0.72, 0.035, 10, 40]} /><meshStandardMaterial color='#1c1410' roughness={0.5} /></mesh>
       <mesh position={[0, 0.22, 0]}><boxGeometry args={[0.22, 0.5, 0.12]} /><meshStandardMaterial color='#b08a5a' roughness={0.6} /></mesh>
       {!helmet && <Face mood={mood} position={[0, 1.05, 0.06]} eyes={eyes} glow={eyeGlow} />}
       {saber !== undefined && <Saber length={saber} color={saberColor} flicker={flicker} position={[0.9, 0.95, 0.3]} rotation={[-0.95, 0, 0.1]} />}
