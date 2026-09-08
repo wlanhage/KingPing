@@ -16,13 +16,13 @@ export type StageEvent = {
 
 /**
  * Vilka scener en händelse får. Tom lista = ingen 3D-scen, den klassiska ceremonin visas.
- * Försvar: exakt tre raka ger rådssalen (Order 66).
+ * Försvar: exakt tre raka ger rådssalen (Order 66), exakt fyra kanslerns kontor (obegränsad makt).
  * Störtande: den störtades svit väger tyngst — 4 eller fler ger Dödsstjärnan, 2–3 Mustafar.
  * Annars: Vaders entré när vinnaren tar tillbaka kronan efter en tappad svit, Cloud City när
  * vinnaren slår sin ärkefiende. Gäller båda singlas slant.
  */
 export function sequenceFor(ev: StageEvent, rand: () => number = Math.random): SceneKey[] {
-  if (!ev.isNewRuler) return ev.streakCount === 3 ? ['temple'] : [];
+  if (!ev.isNewRuler) return ev.streakCount === 3 ? ['temple'] : ev.streakCount === 4 ? ['senate'] : [];
   if (!ev.deposedName) return [];
   if (ev.previousStreakCount >= 4) return ['deathstar'];
   if (ev.previousStreakCount >= 2) return ['mustafar'];

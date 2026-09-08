@@ -266,6 +266,11 @@ function playCueSound(ctx: AudioContext, master: GainNode, cue: CueName) {
       noise(now, 0.9, 3200, 0.22);
       noise(now + 0.1, 0.6, 900, 0.1);
       break;
+    case 'lightning':
+      // kraftblixtar: sprakande stötar och ett elektriskt surr under
+      for (let i = 0; i < 6; i++) noise(now + i * 0.09, 0.12, 2600 + (i % 2) * 900, 0.22);
+      tone(now, 0.6, 110, 95, 'sawtooth', 0.1, 0.02);
+      break;
   }
 }
 

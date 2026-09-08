@@ -4,8 +4,8 @@ import { StageShow } from './StageShow';
 import { SCENE_KEYS } from './scenes';
 import type { SceneCtx, SceneKey } from './types';
 
-const LABEL: Record<SceneKey, string> = { temple: 'Rådssalen (Order 66)', mustafar: 'Mustafar (höjdövertaget)', cloudcity: 'Cloud City (jag är din far)', tantive: 'Tantive IV (Vaders entré)', deathstar: 'Dödsstjärnan' };
-const STREAK: Partial<Record<SceneKey, number>> = { temple: 3, mustafar: 1, deathstar: 1 };
+const LABEL: Record<SceneKey, string> = { temple: 'Rådssalen (Order 66)', senate: 'Kanslerns kontor (obegränsad makt)', mustafar: 'Mustafar (höjdövertaget)', cloudcity: 'Cloud City (jag är din far)', tantive: 'Tantive IV (Vaders entré)', deathstar: 'Dödsstjärnan' };
+const STREAK: Partial<Record<SceneKey, number>> = { temple: 3, senate: 4, mustafar: 1, deathstar: 1 };
 const PREV: Partial<Record<SceneKey, number>> = { mustafar: 3, deathstar: 5, cloudcity: 1, tantive: 0 };
 
 /** Lokal förhandsvisning: /?demo=temple[&t=6.1]. Scenen loopar; knapparna byter. */

@@ -26,9 +26,10 @@ describe('anim', () => {
 
 describe('sequenceFor', () => {
   const base = { eventType: 'NEW_KING', winnerName: 'Axel', deposedName: 'Lanhage', streakCount: 1, previousStreakCount: 1, isNewRuler: true, isFriday: false, daysSinceLastWin: null, returningStreak: false, beatRival: false };
-  it('försvar: exakt tre raka ger rådssalen, allt annat ingen scen', () => {
+  it('försvar: exakt tre raka ger rådssalen, exakt fyra kanslerns kontor, allt annat ingen scen', () => {
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 3 })).toEqual(['temple']);
-    expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 4 })).toEqual([]);
+    expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 4 })).toEqual(['senate']);
+    expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 5 })).toEqual([]);
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 2 })).toEqual([]);
     expect(sequenceFor({ ...base, deposedName: null })).toEqual([]);
   });
