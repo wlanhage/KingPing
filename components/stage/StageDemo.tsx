@@ -5,7 +5,7 @@ import { SCENE_KEYS } from './scenes';
 import type { SceneCtx, SceneKey } from './types';
 
 const LABEL: Record<SceneKey, string> = { temple: 'Templet (Order 66)' };
-const STREAK: Partial<Record<SceneKey, number>> = { temple: 1 };
+const STREAK: Partial<Record<SceneKey, number>> = { temple: 3 };
 
 /** Lokal förhandsvisning: /?demo=temple[&t=6.1]. Scenen loopar; knapparna byter. */
 export function StageDemo({ scene, t, words }: { scene: string; t?: number; words: { crowning: string; tyranny: string } }) {
