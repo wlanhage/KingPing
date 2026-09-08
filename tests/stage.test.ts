@@ -25,16 +25,16 @@ describe('anim', () => {
 
 describe('sequenceFor', () => {
   const base = { eventType: 'NEW_KING', winnerName: 'Axel', deposedName: 'Lanhage', streakCount: 1, previousStreakCount: 1, isNewRuler: true, isFriday: false, daysSinceLastWin: null };
-  it('tre raka eller fler ger rådssalen; kröningar och kortare sviter ger ingen scen än', () => {
+  it('försvar: exakt tre raka ger rådssalen, exakt fyra Dödsstjärnan, allt annat ingen scen', () => {
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 3 })).toEqual(['temple']);
-    expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 6 })).toEqual(['temple']);
+    expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 4 })).toEqual(['deathstar']);
+    expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 5 })).toEqual([]);
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 2 })).toEqual([]);
     expect(sequenceFor({ ...base, deposedName: null })).toEqual([]);
   });
-  it('störtanden: tre–fyra raka ger Mustafar, fem eller mer Dödsstjärnan, annars Cloud City eller Tantive', () => {
+  it('störtanden: tre raka eller mer ger Mustafar, annars Cloud City eller Tantive', () => {
     expect(sequenceFor({ ...base, previousStreakCount: 3 })).toEqual(['mustafar']);
-    expect(sequenceFor({ ...base, previousStreakCount: 4 })).toEqual(['mustafar']);
-    expect(sequenceFor({ ...base, previousStreakCount: 6 })).toEqual(['deathstar']);
+    expect(sequenceFor({ ...base, previousStreakCount: 6 })).toEqual(['mustafar']);
     expect(sequenceFor({ ...base, previousStreakCount: 1 }, () => 0.1)).toEqual(['cloudcity']);
     expect(sequenceFor({ ...base, previousStreakCount: 2 }, () => 0.9)).toEqual(['tantive']);
     expect(sequenceFor({ ...base, previousStreakCount: 3, deposedName: null })).toEqual([]);
