@@ -1,0 +1,49 @@
+import { describe, expect, it } from 'vitest';
+import { ballistic, ease, kf } from '../components/stage/anim';
+import { SCENES, SCENE_KEYS } from '../components/stage/scenes';
+import { locate, sequenceFor } from '../components/stage/sequence';
+import type { SceneCtx } from '../components/stage/types';
+
+const ctx: SceneCtx = { winner: 'Axel', deposed: 'Lanhage', streak: 6, previousStreak: 5, days: 42, cosmic: false, crowningWord: 'kröning', tyrannyWord: 'Tyranni' };
+const finite = (v: unknown) => typeof v === 'number' && Number.isFinite(v);
+
+describe('anim', () => {
+  it('kf håller före första och efter sista keyframen och interpolerar däremellan', () => {
+    const f: [number, number, 'linear'][] = [[1, 0, 'linear'], [3, 10, 'linear']];
+    expect(kf(0, f)).toBe(0); expect(kf(2, f)).toBe(5); expect(kf(9, f)).toBe(10);
+  });
+  it('easing börjar i 0 och slutar i 1', () => {
+    for (const k of ['linear', 'in', 'out', 'inOut', 'back', 'bounce', 'elastic'] as const) { expect(ease(0, k)).toBeCloseTo(0); expect(ease(1, k)).toBeCloseTo(1); }
+  });
+  it('ballistic landar och stannar', () => {
+    expect(ballistic(5, 0.35, 5, 20, 0.35)).toMatchObject({ moving: false });
+  });
+});
+
+describe('sequenceFor', () => {
+  const base = { eventType: 'NEW_KING', winnerName: 'Axel', deposedName: 'Lanhage', streakCount: 1, previousStreakCount: 1, isNewRuler: true, isFriday: false, daysSinceLastWin: null };
+  it('fem raka eller fler ger templet, annat ger ingen scen än', () => {
+    expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 5 })).toEqual(['temple']);
+    expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 2 })).toEqual([]);
+    expect(sequenceFor(base)).toEqual([]);
+  });
+  it('locate hittar rätt scen och lokal tid', () => {
+    expect(locate([{ duration: 2 }, { duration: 3 }], 2.5)).toMatchObject({ index: 1, local: 0.5, total: 5 });
+    expect(locate([{ duration: 2 }], 9).item).toBeNull();
+  });
+});
+
+describe('scenerna', () => {
+  it.each(SCENE_KEYS)('%s: kamera, scen, ord och svärta håller genom hela tidslinjen', (key) => {
+    const scene = SCENES[key];
+    for (let t = 0; t <= scene.duration + 0.5; t += 0.1) {
+      const cam = scene.camera(t, ctx);
+      expect(cam.position.every(finite) && cam.lookAt.every(finite), `${key} kamera vid ${t.toFixed(1)}`).toBe(true);
+      expect(() => scene.Scene({ t, ctx })).not.toThrow();
+      const f = scene.fade?.(t) ?? 0;
+      expect(f >= 0 && f <= 1, `${key} svärta vid ${t.toFixed(1)}`).toBe(true);
+    }
+    for (const w of scene.words(ctx)) expect(w.at).toBeLessThan(scene.duration);
+    for (const c of scene.cues ?? []) expect(c.at).toBeLessThanOrEqual(scene.duration);
+  });
+});

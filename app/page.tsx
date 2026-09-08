@@ -9,15 +9,15 @@ import { FinaleDoor } from '@/components/finale/FinaleDoor';
 import { FinaleIcon } from '@/components/finale/FinaleIcon';
 import { SeasonStrip } from '@/components/SeasonStrip';
 import { NationSeal } from '@/components/NationSeal';
-import { LaneDemo } from '@/components/lane/LaneDemo';
+import { StageDemo } from '@/components/stage/StageDemo';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ demo?: string; t?: string; cosmic?: string }> }) {
   const { theme } = await getActiveTheme();
   const sp = await searchParams;
-  // Lokal förhandsvisning av banans klipp: /?demo=strike — rör ingen data.
-  if (sp.demo) return <LaneDemo clip={sp.demo} t={sp.t ? Number(sp.t) : undefined} cosmic={sp.cosmic === '1'} words={{ crowning: theme.verbs.crowning, tyranny: theme.nationStates.TYRANNY.name }} />;
+  // Lokal förhandsvisning av scenerna: /?demo=temple — rör ingen data.
+  if (sp.demo) return <StageDemo scene={sp.demo} t={sp.t ? Number(sp.t) : undefined} words={{ crowning: theme.verbs.crowning, tyranny: theme.nationStates.TYRANNY.name }} />;
   const kingdom = await getKingdomStats();
   const seasons = await listSeasons();
   const endedSeason = seasons.filter((s) => s.endedAt).sort((a, b) => b.endedAt!.getTime() - a.endedAt!.getTime())[0] ?? null;

@@ -2037,38 +2037,23 @@ html[data-theme='star-wars'] .skeleton-text::after { content: 'Hoppar till hyper
 .badge-chip-icon { font-size: 1.05rem; line-height: 1; }
 .badge-chip-name { font-family: var(--font-display), Georgia, serif; font-size: .8rem; letter-spacing: .03em; }
 
-/* ===== Banan: 90-talets bowlinganimationer i 3D (components/lane) ===== */
-.lane-overlay { position: fixed; inset: 0; z-index: 131; background: #06031a; transition: opacity .25s ease; }
-.lane-canvas { width: 100% !important; height: 100% !important; display: block; }
+/* ===== Scenen: Star Wars-ögonblick i 3D vid kröningar (components/stage) ===== */
+.stage-overlay { position: fixed; inset: 0; z-index: 131; background: #03030a; }
+.stage-canvas { width: 100% !important; height: 100% !important; display: block; }
+.stage-black { position: absolute; inset: 0; background: #000; pointer-events: none; transition: opacity .08s linear; }
 .coro-actions-lane { position: fixed; left: 50%; bottom: 1.4rem; transform: translateX(-50%); z-index: 140; display: flex; gap: .6rem; margin: 0; }
-.lane-demo-bar { position: fixed; left: 0; right: 0; top: 0; z-index: 140; display: flex; flex-wrap: wrap; gap: .35rem; padding: .6rem .8rem; background: linear-gradient(180deg, rgba(0,0,0,.75), rgba(0,0,0,0)); }
-.lane-demo-btn { padding: .35rem .7rem; border: 1px solid rgba(255,255,255,.35); border-radius: 999px; background: rgba(0,0,0,.45); color: #fff; font: 600 .74rem/1 var(--font-display), Georgia, serif; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
-.lane-demo-btn.is-on { background: #ffe066; color: #1a1200; border-color: #ffe066; }
-.lane-demo-cosmic.is-on { background: #ff2bd6; border-color: #ff2bd6; color: #fff; }
-/* Protokollet: en CRT-skärm ovanför banan */
-.lane-scoreboard { position: absolute; left: 50%; top: 8%; transform: translateX(-50%); width: min(920px, 94vw); padding: 1rem 1.2rem 1.2rem; border: 3px solid #3c5a3c; border-radius: 14px; background: radial-gradient(120% 100% at 50% 0%, #0b2a0b, #041004 70%); color: #8dff8d; font-family: 'Courier New', Courier, monospace; text-shadow: 0 0 8px rgba(141,255,141,.7); box-shadow: 0 0 40px rgba(0,0,0,.6), inset 0 0 40px rgba(0,0,0,.6); }
-.lane-scoreboard::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 12px; background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 2px, transparent 2px 4px); }
-.lane-scoreboard-head { display: flex; justify-content: space-between; font-size: clamp(.9rem, 2vw, 1.2rem); letter-spacing: .2em; margin-bottom: .6rem; }
-.lane-scoreboard-frames { display: grid; grid-template-columns: repeat(11, 1fr); gap: .3rem; }
-.lane-frame { display: grid; gap: .2rem; padding: .3rem .2rem; border: 1px solid #3c5a3c; text-align: center; opacity: .35; }
-.lane-frame.is-on { opacity: 1; background: rgba(141,255,141,.08); }
-.lane-frame-n { font-size: .7rem; letter-spacing: .1em; }
-.lane-frame-v { min-height: 1.6em; font-size: clamp(1rem, 2.6vw, 1.7rem); font-weight: 700; }
-.lane-frame-total { border-color: #8dff8d; }
-.lane-scoreboard-over { margin: .9rem 0 0; text-align: center; font-size: clamp(1.1rem, 3vw, 1.8rem); letter-spacing: .25em; animation: lane-blink 0.7s steps(2, start) infinite; }
-@keyframes lane-blink { to { visibility: hidden; } }
+.stage-demo-bar { position: fixed; left: 0; right: 0; top: 0; z-index: 140; display: flex; flex-wrap: wrap; gap: .35rem; padding: .6rem .8rem; background: linear-gradient(180deg, rgba(0,0,0,.75), rgba(0,0,0,0)); }
+.stage-demo-btn { padding: .35rem .7rem; border: 1px solid rgba(255,255,255,.35); border-radius: 999px; background: rgba(0,0,0,.45); color: #fff; font: 600 .74rem/1 var(--font-display), Georgia, serif; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+.stage-demo-btn.is-on { background: #ffe066; color: #1a1200; border-color: #ffe066; }
 
-/* Banans HUD-ord: chunky 90-talstypografi som slår in ovanpå bilden och alltid syns. */
-.lane-words { position: absolute; left: 0; right: 0; top: 14%; z-index: 135; display: flex; flex-direction: column; align-items: center; gap: .35rem; pointer-events: none; padding: 0 1rem; }
-.lane-word { --word: #ffe066; font-family: Impact, 'Arial Black', 'Franklin Gothic Medium', 'Helvetica Neue', Arial, sans-serif; font-size: clamp(2rem, calc(var(--size) * 3.4vw), calc(var(--size) * 4.2rem)); font-style: italic; font-weight: 900; letter-spacing: .02em; line-height: 1; text-transform: uppercase; text-align: center;
-  color: var(--word); background: linear-gradient(180deg, #fffbe6 0%, var(--word) 42%, #b8741a 58%, #fff0a8 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 2px #2a1200) drop-shadow(3px 4px 0 #2a1200) drop-shadow(0 0 22px rgba(255, 224, 102, .55)); transform-origin: center; }
-.lane-word-slam { animation: lane-slam .5s cubic-bezier(.2, 1.4, .3, 1) both; }
-.lane-word-name { --word: #ffffff; font-family: var(--font-display), Georgia, serif; font-style: normal; font-weight: 700; letter-spacing: .18em; background: none; -webkit-text-fill-color: #fff; color: #fff; filter: drop-shadow(0 2px 0 #000) drop-shadow(0 0 16px rgba(255,255,255,.5)); animation: lane-rise .5s ease-out both; }
-.lane-word-sad { --word: #9fb3c8; background: linear-gradient(180deg, #e6eef7, #9fb3c8 50%, #5c6f84); font-style: normal; animation: lane-droop 1.2s ease-out both; }
-.lane-word-blink { animation: lane-slam .5s cubic-bezier(.2, 1.4, .3, 1) both, lane-blink .55s steps(2, start) .6s infinite; }
-.lane-words.is-cosmic .lane-word { --word: #7df9ff; background: linear-gradient(180deg, #ffffff 0%, #7df9ff 45%, #ff2bd6 100%); filter: drop-shadow(0 0 2px #0a0020) drop-shadow(3px 4px 0 #1a0044) drop-shadow(0 0 26px rgba(125, 249, 255, .7)); }
-@keyframes lane-slam { 0% { transform: scale(3.2) rotate(-6deg); opacity: 0; } 55% { transform: scale(.94) rotate(1deg); opacity: 1; } 100% { transform: scale(1) rotate(-2deg); opacity: 1; } }
-@keyframes lane-rise { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes lane-droop { 0% { transform: scale(1.6) translateY(-10px); opacity: 0; } 30% { transform: scale(1) translateY(0); opacity: 1; } 100% { transform: scale(1) translateY(18px) rotate(-3deg); opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .lane-word { animation: none !important; } }
+/* HUD-orden: undertexter längst ner, stora ord som slår in, namnskyltar */
+.stage-words { position: absolute; left: 0; right: 0; top: 14%; bottom: 9%; z-index: 135; display: flex; flex-direction: column; align-items: center; gap: .35rem; pointer-events: none; padding: 0 1rem; }
+.stage-word { --word: #ffe066; font-family: Impact, 'Arial Black', 'Franklin Gothic Medium', 'Helvetica Neue', Arial, sans-serif; font-size: clamp(2rem, calc(var(--size) * 3.4vw), calc(var(--size) * 4.2rem)); font-style: italic; font-weight: 900; letter-spacing: .02em; line-height: 1; text-transform: uppercase; text-align: center;
+  color: var(--word); background: linear-gradient(180deg, #fff2f2 0%, var(--word) 45%, #4a0a0a 60%, #ffb3b3 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 2px #000) drop-shadow(3px 4px 0 #1a0000) drop-shadow(0 0 26px rgba(255, 59, 59, .6)); transform-origin: center; }
+.stage-word-slam { animation: stage-slam .5s cubic-bezier(.2, 1.4, .3, 1) both; }
+.stage-word-name { --word: #ffffff; font-family: var(--font-display), Georgia, serif; font-style: normal; font-weight: 700; letter-spacing: .18em; background: none; -webkit-text-fill-color: #fff; color: #fff; filter: drop-shadow(0 2px 0 #000) drop-shadow(0 0 16px rgba(255,255,255,.5)); animation: stage-rise .5s ease-out both; }
+.stage-word-subtitle { margin-top: auto; max-width: 46rem; font-family: 'Helvetica Neue', Arial, sans-serif; font-style: normal; font-weight: 500; font-size: clamp(1rem, 2.1vw, 1.5rem); letter-spacing: .01em; line-height: 1.35; text-transform: none; color: #fff; background: none; -webkit-text-fill-color: #fff; text-shadow: 0 1px 2px #000, 0 0 12px rgba(0,0,0,.9); filter: none; animation: stage-rise .35s ease-out both; }
+@keyframes stage-slam { 0% { transform: scale(3.2) rotate(-6deg); opacity: 0; } 55% { transform: scale(.94) rotate(1deg); opacity: 1; } 100% { transform: scale(1) rotate(-2deg); opacity: 1; } }
+@keyframes stage-rise { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .stage-word { animation: none !important; } }

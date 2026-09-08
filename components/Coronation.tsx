@@ -2,11 +2,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import type { Theme } from '@/lib/theme';
-import { sequenceFor } from './lane/sequence';
-import type { ClipCtx, CueName } from './lane/types';
+import { sequenceFor } from './stage/sequence';
+import type { SceneCtx, CueName } from './stage/types';
 
-// Banan drar in three.js — laddas först när en kröning faktiskt avfyras.
-const LaneShow = dynamic(() => import('./lane/LaneShow').then((m) => m.LaneShow), { ssr: false });
+// Scenen drar in three.js — laddas först när en kröning faktiskt avfyras.
+const StageShow = dynamic(() => import('./stage/StageShow').then((m) => m.StageShow), { ssr: false });
 
 /**
  * THE ROYAL CORONATION SPECTACULAR™
@@ -27,7 +27,7 @@ export type CoronationEvent = {
   daysSinceLastWin: number | null;
 };
 
-/** Orden banan behöver från temat: KRÖNING/UPPHÖJELSE och TYRANNI/IMPERIET. */
+/** Orden scenen behöver från temat: KRÖNING/UPPHÖJELSE och TYRANNI/IMPERIET. */
 export type LaneWords = { crowning: string; tyranny: string };
 
 function hasWebGL(): boolean {
@@ -196,7 +196,7 @@ function playDroidBeeps(ctx: AudioContext, master: GainNode, at: number) {
   });
 }
 
-/* ── Banans ljud: käglor som smäller, en boll i rännan, siren och dunsar ── */
+/* ── Scenens ljud: sabeln som tänds och brummar, dunsar ── */
 
 function playCueSound(ctx: AudioContext, master: GainNode, cue: CueName) {
   const now = ctx.currentTime;
@@ -210,25 +210,22 @@ function playCueSound(ctx: AudioContext, master: GainNode, cue: CueName) {
     const g = ctx.createGain(); g.gain.value = vol;
     src.connect(bp).connect(g).connect(master); src.start(at);
   };
-  const tone = (at: number, dur: number, from: number, to: number, type: OscillatorType, vol: number) => {
+  const tone = (at: number, dur: number, from: number, to: number, type: OscillatorType, vol: number, attack = 0.01) => {
     const o = ctx.createOscillator(); const g = ctx.createGain();
     o.type = type; o.frequency.setValueAtTime(from, at); o.frequency.exponentialRampToValueAtTime(Math.max(20, to), at + dur);
-    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(vol, at + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(vol, at + attack); g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
     o.connect(g).connect(master); o.start(at); o.stop(at + dur + 0.02);
   };
   switch (cue) {
-    case 'hit':
-    case 'crash':
-      noise(now, 0.3, 900, cue === 'crash' ? 0.7 : 0.5);
-      [0, 0.04, 0.09, 0.15, 0.22, 0.31].forEach((d, i) => tone(now + d, 0.05, 1400 + i * 220, 900, 'square', 0.08));
-      if (cue === 'crash') tone(now, 0.5, 90, 40, 'sine', 0.5);
+    case 'ignite':
+      // "snap-hiss": ett kort brus, sedan bladet som stiger i ton och lägger sig i ett brum
+      noise(now, 0.25, 1800, 0.35);
+      tone(now + 0.02, 0.5, 60, 140, 'sawtooth', 0.22, 0.05);
+      tone(now + 0.3, 3.2, 92, 88, 'sawtooth', 0.14, 0.4);
+      tone(now + 0.3, 3.2, 184, 176, 'triangle', 0.06, 0.4);
       break;
-    case 'gutter':
-      tone(now, 0.9, 320, 120, 'sawtooth', 0.14);
-      tone(now + 0.9, 0.6, 130, 70, 'sawtooth', 0.12);
-      break;
-    case 'siren':
-      for (let i = 0; i < 6; i++) tone(now + i * 0.22, 0.2, i % 2 ? 620 : 920, i % 2 ? 620 : 920, 'square', 0.06);
+    case 'hum':
+      tone(now, 2.5, 90, 90, 'sawtooth', 0.1, 0.5);
       break;
     case 'slam':
       tone(now, 0.35, 85, 40, 'sine', 0.45);
@@ -248,6 +245,7 @@ export function Coronation({ event, copy, words, onDone }: { event: CoronationEv
   // 'on' = tredimensionella banan, 'off' = klassiska overlayen (reduced motion, saknat WebGL eller tappad kontext).
   const [lane, setLane] = useState<'pending' | 'on' | 'off'>('pending');
   const [sequence] = useState(() => sequenceFor(event));
+  const hasScene = sequence.length > 0;
   const doorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const roast = useRef(pick(copy.roasts)).current;
   const holdDecree = copy.holdDecree.replaceAll('{streak}', String(event.streakCount));
@@ -260,13 +258,13 @@ export function Coronation({ event, copy, words, onDone }: { event: CoronationEv
     const rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     setReduced(rm);
     setMuted(window.localStorage.getItem(MUTE_KEY) === '1');
-    setLane(!rm && words && hasWebGL() ? 'on' : 'off');
-  }, [words]);
+    setLane(!rm && words && hasScene && hasWebGL() ? 'on' : 'off');
+  }, [words, hasScene]);
 
   // Auto-stäng + tangentbord (Esc), och fokusera hoppa-över-knappen.
   useEffect(() => {
     skipRef.current?.focus();
-    // I banläget säger LaneShow till när klippen är slut; timern är bara en säkerhetslina.
+    // I scenläget säger StageShow till när scenerna är slut; timern är bara en säkerhetslina.
     const timer = setTimeout(onDone, lane === 'on' ? 30000 : reduced ? 9000 : 8000);
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onDone(); };
     window.addEventListener('keydown', onKey);
@@ -297,7 +295,7 @@ export function Coronation({ event, copy, words, onDone }: { event: CoronationEv
     playCueSound(audioRef.current, masterRef.current, cue);
   }, [muted]);
 
-  const laneCtx: ClipCtx | null = words ? {
+  const laneCtx: SceneCtx | null = words ? {
     winner: event.winnerName, deposed: event.deposedName, streak: event.streakCount, previousStreak: event.previousStreakCount,
     days: event.daysSinceLastWin, cosmic: event.isFriday, crowningWord: words.crowning, tyrannyWord: words.tyranny,
   } : null;
@@ -393,7 +391,7 @@ export function Coronation({ event, copy, words, onDone }: { event: CoronationEv
 
       {lane === 'on' && laneCtx && (
         <div onClick={(e) => e.stopPropagation()}>
-          <LaneShow ctx={laneCtx} sequence={sequence} onDone={onDone} onCue={playCue} onFail={() => setLane('off')} />
+          <StageShow ctx={laneCtx} sequence={sequence} onDone={onDone} onCue={playCue} onFail={() => setLane('off')} />
           <div className='coro-actions coro-actions-lane'>
             <button type='button' className='coro-mute' onClick={toggleMute} aria-pressed={muted}>{muted ? '🔇 Ljud av' : '🔊 Ljud på'}</button>
             <button type='button' ref={skipRef} className='coro-skip' onClick={onDone}>{copy.dismiss}</button>
