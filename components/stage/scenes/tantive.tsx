@@ -80,7 +80,8 @@ export const tantive: Scene = {
     if (t < 9.0) return { position: [-1.8, 1.6, -0.4], lookAt: [1.0, 1.2, -4.8], fov: 54, snap: true, shake: decay(t - FLING - 0.22, 0.05, 0.5) };
     // kronan sätter sig: sakta inzoomning på honom, och bilden hålls kvar
     const p = ease(span(t, 9.0, 11.6), 'inOut');
-    return { position: lerp3([-1.2, 1.5, -3.4], [-0.5, 1.7, -5.0], p), lookAt: [0, 1.7, STAND[2]], fov: 40 - p * 10, snap: true };
+    // siktet ligger på kronan (ovanpå hjälmen, ~2,1 högt), och inzoomningen är måttlig
+    return { position: lerp3([-1.4, 1.7, -3.2], [-1.0, 1.9, -4.0], p), lookAt: [0, 1.95, STAND[2]], fov: 42 - p * 6, snap: true };
   },
   Scene: ({ t }) => {
     const blast = Math.max(0, t - BLAST);
