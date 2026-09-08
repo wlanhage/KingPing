@@ -227,6 +227,11 @@ function playCueSound(ctx: AudioContext, master: GainNode, cue: CueName) {
     case 'hum':
       tone(now, 2.5, 90, 90, 'sawtooth', 0.1, 0.5);
       break;
+    case 'door':
+      // hydrauliskt väsande när dörrarna glider isär
+      noise(now, 0.9, 700, 0.18);
+      tone(now, 0.9, 140, 110, 'triangle', 0.08, 0.2);
+      break;
     case 'slam':
       tone(now, 0.35, 85, 40, 'sine', 0.45);
       noise(now, 0.12, 400, 0.3);
