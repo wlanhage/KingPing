@@ -7,11 +7,20 @@ export function Plastic({ color, emissive, emissiveIntensity = 0 }: { color: str
   return <meshPhysicalMaterial color={color} roughness={0.32} metalness={0.05} clearcoat={0.8} clearcoatRoughness={0.2} emissive={emissive ?? '#000000'} emissiveIntensity={emissiveIntensity} />;
 }
 
-export type Mood = 'happy' | 'hope' | 'sad' | 'shock' | 'grim' | 'none';
+export type Mood = 'happy' | 'hope' | 'sad' | 'shock' | 'grim' | 'calm' | 'none';
 
 /** Ett ansikte i den riktning gruppen pekar. `eyes` färgar pupillerna — gult för sithögon. */
 export function Face({ mood = 'happy', scale = 1, position = [0, 0, 0] as Vec3, eyes = '#111111', glow = 0 }: { mood?: Mood; scale?: number; position?: Vec3; eyes?: string; glow?: number }) {
   if (mood === 'none') return null;
+  if (mood === 'calm') {
+    // slutna ögon: två tunna streck och en lugn mun
+    return (
+      <group position={position} scale={scale}>
+        {[-0.22, 0.22].map((x) => <mesh key={x} position={[x, 0.12, 0.02]}><boxGeometry args={[0.22, 0.035, 0.03]} /><meshStandardMaterial color='#111' /></mesh>)}
+        <mesh position={[0, -0.2, 0]}><torusGeometry args={[0.14, 0.03, 8, 20, Math.PI]} /><meshStandardMaterial color='#111' roughness={0.5} /></mesh>
+      </group>
+    );
+  }
   const big = mood === 'hope' || mood === 'shock';
   const eyeR = big ? 0.15 : 0.12;
   const pupilY = mood === 'sad' ? -0.03 : mood === 'hope' ? 0.03 : 0.01;
@@ -54,6 +63,18 @@ export function Saber({ length, color = '#ff2a2a', flicker = 0, position = [0, 0
   );
 }
 
+/** Kronan: guld med sex spetsar och en röd sten. */
+export function Crown({ position = [0, 0, 0] as Vec3, scale = 1, rotation = [0, 0, 0] as Vec3 }: { position?: Vec3; scale?: number; rotation?: Vec3 }) {
+  const gold = <meshStandardMaterial color='#f2c94c' emissive='#f2c94c' emissiveIntensity={0.45} metalness={0.95} roughness={0.2} />;
+  return (
+    <group position={position} scale={scale} rotation={rotation}>
+      <mesh position={[0, 0.12, 0]}><cylinderGeometry args={[0.42, 0.46, 0.24, 24]} />{gold}</mesh>
+      {[0, 1, 2, 3, 4, 5].map((i) => { const a = (i / 6) * Math.PI * 2; return <mesh key={i} position={[Math.cos(a) * 0.4, 0.34, Math.sin(a) * 0.4]}><coneGeometry args={[0.09, 0.26, 8]} />{gold}</mesh>; })}
+      <mesh position={[0, 0.3, 0.42]}><sphereGeometry args={[0.06, 12, 12]} /><meshStandardMaterial color='#e0304a' emissive='#e0304a' emissiveIntensity={1.2} /></mesh>
+    </group>
+  );
+}
+
 const ROBE = '#241b15';
 
 /**
@@ -76,15 +97,33 @@ function Cloak() {
  * framsidan (+z). `hood` ger jedimanteln. `saber` ger en sabel i högerhanden, i handhöjd och
  * lätt framåtlutad så spetsen svävar strax över golvet.
  */
-export function Racket({ position = [0, 0, 0] as Vec3, rotation = [0, 0, 0] as Vec3, scale = 1, color = '#d8232a', mood = 'happy', eyes = '#111111', eyeGlow = 0, hood = false, saber, saberColor, flicker = 0 }:
-  { position?: Vec3; rotation?: Vec3; scale?: number; color?: string; mood?: Mood; eyes?: string; eyeGlow?: number; hood?: boolean; saber?: number; saberColor?: string; flicker?: number }) {
+/** Vaders hjälm: blank svart kupol över bladet och en mask med andningsgaller under ögonlinserna. */
+function Helmet() {
+  return (
+    <group>
+      <mesh position={[0, 1.3, -0.05]}><sphereGeometry args={[0.86, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.55]} /><meshPhysicalMaterial color='#0b0b10' roughness={0.25} clearcoat={1} clearcoatRoughness={0.1} /></mesh>
+      <mesh position={[0, 0.98, 0.09]}><boxGeometry args={[0.62, 0.42, 0.14]} /><meshStandardMaterial color='#1a1a22' roughness={0.5} metalness={0.4} /></mesh>
+      {[-0.2, 0.2].map((x) => <mesh key={x} position={[x, 1.22, 0.1]} rotation={[0, 0, x < 0 ? 0.3 : -0.3]}><boxGeometry args={[0.24, 0.16, 0.06]} /><meshPhysicalMaterial color='#05050a' roughness={0.1} clearcoat={1} /></mesh>)}
+      <mesh position={[0, 0.9, 0.17]}><boxGeometry args={[0.2, 0.18, 0.04]} /><meshStandardMaterial color='#444' metalness={0.6} roughness={0.4} /></mesh>
+      <mesh position={[0, 0.55, -0.35]}><coneGeometry args={[1.0, 1.4, 28, 1, true]} /><meshStandardMaterial color='#0d0d12' roughness={0.9} side={2} /></mesh>
+    </group>
+  );
+}
+
+export function Racket({ position = [0, 0, 0] as Vec3, rotation = [0, 0, 0] as Vec3, scale = 1, color = '#d8232a', mood = 'happy', eyes = '#111111', eyeGlow = 0, hood = false, helmet = false, arm = 0, crown = false, saber, saberColor, flicker = 0 }:
+  { position?: Vec3; rotation?: Vec3; scale?: number; color?: string; mood?: Mood; eyes?: string; eyeGlow?: number; hood?: boolean; helmet?: boolean; arm?: number; crown?: boolean; saber?: number; saberColor?: string; flicker?: number }) {
   return (
     <group position={position} rotation={rotation} scale={scale}>
       {hood && <Cloak />}
+      {helmet && <Helmet />}
+      {crown && <Crown position={[0, 1.78, 0]} scale={0.8} />}
+      {/* utsträckt hand: en mörk arm som växer framåt ur högersidan */}
+      {arm > 0.01 && <mesh position={[0.6, 0.95, 0.15 + arm / 2]}><boxGeometry args={[0.16, 0.16, arm]} /><meshStandardMaterial color='#15151a' roughness={0.8} /></mesh>}
+      {arm > 0.01 && <mesh position={[0.6, 0.95, 0.15 + arm + 0.08]}><sphereGeometry args={[0.13, 12, 12]} /><meshStandardMaterial color='#15151a' roughness={0.8} /></mesh>}
       <mesh position={[0, 1.05, 0]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.72, 0.72, 0.1, 40]} /><Plastic color={color} /></mesh>
       <mesh position={[0, 1.05, 0]} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[0.72, 0.035, 10, 40]} /><meshStandardMaterial color='#1c1410' roughness={0.5} /></mesh>
       <mesh position={[0, 0.22, 0]}><boxGeometry args={[0.22, 0.5, 0.12]} /><meshStandardMaterial color='#b08a5a' roughness={0.6} /></mesh>
-      <Face mood={mood} position={[0, 1.05, 0.06]} eyes={eyes} glow={eyeGlow} />
+      {!helmet && <Face mood={mood} position={[0, 1.05, 0.06]} eyes={eyes} glow={eyeGlow} />}
       {saber !== undefined && <Saber length={saber} color={saberColor} flicker={flicker} position={[0.9, 0.95, 0.3]} rotation={[-0.95, 0, 0.1]} />}
     </group>
   );

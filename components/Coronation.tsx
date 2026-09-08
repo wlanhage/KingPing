@@ -242,6 +242,21 @@ function playCueSound(ctx: AudioContext, master: GainNode, cue: CueName) {
       tone(now, 0.12, 900, 300, 'square', 0.18);
       tone(now + 0.02, 0.3, 120, 50, 'sine', 0.35);
       break;
+    case 'boom':
+      // explosionen: djup smäll och ett mullrande som klingar av
+      noise(now, 1.6, 180, 0.9);
+      tone(now, 1.4, 60, 28, 'sine', 0.6, 0.02);
+      tone(now + 0.05, 0.4, 300, 90, 'sawtooth', 0.2);
+      break;
+    case 'breath':
+      // det där andetaget: in genom filtret, ut genom filtret
+      noise(now, 0.8, 500, 0.16);
+      noise(now + 0.95, 1.0, 380, 0.14);
+      break;
+    case 'blast':
+      tone(now, 0.18, 1400, 500, 'square', 0.12);
+      tone(now + 0.02, 0.18, 900, 350, 'sawtooth', 0.08);
+      break;
     case 'sizzle':
       // sabeln i lavan: väsande ånga
       noise(now, 0.9, 3200, 0.22);

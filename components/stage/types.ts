@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 export type Vec3 = [number, number, number];
 
-export type SceneKey = 'temple' | 'mustafar';
+export type SceneKey = 'temple' | 'mustafar' | 'cloudcity' | 'tantive' | 'deathstar';
 
 /** Det en scen får veta om händelsen. Orden kommer från temat. */
 export type SceneCtx = {
@@ -18,7 +18,7 @@ export type SceneCtx = {
 
 /** Ett ord i HUD-lagret, `at` i verklig tid. subtitle = undertext längst ner, slam = stort, name = namnskylt. */
 export type Word = { at: number; until?: number; text: string; size?: number; color?: string; style?: 'slam' | 'name' | 'subtitle' };
-export type CueName = 'ignite' | 'slam' | 'hum' | 'door' | 'sizzle' | 'smash';
+export type CueName = 'ignite' | 'slam' | 'hum' | 'door' | 'sizzle' | 'smash' | 'boom' | 'breath' | 'blast';
 export type Cue = { at: number; cue: CueName };
 /** snap = klipp (ingen mjukning), annars glider kameran mot posen. */
 export type CameraPose = { position: Vec3; lookAt: Vec3; fov?: number; shake?: number; snap?: boolean };

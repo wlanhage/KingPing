@@ -29,11 +29,14 @@ describe('sequenceFor', () => {
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 3 })).toEqual(['temple']);
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 6 })).toEqual(['temple']);
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 2 })).toEqual([]);
-    expect(sequenceFor(base)).toEqual([]);
+    expect(sequenceFor({ ...base, deposedName: null })).toEqual([]);
   });
-  it('störtar man en mästare med tre raka eller mer blir det Mustafar', () => {
+  it('störtanden: tre–fyra raka ger Mustafar, fem eller mer Dödsstjärnan, annars Cloud City eller Tantive', () => {
     expect(sequenceFor({ ...base, previousStreakCount: 3 })).toEqual(['mustafar']);
-    expect(sequenceFor({ ...base, previousStreakCount: 6 })).toEqual(['mustafar']);
+    expect(sequenceFor({ ...base, previousStreakCount: 4 })).toEqual(['mustafar']);
+    expect(sequenceFor({ ...base, previousStreakCount: 6 })).toEqual(['deathstar']);
+    expect(sequenceFor({ ...base, previousStreakCount: 1 }, () => 0.1)).toEqual(['cloudcity']);
+    expect(sequenceFor({ ...base, previousStreakCount: 2 }, () => 0.9)).toEqual(['tantive']);
     expect(sequenceFor({ ...base, previousStreakCount: 3, deposedName: null })).toEqual([]);
   });
   it('locate hittar rätt scen och lokal tid', () => {
