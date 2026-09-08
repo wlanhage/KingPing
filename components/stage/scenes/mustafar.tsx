@@ -9,8 +9,8 @@ import type { Scene, Vec3 } from '../types';
 
 /*
  * MUSTAFAR. Någon störtade en mästare med tre raka eller mer.
- *   0.0–3.0  Bakom vinnaren på den svarta banken. Lavan glöder, block med den störtade driver in.
- *            "Det är över, {störtad}! Jag har höjdövertaget."
+ *   0.0–1.6  Snett ovanifrån: vinnaren på klipphyllan, lavan, blocket med den störtade driver in.
+ *   1.6–3.0  Vinnarens ansikte underifrån, blå sabel. "Det är över, {störtad}! Jag har höjdövertaget."
  *   3.0–4.6  Den störtade på blocket, nära. "Du underskattar min makt!"
  *   4.6–6.4  Hoppet: från sidan, volten över lavan. Vinnaren kastar upp en boll och smashar.
  *   6.35     Träffen: hit-stop, ultrarapid, racketen går i två delar. Sabeln i lavan.
@@ -18,9 +18,12 @@ import type { Scene, Vec3 } from '../types';
  */
 
 const BLUE = '#4aa3ff';
+const RED = '#ff2a2a';
+/** Klipphyllan vinnaren står på: så hög att höjdövertaget syns. */
+const LEDGE_H = 1.25;
 const HIT = 6.35;
 const JUMP_FROM = 4.8, JUMP_TO = 6.6;
-const WINNER: Vec3 = [0, 0, -2.6];
+const WINNER: Vec3 = [0, LEDGE_H, -1.9];
 const blockZ = (t: number) => kf(t, [[0, -9.6], [3.0, -7.2, 'linear'], [12, -6.2, 'linear']]);
 const blockY = (t: number) => -0.12 + Math.sin(t * 1.3) * 0.05;
 /** Den störtades position i luften under hoppet (0..1 längs bågen). */
@@ -82,6 +85,9 @@ function Mustafar() {
       {/* banken: svart sten, kanten mot lavan vid z ≈ -4,2 */}
       <mesh position={[0, -0.36, 0.2]}><boxGeometry args={[18, 0.72, 8.8]} /><meshStandardMaterial color='#17100e' roughness={1} /></mesh>
       <mesh position={[0, -0.3, -4.3]} rotation={[0.35, 0, 0]}><boxGeometry args={[18, 0.5, 1.4]} /><meshStandardMaterial color='#1c1310' roughness={1} emissive='#ff4a00' emissiveIntensity={0.12} /></mesh>
+      {/* klipphyllan: vinnaren står högre än lavan och blocket */}
+      <mesh position={[0, LEDGE_H / 2 - 0.02, -1.9]}><boxGeometry args={[6.5, LEDGE_H, 3.0]} /><meshStandardMaterial color='#1a1210' roughness={1} /></mesh>
+      <mesh position={[0, LEDGE_H - 0.15, -3.55]} rotation={[-0.5, 0, 0]}><boxGeometry args={[6.6, 0.5, 0.9]} /><meshStandardMaterial color='#201612' roughness={1} emissive='#ff4a00' emissiveIntensity={0.06} /></mesh>
       {rocks.map(([x, y, z, s], i) => <mesh key={i} position={[x, y, z]} rotation={[i, i * 0.7, 0]}><dodecahedronGeometry args={[s, 0]} /><meshStandardMaterial color='#1a1210' roughness={1} /></mesh>)}
       <Sparkles count={420} scale={[24, 10, 30]} position={[0, 3, -12]} size={3} speed={0.5} opacity={0.8} color='#ffb35c' />
       <Sparkles count={120} scale={[10, 4, 8]} position={[0, 1.5, -1]} size={2} speed={0.35} opacity={0.6} color='#ff9a3a' />
@@ -135,9 +141,15 @@ export const mustafar: Scene = {
   cues: [{ at: 0.3, cue: 'hum' }, { at: 5.9, cue: 'slam' }, { at: HIT, cue: 'smash' }, { at: 8.3, cue: 'sizzle' }, { at: 12.3, cue: 'slam' }],
   fade: (t) => Math.max(1 - span(t, 0, 0.8), span(t, 11.8, 12.3) * 0.94),
   camera: (t) => {
+    if (t < 1.6) {
+      // snett ovanifrån, bakom vinnaren: hyllan, lavan och blocket i samma bild
+      const p = ease(span(t, 0, 1.6), 'out');
+      return { position: lerp3([2.8, 4.4, 2.6], [2.2, 3.9, 1.6], p), lookAt: [0.2, 0.7, -6.5], fov: 44, snap: true };
+    }
     if (t < 3.0) {
-      const p = ease(span(t, 0, 3.0), 'out');
-      return { position: lerp3([1.0, 1.15, 1.9], [0.7, 1.0, 0.7], p), lookAt: [0.3, 0.9, -8.5], fov: 40, snap: true };
+      // vinnarens ansikte, underifrån från lavans håll — höjden syns
+      const p = ease(span(t, 1.6, 3.0), 'inOut');
+      return { position: lerp3([1.5, 1.0, -4.9], [1.1, 1.2, -4.4], p), lookAt: [0, LEDGE_H + 1.1, -1.9], fov: 34, snap: true };
     }
     if (t < 4.6) {
       const z = blockZ(t);
@@ -145,14 +157,14 @@ export const mustafar: Scene = {
     }
     if (t < HIT) {
       const a = arc(span(t, JUMP_FROM, JUMP_TO), JUMP_START);
-      return { position: [6.0, 2.2, a[2] + 0.8], lookAt: [a[0], Math.max(1.0, a[1] - 0.4), a[2]], fov: 42, snap: true };
+      return { position: [6.0, 2.6, a[2] + 0.8], lookAt: [a[0], Math.max(1.0, a[1] - 0.4), a[2]], fov: 42, snap: true };
     }
     if (t < 7.9) {
       const hp = hitPoint();
       return { position: [2.6, 2.3, hp[2] + 1.6], lookAt: [hp[0], hp[1] - 0.2, hp[2]], fov: 38, snap: true, shake: decay(t - HIT, 0.03, 0.4) };
     }
     const p = ease(span(t, 9.8, 11.6), 'inOut');
-    return { position: lerp3([1.9, 0.55, -1.7], [1.6, 0.9, -1.2], p), lookAt: lerp3([0.2, 0.4, -3.7], [0.1, 1.1, -2.8], p), fov: 34, snap: true };
+    return { position: lerp3([2.1, 0.5, -5.2], [1.8, 0.9, -4.6], p), lookAt: lerp3([0.2, 0.4, -3.9], [0.1, LEDGE_H + 1.0, -2.0], p), fov: 34, snap: true };
   },
   Scene: ({ t, ctx }) => {
     const jump = span(t, JUMP_FROM, JUMP_TO);
@@ -163,7 +175,7 @@ export const mustafar: Scene = {
     const toss = span(t, 5.2, 5.8);
     const swing = kf(t, [[5.7, 0.25], [5.95, 0.95, 'inOut'], [6.15, -1.25, 'in'], [6.9, -0.1, 'out']]);
     const ballFly = span(t, 6.15, HIT);
-    const ballPos: Vec3 = t < 6.15 ? [0.95, 1.35 + toss * 0.95 - (t > 5.8 ? (t - 5.8) * 1.2 : 0), -2.55] : split ? [0.3 - (t - HIT) * 2.6, Math.max(-0.2, 1.9 + (t - HIT) * 1.5 - 4 * (t - HIT) * (t - HIT)), -4.4 - (t - HIT) * 2.2] : lerp3([0.95, 1.9, -2.55], hitPoint(), ballFly);
+    const ballPos: Vec3 = t < 6.15 ? [0.95, LEDGE_H + 1.35 + toss * 0.95 - (t > 5.8 ? (t - 5.8) * 1.2 : 0), -1.85] : split ? [0.3 - (t - HIT) * 2.6, Math.max(-0.2, 1.9 + (t - HIT) * 1.5 - 4 * (t - HIT) * (t - HIT)), -4.4 - (t - HIT) * 2.2] : lerp3([0.95, LEDGE_H + 1.9, -1.85], hitPoint(), ballFly);
     const turn = ease(span(t, 10.0, 11.8), 'inOut');
     // den störtades sabel tumlar ner i lavan efter träffen
     const saberDrop = split ? Math.min(1, (t - HIT) / 1.2) : 0;
@@ -178,14 +190,14 @@ export const mustafar: Scene = {
           <mesh position={ballPos} rotation={[t * 12, 0, 0]}><sphereGeometry args={[0.16, 20, 20]} /><Plastic color='#fff7e3' /></mesh>
         )}
         {/* den störtade: på blocket, i luften med volt, eller i två delar */}
-        {!split && !inAir && <Racket position={[0.4, blockY(t) + 0.28, blockZ(t)]} rotation={[0, 0, Math.sin(t * 1.3) * 0.02]} color='#2f2c3a' mood='grim' eyes='#ffb020' eyeGlow={1.2} saber={0.95} saberColor={BLUE} flicker={0.5 + 0.5 * Math.sin(t * 53)} />}
+        {!split && !inAir && <Racket position={[0.4, blockY(t) + 0.28, blockZ(t)]} rotation={[0, 0, Math.sin(t * 1.3) * 0.02]} color='#2f2c3a' mood='grim' eyes='#ffb020' eyeGlow={1.2} saber={0.95} saberColor={RED} flicker={0.5 + 0.5 * Math.sin(t * 53)} />}
         {inAir && (
           <group position={[air[0], air[1] + 1.0, air[2]]} rotation={[-jump * Math.PI * 4, 0, 0]}>
-            <Racket position={[0, -1.0, 0]} color='#2f2c3a' mood='grim' eyes='#ffb020' eyeGlow={1.2} saber={0.95} saberColor={BLUE} flicker={0.5} />
+            <Racket position={[0, -1.0, 0]} color='#2f2c3a' mood='grim' eyes='#ffb020' eyeGlow={1.2} saber={0.95} saberColor={RED} flicker={0.5} />
           </group>
         )}
         {split && <SplitRacket t={t} color='#2f2c3a' />}
-        {split && saberDrop < 1 && <group position={saberPos} rotation={[(t - HIT) * 9, 0, (t - HIT) * 5]}><Saber length={0.95 * (1 - saberDrop * 0.6)} color={BLUE} /></group>}
+        {split && saberDrop < 1 && <group position={saberPos} rotation={[(t - HIT) * 9, 0, (t - HIT) * 5]}><Saber length={0.95 * (1 - saberDrop * 0.6)} color={RED} /></group>}
         {split && saberDrop >= 1 && t < HIT + 2.6 && [0, 1, 2].map((i) => (
           <mesh key={i} position={[1.9 + Math.sin(t * 3 + i) * 0.2, -0.1 + (t - HIT - 1.2) * 0.6 + i * 0.2, -5.6]}><sphereGeometry args={[0.18 + i * 0.05, 8, 8]} /><meshBasicMaterial color='#ffd9b0' transparent opacity={Math.max(0, 0.5 - (t - HIT - 1.2) * 0.35)} /></mesh>
         ))}
