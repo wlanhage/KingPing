@@ -77,6 +77,8 @@ export function RecordWinForm({ players, lastWinAt, cooldownMs, copy }: { player
         previousStreakCount: win?.previousStreakCount ?? 0,
         isFriday: !!win?.isFridayFinal,
         daysSinceLastWin: null,
+        returningStreak: !!data?.stage?.returningStreak,
+        beatRival: !!data?.stage?.beatRival,
       });
     } catch {
       setError('Kunde inte nå servern. Försök igen.');

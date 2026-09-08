@@ -25,6 +25,10 @@ export type CoronationEvent = {
   previousStreakCount: number;
   isFriday: boolean;
   daysSinceLastWin: number | null;
+  /** Tog kronan tillbaka efter en tappad svit på minst två, inom två kröningar. */
+  returningStreak: boolean;
+  /** Tog kronan från sin ärkefiende (rivalstatistikens etta). */
+  beatRival: boolean;
 };
 
 /** Orden scenen behöver från temat: KRÖNING/UPPHÖJELSE och TYRANNI/IMPERIET. */

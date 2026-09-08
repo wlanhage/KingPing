@@ -8,6 +8,7 @@ import { calculateGlobalStats, calculatePlayerStats } from '../badges/player-sta
 import { getPlayerBadges } from '../badges/badge-engine';
 import { clampReignToSeason, getPreviousSeason, isWinInSeason, resolveSeason, scopePlayerToSeason, seasonNow, winOccurredAtFilter, type SeasonWindow } from './season';
 import { describeSeasonEcho, ECHO_WINDOW, pickSeasonEcho, type SeasonEcho } from './season-echo';
+import { isStreakReturn } from './stage-triggers';
 import { getTheme } from '../theme';
 
 
@@ -102,12 +103,17 @@ export async function recordWin(winnerId:string,note?:string,opts:{ignoreCooldow
  const previousEvents=await prisma.winEvent.findMany({where:{occurredAt:winOccurredAtFilter(season)},orderBy:{occurredAt:'desc'},take:7}); const previousStreakCount=previousEvents[0]?.streakCount ?? 0; const streakCount=isSameKing?previousStreakCount+1:1;
  const winnerWinCount=await prisma.winEvent.count({where:{winnerId}}); const lastWin=await prisma.winEvent.findFirst({where:{winnerId},orderBy:{occurredAt:'desc'}}); const isFirstWin=winnerWinCount===0; const daysSinceLastWin=lastWin?differenceInDays(now,new Date(lastWin.occurredAt)):null;
  const eventType=determineEventType({isSameKing:!!isSameKing, streakCount, previousStreakCount, isFirstWin, daysSinceLastWin}); const nationState=determineNationState({recentWinnerIds:previousEvents.map(e=>e.winnerId),currentStreak:streakCount,brokeBigStreak:!isSameKing&&previousStreakCount>=3}); const winner=await prisma.player.findUniqueOrThrow({where:{id:winnerId}}); const echo=await loadSeasonEcho(season, winnerId, current?.playerId ?? null); const ann=generateAnnouncement({eventType,winnerName:winner.name,previousKingName:current?.player.name,previousStreakCount,nationState,isFridayFinal:isFriday(now),daysSinceLastWin,recentTexts:previousEvents.map(e=>e.announcementText),echo}, getTheme(season.theme).announcements);
- return prisma.$transaction(async(tx)=>{
+ // Scenutlösare som kräver historik: återkomst efter tappad svit, och seger över ärkefienden.
+ const returningStreak = !isSameKing && isStreakReturn(previousEvents, winnerId);
+ const nemesis = !isSameKing && current ? await getPlayerNemesis(winnerId, season) : null;
+ const beatRival = !!nemesis && nemesis.rival.id === current?.playerId;
+ const result = await prisma.$transaction(async(tx)=>{
   // Två samtidiga anrop (dubbelklick) passerade båda API:ets cooldown-kontroll och skrev varsin
   // vinst och regering. Låset serialiserar kröningar, och kontrollen görs om innanför låset.
   await tx.$executeRaw`SELECT pg_advisory_xact_lock(4711)`;
   if(!opts.ignoreCooldown){ const clash=await tx.winEvent.findFirst({where:{occurredAt:{gt:new Date(now.getTime()-WIN_COOLDOWN_MS)}},select:{id:true}}); if(clash) throw new Error('En vinnare sattes nyss. Vänta innan nästa kröning.'); }
-  if(current && !isSameKing){ await tx.reign.update({where:{id:current.id}, data:{endedAt:now}}); await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} if(!current){ await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} const win=await tx.winEvent.create({data:{winnerId,previousKingId:current?.playerId,occurredAt:now,eventType,streakCount,previousStreakCount,note,announcementText:ann.text,nationState,isFridayFinal:isFriday(now)}}); const a=await tx.announcement.create({data:{winEventId:win.id,text:ann.text,layout:ann.layout,persona:ann.persona}}); return {win,a}; }); }
+  if(current && !isSameKing){ await tx.reign.update({where:{id:current.id}, data:{endedAt:now}}); await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} if(!current){ await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} const win=await tx.winEvent.create({data:{winnerId,previousKingId:current?.playerId,occurredAt:now,eventType,streakCount,previousStreakCount,note,announcementText:ann.text,nationState,isFridayFinal:isFriday(now)}}); const a=await tx.announcement.create({data:{winEventId:win.id,text:ann.text,layout:ann.layout,persona:ann.persona}}); return {win,a}; });
+ return { ...result, stage: { returningStreak, beatRival } }; }
 
 // Utan säsong: oförändrat all-time-beteende (används av testerna). Med säsong: spelarens
 // vinster filtreras och regeringar klampas mot fönstret, och "nu" fryses vid säsongsslutet

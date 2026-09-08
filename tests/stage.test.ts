@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ballistic, ease, kf, warpHit } from '../components/stage/anim';
 import { SCENES, SCENE_KEYS } from '../components/stage/scenes';
 import { locate, sequenceFor } from '../components/stage/sequence';
+import { isStreakReturn } from '../lib/domain/stage-triggers';
 import type { SceneCtx } from '../components/stage/types';
 
 const ctx: SceneCtx = { winner: 'Axel', deposed: 'Lanhage', streak: 6, previousStreak: 5, days: 42, cosmic: false, crowningWord: 'kröning', tyrannyWord: 'Tyranni' };
@@ -24,20 +25,25 @@ describe('anim', () => {
 });
 
 describe('sequenceFor', () => {
-  const base = { eventType: 'NEW_KING', winnerName: 'Axel', deposedName: 'Lanhage', streakCount: 1, previousStreakCount: 1, isNewRuler: true, isFriday: false, daysSinceLastWin: null };
+  const base = { eventType: 'NEW_KING', winnerName: 'Axel', deposedName: 'Lanhage', streakCount: 1, previousStreakCount: 1, isNewRuler: true, isFriday: false, daysSinceLastWin: null, returningStreak: false, beatRival: false };
   it('försvar: exakt tre raka ger rådssalen, allt annat ingen scen', () => {
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 3 })).toEqual(['temple']);
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 4 })).toEqual([]);
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 2 })).toEqual([]);
     expect(sequenceFor({ ...base, deposedName: null })).toEqual([]);
   });
-  it('störtanden: 2–3 raka ger Mustafar, 4+ Dödsstjärnan, annars Cloud City eller Tantive', () => {
+  it('störtanden: 2–3 raka ger Mustafar, 4+ Dödsstjärnan', () => {
     expect(sequenceFor({ ...base, previousStreakCount: 2 })).toEqual(['mustafar']);
     expect(sequenceFor({ ...base, previousStreakCount: 3 })).toEqual(['mustafar']);
     expect(sequenceFor({ ...base, previousStreakCount: 4 })).toEqual(['deathstar']);
     expect(sequenceFor({ ...base, previousStreakCount: 7 })).toEqual(['deathstar']);
-    expect(sequenceFor({ ...base, previousStreakCount: 1 }, () => 0.1)).toEqual(['cloudcity']);
-    expect(sequenceFor({ ...base, previousStreakCount: 0 }, () => 0.9)).toEqual(['tantive']);
+  });
+  it('Vaders entré vid återkomst, Cloud City mot ärkefienden, slantsingling när båda gäller', () => {
+    expect(sequenceFor({ ...base, previousStreakCount: 1 })).toEqual([]);
+    expect(sequenceFor({ ...base, returningStreak: true })).toEqual(['tantive']);
+    expect(sequenceFor({ ...base, beatRival: true })).toEqual(['cloudcity']);
+    expect(sequenceFor({ ...base, returningStreak: true, beatRival: true }, () => 0.2)).toEqual(['tantive']);
+    expect(sequenceFor({ ...base, returningStreak: true, beatRival: true }, () => 0.8)).toEqual(['cloudcity']);
   });
   it('locate hittar rätt scen och lokal tid', () => {
     expect(locate([{ duration: 2 }, { duration: 3 }], 2.5)).toMatchObject({ index: 1, local: 0.5, total: 5 });
@@ -58,4 +64,18 @@ describe('scenerna', () => {
     for (const w of scene.words(ctx)) expect(w.at).toBeLessThan(scene.duration);
     for (const c of scene.cues ?? []) expect(c.at).toBeLessThanOrEqual(scene.duration);
   });
+});
+
+describe('isStreakReturn', () => {
+  // Vinsterna i tidsordning skrivs här som de hände; funktionen får dem senaste först.
+  const history = (...names: string[]) => {
+    const out: { winnerId: string; streakCount: number }[] = [];
+    for (const n of names) { const prev = out[out.length - 1]; out.push({ winnerId: n, streakCount: prev?.winnerId === n ? prev.streakCount + 1 : 1 }); }
+    return out.reverse();
+  };
+  it('Axel, Axel, Calle, Lanhage → Axel: ja', () => expect(isStreakReturn(history('Axel', 'Axel', 'Calle', 'Lanhage'), 'Axel')).toBe(true));
+  it('Axel ×4, Lanhage → Axel: ja', () => expect(isStreakReturn(history('Axel', 'Axel', 'Axel', 'Axel', 'Lanhage'), 'Axel')).toBe(true));
+  it('Axel ×3, Lanhage, Calle, Aymen → Axel: nej, tre emellan', () => expect(isStreakReturn(history('Axel', 'Axel', 'Axel', 'Lanhage', 'Calle', 'Aymen'), 'Axel')).toBe(false));
+  it('Axel, Calle → Axel: nej, sviten var bara en', () => expect(isStreakReturn(history('Axel', 'Calle'), 'Axel')).toBe(false));
+  it('ingen tidigare vinst: nej', () => expect(isStreakReturn(history('Calle', 'Lanhage'), 'Axel')).toBe(false));
 });
