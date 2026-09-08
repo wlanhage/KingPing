@@ -25,19 +25,19 @@ describe('anim', () => {
 
 describe('sequenceFor', () => {
   const base = { eventType: 'NEW_KING', winnerName: 'Axel', deposedName: 'Lanhage', streakCount: 1, previousStreakCount: 1, isNewRuler: true, isFriday: false, daysSinceLastWin: null };
-  it('försvar: exakt tre raka ger rådssalen, exakt fyra Dödsstjärnan, allt annat ingen scen', () => {
+  it('försvar: exakt tre raka ger rådssalen, allt annat ingen scen', () => {
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 3 })).toEqual(['temple']);
-    expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 4 })).toEqual(['deathstar']);
-    expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 5 })).toEqual([]);
+    expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 4 })).toEqual([]);
     expect(sequenceFor({ ...base, isNewRuler: false, streakCount: 2 })).toEqual([]);
     expect(sequenceFor({ ...base, deposedName: null })).toEqual([]);
   });
-  it('störtanden: tre raka eller mer ger Mustafar, annars Cloud City eller Tantive', () => {
+  it('störtanden: 2–3 raka ger Mustafar, 4+ Dödsstjärnan, annars Cloud City eller Tantive', () => {
+    expect(sequenceFor({ ...base, previousStreakCount: 2 })).toEqual(['mustafar']);
     expect(sequenceFor({ ...base, previousStreakCount: 3 })).toEqual(['mustafar']);
-    expect(sequenceFor({ ...base, previousStreakCount: 6 })).toEqual(['mustafar']);
+    expect(sequenceFor({ ...base, previousStreakCount: 4 })).toEqual(['deathstar']);
+    expect(sequenceFor({ ...base, previousStreakCount: 7 })).toEqual(['deathstar']);
     expect(sequenceFor({ ...base, previousStreakCount: 1 }, () => 0.1)).toEqual(['cloudcity']);
-    expect(sequenceFor({ ...base, previousStreakCount: 2 }, () => 0.9)).toEqual(['tantive']);
-    expect(sequenceFor({ ...base, previousStreakCount: 3, deposedName: null })).toEqual([]);
+    expect(sequenceFor({ ...base, previousStreakCount: 0 }, () => 0.9)).toEqual(['tantive']);
   });
   it('locate hittar rätt scen och lokal tid', () => {
     expect(locate([{ duration: 2 }, { duration: 3 }], 2.5)).toMatchObject({ index: 1, local: 0.5, total: 5 });

@@ -14,21 +14,16 @@ export type StageEvent = {
 
 /**
  * Vilka scener en händelse får. Tom lista = ingen 3D-scen, den klassiska ceremonin visas.
- * Försvar: exakt tre raka ger rådssalen (Order 66), exakt fyra ger Dödsstjärnan som sprängs.
- * Störtande: en mästare med tre raka eller mer ger Mustafar, annars slumpas Cloud City eller
- * Vaders entré.
+ * Försvar: exakt tre raka ger rådssalen (Order 66).
+ * Störtande, efter den störtades svit: 2–3 raka ger Mustafar, 4 eller fler Dödsstjärnan som
+ * sprängs, annars slumpas Cloud City eller Vaders entré.
  */
 export function sequenceFor(ev: StageEvent, rand: () => number = Math.random): SceneKey[] {
-  if (!ev.isNewRuler) {
-    if (ev.streakCount === 3) return ['temple'];
-    if (ev.streakCount === 4) return ['deathstar'];
-    return [];
-  }
-  if (ev.deposedName) {
-    if (ev.previousStreakCount >= 3) return ['mustafar'];
-    return [rand() < 0.5 ? 'cloudcity' : 'tantive'];
-  }
-  return [];
+  if (!ev.isNewRuler) return ev.streakCount === 3 ? ['temple'] : [];
+  if (!ev.deposedName) return [];
+  if (ev.previousStreakCount >= 4) return ['deathstar'];
+  if (ev.previousStreakCount >= 2) return ['mustafar'];
+  return [rand() < 0.5 ? 'cloudcity' : 'tantive'];
 }
 
 /** Var i sekvensen tiden t befinner sig. */

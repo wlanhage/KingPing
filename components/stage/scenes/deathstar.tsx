@@ -6,7 +6,7 @@ import { decay, ease, kf, rng, span, warpHit } from '../anim';
 import type { Scene, Vec3 } from '../types';
 
 /*
- * DÖDSSTJÄRNAN. Fjärde raka: mästaren flyr ut ur stationen — en vit pingisboll — och spränger den bakom sig.
+ * DÖDSSTJÄRNAN. Någon bröt fyra raka eller mer: den störtades station är en vit pingisboll.
  *   0.0–2.4  Rymden: bara bollen. Så exploderar den — ett eldmoln bryter ut ur ytan.
  *   2.4–6.0  Inne i stationen: bakom en racket som flyger genom industriella schakt av balkar,
  *            rör och ljuspaneler. Laserskott bakifrån; racketen rullar undan.
@@ -131,8 +131,8 @@ export const deathstar: Scene = {
   words: (ctx) => [
     { at: 2.8, until: 4.4, text: 'Håll i er — nu blir det tajt!', style: 'subtitle' },
     { at: 8.4, until: 9.6, text: 'Kom igen, kom igen, kom igen…', style: 'subtitle' },
-    { at: 12.5, text: `${ctx.streak} RAKA`, size: 2.0, color: '#ffb347' },
-    { at: 13.1, text: `${ctx.winner} · ${ctx.streak >= 2 ? `${ctx.streak} raka` : ctx.crowningWord}`, style: 'name', size: 0.9 },
+    { at: 12.5, text: `${ctx.previousStreak} RAKA SPRÄNGDA`, size: 2.0, color: '#ffb347' },
+    { at: 13.1, text: `${ctx.winner} · ${ctx.crowningWord}`, style: 'name', size: 0.9 },
   ],
   cues: [{ at: 0.3, cue: 'hum' }, { at: BLOW1, cue: 'boom' }, ...BOLTS.map((at) => ({ at, cue: 'blast' as const })), { at: FRONT, cue: 'boom' }, { at: BOOM, cue: 'boom' }, { at: 12.5, cue: 'slam' }],
   fade: (t) => Math.max(1 - span(t, 0, 0.8), span(t, 12.0, 12.5) * 0.94),
