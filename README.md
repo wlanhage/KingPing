@@ -29,3 +29,4 @@ MVP byggd med Next.js, Prisma och Slack-integration.
 - Sammanställ vad användarna tänker om time on throne metric....
 - Ta bort write access för @rosendahlaxel
 - Fundera på om stora stygga Bandeiras ska vara med som tema..
+- Va
