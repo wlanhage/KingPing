@@ -30,10 +30,10 @@ export default async function Players() {
         {players.map((player) => {
           const portrait = playerPortrait(player.name, { theme, isKing: player.id === king?.playerId, characterIndex: characters[player.id] });
           return (
-            <Link className='card knight-card' key={player.id} href={`/players/${player.id}`}>
+            <Link className={`card knight-card${player.isActive ? '' : ' is-afk'}`} key={player.id} href={`/players/${player.id}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img className={`knight-sigil${portrait.character ? ' is-photo' : ''}`} src={portrait.src} alt='' width={44} height={44} />
-              <h3 style={{ margin: 0 }}>{player.name}</h3>
+              <h3 style={{ margin: 0 }}>{player.name}{!player.isActive && <span className='knight-afk'>💤 AFK</span>}</h3>
               {portrait.character && <p className='knight-alias'>{portrait.character.name}</p>}
               <p className='muted' style={{ marginBottom: 0 }}>{theme.profile.viewProfile}</p>
             </Link>

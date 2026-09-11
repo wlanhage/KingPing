@@ -50,8 +50,10 @@ const expected = (a: number, b: number) => 1 / (1 + 10 ** ((b - a) / 400));
  * ledig en vecka ska inte komma tillbaka till en sänkt rating. Priset är att summan av
  * all rating sakta stiger under en säsong. Det spelar ingen roll här — tabellen jämför
  * spelare med varandra inom en säsong, aldrig mot ett absolut tal eller mot en annan säsong.
+ *
+ * `isAfkAt` håller spelare som var AFK vid försvaret utanför fältets snitt — de satt inte vid bordet.
  */
-export function crownRatings(wins: RatedWin[]): Record<string, CrownRating> {
+export function crownRatings(wins: RatedWin[], isAfkAt: (playerId: string, at: Date) => boolean = () => false): Record<string, CrownRating> {
   // Elo är ordningsberoende. Anroparen samlar vinsterna per spelare och får dem därmed
   // grupperade, inte kronologiska — ordningen sätts här i stället för att litas på.
   const ordered = [...wins].sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime());
@@ -63,7 +65,8 @@ export function crownRatings(wins: RatedWin[]): Record<string, CrownRating> {
     if (!win.previousKingId) continue; // tom tron
 
     if (win.previousKingId === win.winnerId) {
-      const others = Object.entries(table).flatMap(([id, r]) => (id === win.winnerId ? [] : [r.rating]));
+      const at = new Date(win.occurredAt);
+      const others = Object.entries(table).flatMap(([id, r]) => (id === win.winnerId || isAfkAt(id, at) ? [] : [r.rating]));
       // Säsongens första försvar kan komma innan någon annan hunnit in i tabellen.
       const field = others.length ? others.reduce((sum, r) => sum + r, 0) / others.length : START_RATING;
       winner.rating += K_FACTOR * (1 - expected(winner.rating, field));

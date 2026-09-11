@@ -1,5 +1,5 @@
 import { prisma } from '../prisma';
-import { getLeaderboard } from './riket';
+import { getLeaderboard, isRanked, type LeaderboardRow } from './riket';
 import { clampedReignMs, listSeasons, winOccurredAtFilter, type SeasonWindow } from './season';
 import type { WeaveTransfer } from './weave';
 
@@ -36,7 +36,7 @@ export function extractTransfers(events: FinaleEventRow[]): {
 
 export type FinaleSummary = {
   season: { slug: string; name: string; theme: string; startedAt: string; endedAt: string | null };
-  standings: Awaited<ReturnType<typeof getLeaderboard>>;
+  standings: (LeaderboardRow & { rank: number })[];
   transfers: WeaveTransfer[];
   defences: Record<string, number>;
   timeline: FinaleTimelineItem[];
@@ -50,13 +50,16 @@ export type FinaleSummary = {
 };
 
 export async function buildFinaleSummary(season: SeasonWindow): Promise<FinaleSummary> {
-  const [standings, events, reigns, seasons] = await Promise.all([
+  const [everyone, events, reigns, seasons] = await Promise.all([
     getLeaderboard(season),
     prisma.winEvent.findMany({ where: { occurredAt: winOccurredAtFilter(season) }, orderBy: { occurredAt: 'asc' } }),
     prisma.reign.findMany(),
     listSeasons(),
   ]);
-  const name = (id: string | null | undefined) => standings.find((s) => s.id === id)?.name ?? 'okänd';
+  // Krönikans slutställning och domar gäller bara rankade — den som var AFK vid säsongsslutet
+  // ska inte kunna dömas som sist i tabellen. Namnen behövs ändå för hela säsongens kronbyten.
+  const standings = everyone.filter(isRanked);
+  const name = (id: string | null | undefined) => everyone.find((s) => s.id === id)?.name ?? 'okänd';
   const { transfers, defences, timeline } = extractTransfers(events);
 
   const topStreakEvent = [...events].sort((a, b) => b.streakCount - a.streakCount)[0] ?? null;

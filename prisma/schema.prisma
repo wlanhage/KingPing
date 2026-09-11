@@ -51,6 +51,17 @@ model Player {
   createdAt   DateTime  @default(now())
   wins        WinEvent[] @relation("Winner")
   reigns      Reign[]
+  afkPeriods  AfkPeriod[]
+}
+
+/// En period då spelaren varit AFK. `Player.isActive` är nu-läget; perioderna är historiken,
+/// så att en säsong kan avgöra vem som var AFK vid en viss tidpunkt.
+model AfkPeriod {
+  id        String    @id @default(cuid())
+  playerId  String
+  player    Player    @relation(fields: [playerId], references: [id])
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
 }
 
 model Reign {

@@ -1,17 +1,17 @@
 export const TREND_DAYS = 7;
 
-type Ranked = { id: string; rank: number; totalReignMs: number };
+type Ranked = { id: string; rank: number | null; totalReignMs: number };
 
 /**
  * Placeringsförändring per spelare: positivt tal = klättrat. Spelare utan trontid
  * i någon av tabellerna får null — deras inbördes ordning är godtycklig och en pil
- * skulle bara vara brus.
+ * skulle bara vara brus. Detsamma för den som var AFK (saknar placering) i någon av dem.
  */
 export function rankDeltas(current: Ranked[], past: Ranked[]): Record<string, number | null> {
-  const pastRank = new Map(past.filter((r) => r.totalReignMs > 0).map((r) => [r.id, r.rank]));
+  const pastRank = new Map(past.filter((r) => r.totalReignMs > 0 && r.rank !== null).map((r) => [r.id, r.rank as number]));
   return Object.fromEntries(current.map((r) => {
     const before = pastRank.get(r.id);
-    return [r.id, r.totalReignMs > 0 && before !== undefined ? before - r.rank : null];
+    return [r.id, r.totalReignMs > 0 && r.rank !== null && before !== undefined ? before - r.rank : null];
   }));
 }
 
