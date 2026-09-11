@@ -133,6 +133,7 @@ export const starWars: Theme = {
     reigning: 'Härskar just nu',
     resting: 'Vilar från tronrummet — men sköldarna är uppe',
     never: 'Har ännu inte satt sin fot i tronrummet',
+    hologram: 'Hjälp mig, {name}. Du är mitt enda hopp.',
     quoteKing: 'Historien skrivs fortfarande.',
     quoteFriday: 'Fredagarna fruktar detta namn.',
     quoteFormer: 'En gång mästare. Alltid farlig.',

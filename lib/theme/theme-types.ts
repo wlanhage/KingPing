@@ -98,6 +98,8 @@ export type Theme = {
   profile: {
     addTitle: string; addSubtitle: string; addPlaceholder: string; addButton: string; addBusy: string; addDuplicate: string;
     viewProfile: string; back: string;
+    /** Hologrammets replik på spelarsidan, i stället för temats citat. {name} byts mot spelarens namn. Utelämnas för teman utan hologram. */
+    hologram?: string;
     reigning: string; resting: string; never: string;
     quoteKing: string; quoteFriday: string; quoteFormer: string; quoteNever: string;
     rankTitle: string; rankSubtitle: string; rankTop: [string, string, string];

@@ -74,7 +74,9 @@ function reignLine(stats: any, copy: Theme['profile']): string {
 
 export function PlayerHero({ player, stats, theme, characterIndex }: { player: any; stats: any; theme: Theme; characterIndex?: number }) {
   const title = stats?.isCurrentKing ? `Nuvarande ${theme.roles.monarchLower}` : stats?.totalWins ? `Tidigare ${theme.roles.monarchLower}` : theme.roles.challenger;
-  const line = stats?.isCurrentKing ? theme.profile.quoteKing : stats?.fridayWins ? theme.profile.quoteFriday : stats?.totalWins ? theme.profile.quoteFormer : theme.profile.quoteNever;
+  const quote = stats?.isCurrentKing ? theme.profile.quoteKing : stats?.fridayWins ? theme.profile.quoteFriday : stats?.totalWins ? theme.profile.quoteFormer : theme.profile.quoteNever;
+  // Har temat ett hologram är det hologrammet som talar: en rad i stället för temats citat.
+  const hologram = theme.profile.hologram?.replace('{name}', player.name);
   const badges: ComputedPlayerBadge[] = stats?.badges ?? [];
   const tier = vesselTier(stats?.totalWins ?? 0);
   const toNext = winsToNextVessel(stats?.totalWins ?? 0);
@@ -112,7 +114,7 @@ export function PlayerHero({ player, stats, theme, characterIndex }: { player: a
             </p>
           )}
           <p className='royal-player-reign'>{reignLine(stats, theme.profile)}</p>
-          <p className='royal-player-quote'>&ldquo;{line}&rdquo;</p>
+          <p className={`royal-player-quote${hologram ? ' is-holo' : ''}`}>&ldquo;{hologram ?? quote}&rdquo;</p>
           <p className='royal-player-vessel'>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={vesselDataUri(tier, { colors: theme.colors, hull: theme.heraldry.hull })} alt='' width={104} height={49} />
