@@ -1,0 +1,54 @@
+{
+  "source": "https://swapi.dev/api",
+  "fetchedAt": "2026-09-11",
+  "ships": [
+    {
+      "name": "TIE Advanced x1",
+      "model": "Twin Ion Engine Advanced x1",
+      "starshipClass": "Starfighter",
+      "manufacturer": "Sienar Fleet Systems",
+      "lengthM": 9.2,
+      "hyperdrive": "1.0"
+    },
+    {
+      "name": "X-wing",
+      "model": "T-65 X-wing",
+      "starshipClass": "Starfighter",
+      "manufacturer": "Incom Corporation",
+      "lengthM": 12.5,
+      "hyperdrive": "1.0"
+    },
+    {
+      "name": "Millennium Falcon",
+      "model": "YT-1300 light freighter",
+      "starshipClass": "Light freighter",
+      "manufacturer": "Corellian Engineering Corporation",
+      "lengthM": 34.37,
+      "hyperdrive": "0.5"
+    },
+    {
+      "name": "CR90 corvette",
+      "model": "CR90 corvette",
+      "starshipClass": "corvette",
+      "manufacturer": "Corellian Engineering Corporation",
+      "lengthM": 150,
+      "hyperdrive": "2.0"
+    },
+    {
+      "name": "Star Destroyer",
+      "model": "Imperial I-class Star Destroyer",
+      "starshipClass": "Star Destroyer",
+      "manufacturer": "Kuat Drive Yards",
+      "lengthM": 1600,
+      "hyperdrive": "2.0"
+    },
+    {
+      "name": "Death Star",
+      "model": "DS-1 Orbital Battle Station",
+      "starshipClass": "Deep Space Mobile Battlestation",
+      "manufacturer": "Imperial Department of Military Research, Sienar Fleet Systems",
+      "lengthM": 120000,
+      "hyperdrive": "4.0"
+    }
+  ]
+}

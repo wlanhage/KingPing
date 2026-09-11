@@ -18,6 +18,37 @@ export type ThemeColors = {
 };
 
 /**
+ * Vad spelarens vapen och farkost KALLAS och hur skrovet ritas. Nivån på farkosten
+ * räknas tema-agnostiskt i lib/domain/heraldry.ts — temat namnger bara stegen.
+ */
+export type Vessel = {
+  name: string;
+  /** Kort faktarad under namnet. Kommer från SWAPI för galaxen; riket har ingen. */
+  note?: string;
+};
+
+/** En figur ur temats rollista. Bilden ligger under public/. */
+export type Character = { name: string; image: string; note?: string };
+
+export type Heraldry = {
+  sigilWord: string;
+  vesselWord: string;
+  /**
+   * Hur farkosten ritas. 'sail' = generiska segelskepp som skalas med nivån.
+   * 'swapi' = de sex SWAPI-skeppen, ritade var för sig — den är HÅRT kopplad till
+   * ordningen i swapi-starships.json, så byt inte vessels utan att byta ritningarna.
+   */
+  hull: 'sail' | 'swapi';
+  /** Farkosten på nivå 0–5, minsta först. Måste vara sex — en per steg i VESSEL_STEPS. */
+  vessels: [Vessel, Vessel, Vessel, Vessel, Vessel, Vessel];
+  /**
+   * Rollistan spelarna tilldelas ur. Utelämnas av teman utan porträtt — då ritas
+   * vapenskölden i stället, och inget annat i appen behöver veta skillnaden.
+   */
+  characters?: Character[];
+};
+
+/**
  * Ett tema äger rikets IDENTITET — vad saker heter och hur de ser ut — men aldrig
  * någon logik. Vem som förtjänar en badge avgörs fortsatt av badge-engine; temat
  * bestämmer bara vad badgen kallas.
@@ -77,6 +108,8 @@ export type Theme = {
     events: Record<string, string>;
     feudTitle: string; feudEmpty: string; feudTaken: string; feudLost: string; feudLead: string; feudBehind: string; feudTie: string;
   };
+  /** Spelarens vapen och flotta: namnen och skrovformen, aldrig nivån. */
+  heraldry: Heraldry;
   colors: ThemeColors;
   /** Rörlig bakgrund bakom hela sidan. Utelämnas för teman utan. */
   backdrop?: 'starfield';

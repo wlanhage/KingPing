@@ -88,6 +88,12 @@ export const realm: Theme = {
     feudBehind: 'Rivalen har övertaget. Hämnden väntar.',
     feudTie: 'Dödläge. Varje krona är ett krig.',
   },
+  heraldry: {
+    sigilWord: 'Vapensköld',
+    vesselWord: 'Skepp',
+    hull: 'sail',
+    vessels: [{ name: 'Eka' }, { name: 'Kogg' }, { name: 'Galeas' }, { name: 'Karack' }, { name: 'Drakskepp' }, { name: 'Regalskepp' }],
+  },
   colors: {
     bg: '#120d08',
     panel: '#1e1810',

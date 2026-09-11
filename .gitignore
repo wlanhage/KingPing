@@ -15,3 +15,6 @@ backups/
 *.aup3-shm
 *.aup3-wal
 .DS_Store
+
+# Mellanlandning för porträtthämtningen — transient, städas i skriptets finally.
+public/characters.incoming/

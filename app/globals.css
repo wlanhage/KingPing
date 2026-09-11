@@ -413,6 +413,32 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   font-style: italic;
 }
 
+.royal-player-alias {
+  margin: .2rem auto 0;
+  color: var(--gold);
+  font-size: 1rem;
+  letter-spacing: .02em;
+}
+
+.royal-player-alias .muted { font-size: .85rem; }
+
+.royal-player-vessel {
+  display: flex;
+  gap: .7rem;
+  align-items: center;
+  justify-content: center;
+  margin: .9rem auto 0;
+  color: var(--gold);
+  font-size: .98rem;
+}
+
+.royal-player-vessel img {
+  width: 104px;
+  height: auto;
+}
+
+.royal-player-vessel .muted { font-size: .86rem; }
+
 .royal-mobile-badges {
   display: none;
 }
@@ -1323,19 +1349,21 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 .add-knight-form .crown-btn { flex: 0 0 auto; margin-top: 0; }
 
 .knight-card { display: grid; justify-items: start; gap: .15rem; }
-.knight-initial {
-  display: grid;
-  width: 2.6rem;
-  height: 2.6rem;
+/* Vapnet bär sin egen guldring; ett foto behöver en egen. */
+.knight-sigil {
+  width: 2.9rem;
+  height: 2.9rem;
   margin-bottom: .4rem;
-  place-items: center;
-  border: 1px solid rgba(231, 194, 92, .45);
   border-radius: 999px;
-  background: radial-gradient(circle at 35% 28%, rgba(231, 194, 92, .16), transparent 45%), #1a130b;
+  object-fit: cover;
+}
+
+.knight-sigil.is-photo { border: 1px solid rgba(231, 194, 92, .55); }
+
+.knight-alias {
+  margin: 0;
   color: var(--gold);
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: .85rem;
 }
 .knight-card h3 { font-size: 1.15rem; }
 

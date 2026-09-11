@@ -1,0 +1,150 @@
+{
+  "source": "https://akabab.github.io/starwars-api/api/all.json",
+  "fetchedAt": "2026-09-11",
+  "people": [
+    {
+      "name": "Luke Skywalker",
+      "image": "/characters/luke-skywalker.jpg",
+      "species": "human",
+      "homeworld": "tatooine"
+    },
+    {
+      "name": "Darth Vader",
+      "image": "/characters/darth-vader.jpg",
+      "species": "human",
+      "homeworld": "tatooine"
+    },
+    {
+      "name": "Leia Organa",
+      "image": "/characters/leia-organa.jpg",
+      "species": "human",
+      "homeworld": "alderaan"
+    },
+    {
+      "name": "Han Solo",
+      "image": "/characters/han-solo.jpg",
+      "species": "human",
+      "homeworld": "corellia"
+    },
+    {
+      "name": "Chewbacca",
+      "image": "/characters/chewbacca.jpg",
+      "species": "wookiee",
+      "homeworld": "kashyyyk"
+    },
+    {
+      "name": "Obi-Wan Kenobi",
+      "image": "/characters/obi-wan-kenobi.jpg",
+      "species": "human",
+      "homeworld": "stewjon"
+    },
+    {
+      "name": "Yoda",
+      "image": "/characters/yoda.jpg",
+      "species": "yoda's species",
+      "homeworld": null
+    },
+    {
+      "name": "R2-D2",
+      "image": "/characters/r2-d2.jpg",
+      "species": "droid",
+      "homeworld": "naboo"
+    },
+    {
+      "name": "C-3PO",
+      "image": "/characters/c-3po.jpg",
+      "species": "droid",
+      "homeworld": "tatooine"
+    },
+    {
+      "name": "BB8",
+      "image": "/characters/bb8.jpg",
+      "species": "droid",
+      "homeworld": null
+    },
+    {
+      "name": "Boba Fett",
+      "image": "/characters/boba-fett.jpg",
+      "species": "human",
+      "homeworld": "kamino"
+    },
+    {
+      "name": "Jango Fett",
+      "image": "/characters/jango-fett.jpg",
+      "species": "human",
+      "homeworld": "concord dawn"
+    },
+    {
+      "name": "Palpatine",
+      "image": "/characters/palpatine.jpg",
+      "species": "human",
+      "homeworld": "naboo"
+    },
+    {
+      "name": "Lando Calrissian",
+      "image": "/characters/lando-calrissian.jpg",
+      "species": "human",
+      "homeworld": "socorro"
+    },
+    {
+      "name": "Darth Maul",
+      "image": "/characters/darth-maul.jpg",
+      "species": "dathomirian zabrak",
+      "homeworld": "dathomir"
+    },
+    {
+      "name": "Padmé Amidala",
+      "image": "/characters/padme-amidala.jpg",
+      "species": "human",
+      "homeworld": "naboo"
+    },
+    {
+      "name": "Anakin Skywalker",
+      "image": "/characters/anakin-skywalker.jpg",
+      "species": "human",
+      "homeworld": "tatooine"
+    },
+    {
+      "name": "Qui-Gon Jinn",
+      "image": "/characters/qui-gon-jinn.jpg",
+      "species": "human",
+      "homeworld": "coruscant"
+    },
+    {
+      "name": "Jabba Desilijic Tiure",
+      "image": "/characters/jabba-desilijic-tiure.jpg",
+      "species": "hutt",
+      "homeworld": "tatooine"
+    },
+    {
+      "name": "Jar Jar Binks",
+      "image": "/characters/jar-jar-binks.jpg",
+      "species": "gungan",
+      "homeworld": "naboo"
+    },
+    {
+      "name": "Dooku",
+      "image": "/characters/dooku.jpg",
+      "species": "human",
+      "homeworld": "serenno"
+    },
+    {
+      "name": "Ackbar",
+      "image": "/characters/ackbar.jpg",
+      "species": "mon calamari",
+      "homeworld": "mon cala"
+    },
+    {
+      "name": "Rey",
+      "image": "/characters/rey.jpg",
+      "species": "human",
+      "homeworld": "jakku"
+    },
+    {
+      "name": "Poe Dameron",
+      "image": "/characters/poe-dameron.jpg",
+      "species": "human",
+      "homeworld": "yavin 4"
+    }
+  ]
+}

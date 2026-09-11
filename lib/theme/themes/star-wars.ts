@@ -1,6 +1,25 @@
 import { galaxyFridayIntros, galaxyJesterRoasts, galaxyNationIntros, galaxySeasonEchoes, galaxyStreakTemplates } from '../../copy/galaxy';
 import { withNeutral } from '../../copy/neutral';
 import type { Theme } from '../theme-types';
+import swapi from './swapi-starships.json';
+import swapiPeople from './swapi-people.json';
+
+/**
+ * Flottan kommer från SWAPI, bakad till JSON av `npm run swapi` — riktiga skepp med
+ * riktiga längder, inte påhittade namn. Stegen är strikt växande i meter; skriptet
+ * vägrar skriva filen annars. Sex skepp är garanterat, därav tuple-castet.
+ */
+const swapiVessels = swapi.ships.map((s) => ({
+  name: s.name,
+  note: `${s.lengthM.toLocaleString('sv-SE')} m · ${s.starshipClass.toLowerCase()}`,
+})) as Theme['heraldry']['vessels'];
+
+/** Rollistan och porträtten, hämtade av `npm run swapi:people`. */
+const swapiCharacters = swapiPeople.people.map((p) => ({
+  name: p.name,
+  image: p.image,
+  note: [p.species, p.homeworld].filter(Boolean).join(' · ') || undefined,
+}));
 
 /**
  * Galaktiskt tema. Visar vad temalagret klarar: samma logik, helt annat rike.
@@ -140,6 +159,13 @@ export const starWars: Theme = {
   },
   backdrop: 'starfield',
   historyStyle: 'crawl',
+  heraldry: {
+    sigilWord: 'Insignier',
+    vesselWord: 'Farkost',
+    hull: 'swapi',
+    vessels: swapiVessels,
+    characters: swapiCharacters,
+  },
   colors: {
     bg: '#05070f',
     panel: '#0e1424',

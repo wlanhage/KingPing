@@ -5,6 +5,9 @@ import { themedBadge } from '@/lib/theme';
 import { getActiveTheme } from '@/lib/theme/server';
 import { OG_SIZE, OgFrame, ogFonts } from '@/lib/og/frame';
 import { siteUrl } from '@/lib/site-url';
+import { playerPortrait, vesselDataUri } from '@/lib/og/sigil';
+import { assignCharacters, vesselTier } from '@/lib/domain/heraldry';
+import { prisma } from '@/lib/prisma';
 
 export const alt = 'Spelarprofil';
 export const size = OG_SIZE;
@@ -18,6 +21,15 @@ export default async function Image({ params }: { params: Promise<{ playerId: st
   const c = theme.colors;
   const name = profile?.player.name ?? 'Okänd riddare';
   const s = profile?.stats;
+  const tier = vesselTier(s?.totalWins ?? 0);
+  const roster = await prisma.player.findMany({ select: { id: true, name: true, createdAt: true } });
+  const portrait = playerPortrait(name, {
+    theme,
+    isKing: !!s?.isCurrentKing,
+    characterIndex: assignCharacters(roster, theme.heraldry.characters?.length ?? 0)[playerId],
+  });
+  // Satori hämtar bilden själv och klarar inte en relativ sökväg; skölden är redan en data-uri.
+  const portraitSrc = portrait.character ? new URL(portrait.src, siteUrl()).toString() : portrait.src;
   const badges = (s?.badges ?? []).slice(0, 3).map((b) => themedBadge(b.definition, theme));
   const stats = s ? [
     ['Placering', s.currentRankByThroneTime ? `#${s.currentRankByThroneTime}` : '–'],
@@ -30,12 +42,14 @@ export default async function Image({ params }: { params: Promise<{ playerId: st
     (
       <OgFrame theme={theme}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 44 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 190, height: 190, borderRadius: 999, border: `4px solid ${c.gold}`, background: c.panel, fontSize: 96, color: c.gold }}>
-            {name.trim()[0]?.toUpperCase() ?? '–'}
-          </div>
+          <img src={portraitSrc} width={190} height={190} style={{ borderRadius: 999, objectFit: 'cover', border: `4px solid ${c.gold}` }} alt='' />
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', fontSize: 24, letterSpacing: 8, color: c.muted, textTransform: 'uppercase' }}>{theme.appName}</div>
+            <div style={{ display: 'flex', fontSize: 24, letterSpacing: 8, color: c.muted, textTransform: 'uppercase' }}>{portrait.character?.name ?? theme.appName}</div>
             <div style={{ display: 'flex', marginTop: 10, fontSize: 84, lineHeight: 1.05, color: c.gold }}>{name}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 6, fontSize: 26, color: c.muted }}>
+              <img src={vesselDataUri(tier, { colors: c, hull: theme.heraldry.hull })} width={120} height={56} alt='' />
+              <span>{theme.heraldry.vessels[tier].name}</span>
+            </div>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 28, marginTop: 44 }}>
