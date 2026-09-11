@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const result = await recordWin(body.winnerId, body.note);
+    const result = await recordWin(body.winnerId, body.note, { actor: 'web' });
     return Response.json(result);
   } catch (e: any) {
     return Response.json({ error: e.message }, { status: 400 });

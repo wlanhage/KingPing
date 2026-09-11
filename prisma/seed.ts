@@ -21,7 +21,7 @@ async function main() {
       'Anna', 'Anna',                 // Anna tar två raka
     ];
     for (const n of sequence) {
-      await recordWin(byName[n]);
+      await recordWin(byName[n], undefined, { actor: 'seed' });
     }
   }
 }

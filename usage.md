@@ -18,6 +18,7 @@
 
 ## Settings (`/settings`)
 - Visar om Slack-env är konfigurerade (utan att exponera hemligheter).
+- Visar loggboken: de senaste ändringarna i riket (kröningar, nya spelare, säsongsbyten) med tidpunkt och varifrån de gjordes. Appen har ingen inloggning, så loggen visar yta (`web`, `cli:namn`) — inte person.
 
 ## API (MVP)
 - `GET /api/state`
