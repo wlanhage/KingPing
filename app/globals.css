@@ -259,6 +259,19 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   object-fit: cover;
 }
 
+/* I galaxen är porträttet ett hologram: blåtonat, skanlinjer, ett svep och flimmer. */
+[data-theme='star-wars'] .royal-avatar { overflow: hidden; color: #bfe0ff; text-shadow: 0 0 14px #6fb3ff;
+  background: radial-gradient(circle at 50% 40%, rgba(90, 170, 255, .3), rgba(8, 18, 48, .75) 72%);
+  box-shadow: 0 0 22px rgba(78, 161, 224, .5), inset 0 0 34px rgba(78, 161, 224, .3); animation: holo-flicker 6s steps(1, end) infinite; }
+[data-theme='star-wars'] .royal-avatar img { filter: grayscale(1) sepia(1) hue-rotate(178deg) saturate(3.4) brightness(1.15) contrast(1.05); opacity: .92; }
+[data-theme='star-wars'] .royal-avatar::after { content: ''; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
+  background: repeating-linear-gradient(180deg, rgba(120, 190, 255, .16) 0 2px, transparent 2px 5px), linear-gradient(180deg, transparent 0 42%, rgba(170, 215, 255, .35) 50%, transparent 58% 100%);
+  background-size: 100% 100%, 100% 300%; animation: holo-sweep 3.2s linear infinite; }
+.royal-player-quote.is-holo { color: #8ac4ff; text-shadow: 0 0 10px rgba(110, 179, 255, .8); animation: holo-flicker 6s steps(1, end) -2s infinite; }
+@keyframes holo-sweep { from { background-position: 0 0, 0 -100%; } to { background-position: 0 0, 0 200%; } }
+@keyframes holo-flicker { 0%, 100% { opacity: 1; } 7% { opacity: .75; } 8% { opacity: 1; } 43% { opacity: .88; } 44.5% { opacity: 1; } 71% { opacity: .8; } 72% { opacity: 1; } 73% { opacity: .92; } 74% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { [data-theme='star-wars'] .royal-avatar, [data-theme='star-wars'] .royal-avatar::after, .royal-player-quote.is-holo { animation: none; } }
+
 .royal-orbit-badge {
   position: absolute;
   display: grid;
