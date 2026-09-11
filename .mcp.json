@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "rundpingisriket": {
+      "command": "npx",
+      "args": ["tsx", "scripts/mcp.ts"],
+      "env": { "KINGPING_URL": "http://localhost:3030" }
+    }
+  }
+}
