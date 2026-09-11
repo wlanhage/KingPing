@@ -1174,6 +1174,14 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   cursor: not-allowed;
 }
 
+/* I galaxen är knappen ett sabelfäste: bladet tänds längs underkanten när man håller över den. */
+[data-theme='star-wars'] .crown-btn { position: relative; }
+[data-theme='star-wars'] .crown-btn::after { content: ''; position: absolute; left: .55rem; right: .55rem; bottom: -.5rem; height: .32rem; border-radius: 999px; pointer-events: none; opacity: 0;
+  background: linear-gradient(90deg, #ffffff, #e2f2ff 35%, #8ac4ff); box-shadow: 0 0 6px #8ac4ff, 0 0 14px #4ea1e0, 0 0 30px rgba(78, 161, 224, .7);
+  transform: scaleX(0); transform-origin: left center; transition: transform .24s cubic-bezier(.2, .9, .3, 1), opacity .1s; }
+[data-theme='star-wars'] .crown-btn:hover:not(:disabled)::after, [data-theme='star-wars'] .crown-btn:focus-visible:not(:disabled)::after { transform: scaleX(1); opacity: 1; }
+[data-theme='star-wars'] .crown-btn:hover:not(:disabled) { box-shadow: 0 0 0 1px rgba(138, 196, 255, .45), 0 8px 26px rgba(78, 161, 224, .35); }
+
 .crown-hint {
   margin: .2rem 0 0;
   color: var(--muted);

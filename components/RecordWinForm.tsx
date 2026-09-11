@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Coronation, type CoronationCopy, type CoronationEvent, type LaneWords } from './Coronation';
+import { Coronation, playIgniteHint, type CoronationCopy, type CoronationEvent, type LaneWords } from './Coronation';
 
 export type WinFormCopy = { crown: string; crowning: string; crowningNow: string; coronation: CoronationCopy; lane: LaneWords };
 
@@ -114,7 +114,7 @@ export function RecordWinForm({ players, lastWinAt, cooldownMs, copy }: { player
           <input className='crown-input' placeholder='Vad hände? Ett ord eller en hel saga' value={note} onChange={(e) => setNote(e.target.value)} disabled={onCooldown} />
         </label>
 
-        <button className='crown-btn' disabled={!winnerId || onCooldown}>
+        <button className='crown-btn' disabled={!winnerId || onCooldown} onMouseEnter={() => { if (copy.coronation.sound === 'march') playIgniteHint(); }}>
           {onCooldown ? `Ny vinnare om ${formatCountdown(remainingMs)}` : `${copy.crown} ${selected?.name ?? 'vinnaren'}`}
         </button>
 

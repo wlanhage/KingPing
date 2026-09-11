@@ -202,6 +202,27 @@ function playDroidBeeps(ctx: AudioContext, master: GainNode, at: number) {
 
 /* ── Scenens ljud: sabeln som tänds och brummar, dunsar ── */
 
+let hintAudio: { ctx: AudioContext; master: GainNode; lastAt: number } | null = null;
+
+/**
+ * Snap-hiss när man håller över Upphöj-knappen. Webbläsaren släpper inte ljud förrän sidan
+ * fått ett klick, så innan dess är den tyst. Högst en tändning per par sekunder.
+ */
+export function playIgniteHint() {
+  if (typeof window === 'undefined' || !navigator.userActivation?.hasBeenActive) return;
+  if (!hintAudio) {
+    const ctx = new AudioContext();
+    const master = ctx.createGain();
+    master.gain.value = 0.2;
+    master.connect(ctx.destination);
+    hintAudio = { ctx, master, lastAt: -10 };
+  }
+  const now = hintAudio.ctx.currentTime;
+  if (hintAudio.ctx.state !== 'running' || now - hintAudio.lastAt < 3) return;
+  hintAudio.lastAt = now;
+  playCueSound(hintAudio.ctx, hintAudio.master, 'ignite');
+}
+
 function playCueSound(ctx: AudioContext, master: GainNode, cue: CueName) {
   const now = ctx.currentTime;
   const noise = (at: number, dur: number, freq: number, vol: number) => {
