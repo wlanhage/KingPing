@@ -2,6 +2,8 @@ import type { ComputedPlayerBadge } from '@/lib/badges/badge-types';
 import { formatDuration } from '@/lib/format';
 import type { Theme } from '@/lib/theme';
 import { BadgeIcon } from '@/components/badges/BadgeIcon';
+import { vesselTier, winsToNextVessel } from '@/lib/domain/heraldry';
+import { playerPortrait, vesselDataUri } from '@/lib/og/sigil';
 
 type Rarity = 'common' | 'rare' | 'epic' | 'legendary' | 'mythical';
 
@@ -70,11 +72,14 @@ function reignLine(stats: any, copy: Theme['profile']): string {
   return copy.never;
 }
 
-export function PlayerHero({ player, stats, theme }: { player: any; stats: any; theme: Theme }) {
-  const initials = player.name.split(' ').map((s: string) => s[0]).join('').slice(0, 1).toUpperCase();
+export function PlayerHero({ player, stats, theme, characterIndex }: { player: any; stats: any; theme: Theme; characterIndex?: number }) {
   const title = stats?.isCurrentKing ? `Nuvarande ${theme.roles.monarchLower}` : stats?.totalWins ? `Tidigare ${theme.roles.monarchLower}` : theme.roles.challenger;
   const line = stats?.isCurrentKing ? theme.profile.quoteKing : stats?.fridayWins ? theme.profile.quoteFriday : stats?.totalWins ? theme.profile.quoteFormer : theme.profile.quoteNever;
   const badges: ComputedPlayerBadge[] = stats?.badges ?? [];
+  const tier = vesselTier(stats?.totalWins ?? 0);
+  const toNext = winsToNextVessel(stats?.totalWins ?? 0);
+  const vessel = theme.heraldry.vessels[tier];
+  const portrait = playerPortrait(player.name, { theme, isKing: !!stats?.isCurrentKing, characterIndex });
   const topBadges = sortBadges(badges).slice(0, 8);
 
   return (
@@ -91,20 +96,33 @@ export function PlayerHero({ player, stats, theme }: { player: any; stats: any; 
           ))}
 
           <div className={`royal-avatar${stats?.isCurrentKing ? ' is-king' : ''}`}>
-            {player.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={player.imageUrl} alt={`${player.name} profilbild`} />
-            ) : (
-              <span>{initials}</span>
-            )}
+            {/* Figur ur temats rollista, annars vapnet ritat ur namnet — se playerPortrait. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={portrait.src} alt={portrait.alt} />
           </div>
         </div>
 
         <div className='royal-player-identity'>
           <h1>{player.name}</h1>
           <p className='royal-player-title'>{title}</p>
+          {portrait.character && (
+            <p className='royal-player-alias'>
+              <strong>{portrait.character.name}</strong>
+              {portrait.character.note && <span className='muted'> · {portrait.character.note}</span>}
+            </p>
+          )}
           <p className='royal-player-reign'>{reignLine(stats, theme.profile)}</p>
           <p className='royal-player-quote'>&ldquo;{line}&rdquo;</p>
+          <p className='royal-player-vessel'>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={vesselDataUri(tier, { colors: theme.colors, hull: theme.heraldry.hull })} alt='' width={104} height={49} />
+            <span>
+              <strong>{vessel.name}</strong>
+              {vessel.note && <span className='muted'> · {vessel.note}</span>}
+              <br />
+              <span className='muted'>{toNext === null ? `Flottans största ${theme.heraldry.vesselWord.toLowerCase()}` : `${toNext} vinster till nästa`}</span>
+            </span>
+          </p>
         </div>
 
         <div className='royal-mobile-badges'>

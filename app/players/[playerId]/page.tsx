@@ -16,6 +16,7 @@ import { formatDate } from '@/lib/format';
 import { nextBadges } from '@/lib/badges/badge-progress';
 import { formatDuration, formatShortDuration, formatRelativeDate } from '@/lib/format';
 import { getTheme, themedBadge } from '@/lib/theme';
+import { assignCharacters } from '@/lib/domain/heraldry';
 
 export async function generateMetadata({ params }: { params: Promise<{ playerId: string }> }) {
   const { playerId } = await params;
@@ -32,6 +33,9 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
   // Säsongens eget tema, så att en arkiverad säsong behåller sina namn (Kejsaren, inte Darth Vader).
   const theme = getTheme(season.theme);
   const weekdayWins = await getPlayerWeekdayWins(playerId, profile.season);
+  // Figuren tilldelas mot hela truppen, så samma spelare får samma figur överallt.
+  const roster = await prisma.player.findMany({ select: { id: true, name: true, createdAt: true } });
+  const characterIndex = assignCharacters(roster, theme.heraldry.characters?.length ?? 0)[playerId];
   // Badge-namnen döps om av temat på ett ställe; orbiten och modalen ärver det.
   const s = { ...profile.stats, badges: (profile.stats.badges ?? []).map((b) => ({ ...b, definition: themedBadge(b.definition, theme) })) };
 
@@ -47,7 +51,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
           <Link href={`/players/${playerId}`}>Till pågående säsong →</Link>
         </p>
       )}
-      <PlayerHero player={profile.player} stats={s} theme={theme} />
+      <PlayerHero player={profile.player} stats={s} theme={theme} characterIndex={characterIndex} />
       <BadgeStrip badges={s.badges ?? []} />
       <StatsGrid stats={[
         { label: 'Total tid på tronen', value: formatDuration(s.totalReignMs) },
