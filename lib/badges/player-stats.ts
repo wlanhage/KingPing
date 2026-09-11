@@ -1,6 +1,7 @@
 import { differenceInDays, subDays } from 'date-fns';
 import { countByWeekday, dayKey, hourOfDay } from '../domain/local-time';
 import type { GlobalStats, PlayerStats } from './badge-types';
+import { START_RATING } from '../domain/crown-rating';
 
 const durationMs = (start: Date, end?: Date | null) => (end ?? new Date()).getTime() - new Date(start).getTime();
 
@@ -46,7 +47,7 @@ export function calculatePlayerStats(player: any, currentKingId?: string | null,
   const firstWinAt = winDates.length ? new Date(Math.min(...winDates.map((d) => d.getTime()))) : null;
   const reignCount = reigns.length;
   const distinctVictims = new Set(wins.filter((w: any) => w.previousKingId && w.previousKingId !== w.winnerId).map((w: any) => w.previousKingId)).size;
-  return { playerId: player.id, totalWins, totalReignMs, longestReignMs, currentReignMs, currentStreak, longestStreak, fridayWins, winsLast30Days, winsLast7Days, daysSinceLastWin, daysSincePreviousWin, streaksBroken, biggestStreakBroken, takeoverWins, timesDethroned, averageReignMs, crownEfficiencyMsPerWin, isCurrentKing, winsByWeekday, earlyWins, lunchWins, lateWins, maxWinsInOneDay, firstWinAt, reignCount, distinctVictims, previousSeasonWins: null, maxNetTakeovers: 0, dominatedRivalId: null, stolenReignMs: 0 };
+  return { playerId: player.id, totalWins, totalReignMs, longestReignMs, currentReignMs, currentStreak, longestStreak, fridayWins, winsLast30Days, winsLast7Days, daysSinceLastWin, daysSincePreviousWin, streaksBroken, biggestStreakBroken, takeoverWins, timesDethroned, averageReignMs, crownEfficiencyMsPerWin, isCurrentKing, winsByWeekday, earlyWins, lunchWins, lateWins, maxWinsInOneDay, firstWinAt, reignCount, distinctVictims, previousSeasonWins: null, maxNetTakeovers: 0, dominatedRivalId: null, stolenReignMs: 0, crownRating: START_RATING, ratedRounds: 0 };
 }
 
 export function calculateGlobalStats(stats: PlayerStats[], currentKingId: string | null): GlobalStats {
