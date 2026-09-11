@@ -72,7 +72,7 @@ function reignLine(stats: any, copy: Theme['profile']): string {
 
 export function PlayerHero({ player, stats, theme }: { player: any; stats: any; theme: Theme }) {
   const initials = player.name.split(' ').map((s: string) => s[0]).join('').slice(0, 1).toUpperCase();
-  const title = stats?.isCurrentKing ? `Nuvarande ${theme.roles.monarchLower}` : stats?.totalWins ? `Tidigare ${theme.roles.monarchLower}` : theme.roles.challenger;
+  const title = stats?.isCurrentKing ? `Nuvarande ${theme.roles.monarchLower}` : stats?.isAfk ? '💤 AFK — utanför tabellen' : stats?.totalWins ? `Tidigare ${theme.roles.monarchLower}` : theme.roles.challenger;
   const quote = stats?.isCurrentKing ? theme.profile.quoteKing : stats?.fridayWins ? theme.profile.quoteFriday : stats?.totalWins ? theme.profile.quoteFormer : theme.profile.quoteNever;
   // Har temat ett hologram är det hologrammet som talar: en rad i stället för temats citat.
   const hologram = theme.profile.hologram?.replace('{name}', player.name);

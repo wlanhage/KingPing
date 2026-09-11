@@ -1338,6 +1338,8 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   font-weight: 700;
 }
 .knight-card h3 { font-size: 1.15rem; }
+.knight-card.is-afk { opacity: .6; }
+.knight-afk { margin-left: .5rem; font-size: .75rem; font-weight: 600; color: var(--muted); }
 
 /* ===== Utmärkelser (badge-codex) ===== */
 .badge-codex-group { display: grid; gap: .8rem; }
@@ -1384,6 +1386,9 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   justify-content: space-between;
   gap: .6rem;
 }
+.profile-topbar-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.afk-toggle { display: grid; gap: .3rem; justify-items: end; }
+.afk-toggle .crown-error { margin: 0; }
 
 .all-badges-btn {
   display: inline-flex;
@@ -1951,6 +1956,7 @@ html[data-theme='star-wars'] body {
 .lb-trend.flat { color: var(--muted); opacity: .6; }
 .lb-rating { font-variant-numeric: tabular-nums; font-weight: 700; color: #ffe2a1; }
 .lb-rating-empty { color: var(--muted); opacity: .6; }
+.lb-afk-row { opacity: .55; }
 
 /* Profil: vinster per veckodag */
 .weekday-panel { padding: 1.2rem 1.4rem 1rem; border: 1px solid var(--border); border-radius: 14px; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.18)), var(--panel); }

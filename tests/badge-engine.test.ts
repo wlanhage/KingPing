@@ -244,3 +244,28 @@ describe('stolenReign', () => {
     expect(r.axel).toBe(2 * 3_600_000);   // två timmar av Calles
   });
 });
+
+describe('AFK', () => {
+  // I produktion räknas globalStats bara på rankade spelare — AFK-spelaren läggs till efteråt.
+  const withAfk = (active: PlayerStats[], afk: PlayerStats) => { const c = ctx(active); c.playerStats[afk.playerId] = { ...afk, isAfk: true }; return c; };
+
+  it('AFK-spelaren får inga badges som jämförs med fältet och blockerar inte heller de aktiva', () => {
+    const c = withAfk([p('a', { totalReignMs: 500 }), p('b', { totalReignMs: 100 })], p('afk', { totalReignMs: 9_000 }));
+    expect(ids(getPlayerBadges('afk', c))).not.toContain('emperor');
+    expect(ids(getPlayerBadges('a', c))).toContain('emperor');
+  });
+
+  it('en vinstlös AFK-spelare är aldrig Jar Jar, och räknas inte bort från den aktiva Jar Jar', () => {
+    const c = withAfk([p('a', { totalWins: 1, totalReignMs: 100 }), p('b', {})], p('afk', {}));
+    expect(ids(getPlayerBadges('afk', c))).not.toContain('jar_jar');
+    expect(ids(getPlayerBadges('b', c))).toContain('jar_jar');
+  });
+
+  it('egna meriter står kvar, men ingen roast för att inte vinna under frånvaron', () => {
+    const c = withAfk([p('a', {})], p('afk', { totalWins: 6, longestStreak: 3, daysSinceLastWin: 40 }));
+    const res = ids(getPlayerBadges('afk', c));
+    expect(res).toEqual(expect.arrayContaining(['five_crowns', 'dynasty_founder']));
+    expect(res).not.toContain('frozen');
+    expect(res).not.toContain('cold');
+  });
+});

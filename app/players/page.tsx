@@ -23,9 +23,9 @@ export default async function Players() {
 
       <section className='grid cols-3'>
         {players.map((player) => (
-          <Link className='card knight-card' key={player.id} href={`/players/${player.id}`}>
+          <Link className={`card knight-card${player.isActive ? '' : ' is-afk'}`} key={player.id} href={`/players/${player.id}`}>
             <span className='knight-initial' aria-hidden>{player.name.trim()[0]?.toUpperCase() ?? '–'}</span>
-            <h3 style={{ margin: 0 }}>{player.name}</h3>
+            <h3 style={{ margin: 0 }}>{player.name}{!player.isActive && <span className='knight-afk'>💤 AFK</span>}</h3>
             <p className='muted' style={{ marginBottom: 0 }}>{theme.profile.viewProfile}</p>
           </Link>
         ))}
