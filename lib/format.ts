@@ -26,6 +26,12 @@ export function formatDate(date?: Date | string | null): string {
   return format(new Date(date), 'd MMM yyyy', { locale: sv });
 }
 
+// Loggboken behöver klockslag: flera händelser samma dag ska gå att skilja åt och ordna.
+export function formatDateTime(date?: Date | string | null): string {
+  if (!date) return 'Aldrig';
+  return format(new Date(date), 'd MMM HH:mm', { locale: sv });
+}
+
 export function formatRelativeDate(date?: Date | string | null): string {
   if (!date) return 'Aldrig';
   const parsed = new Date(date);

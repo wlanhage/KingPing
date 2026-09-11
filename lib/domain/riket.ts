@@ -3,6 +3,7 @@ import { dominance, stolenReign } from '../badges/player-stats';
 import { EventType, NationState } from '@prisma/client';
 import { differenceInDays, isFriday } from 'date-fns';
 import { prisma } from '../prisma';
+import { audit, describeWin, type Actor } from '../audit';
 import { realm } from '../theme/themes/realm';
 import { calculateGlobalStats, calculatePlayerStats } from '../badges/player-stats';
 import { getPlayerBadges } from '../badges/badge-engine';
@@ -98,7 +99,7 @@ async function loadSeasonEcho(season: SeasonWindow, winnerId: string, previousKi
   return describeSeasonEcho(previous, await getLeaderboard(previous), winnerId, previousKingId);
 }
 
-export async function recordWin(winnerId:string,note?:string,opts:{ignoreCooldown?:boolean}={}){ const now=new Date(); const season=await resolveSeason(); const current=await getCurrentKing(season); const isSameKing=current?.playerId===winnerId;
+export async function recordWin(winnerId:string,note?:string,opts:{ignoreCooldown?:boolean;actor?:Actor}={}){ const now=new Date(); const season=await resolveSeason(); const current=await getCurrentKing(season); const isSameKing=current?.playerId===winnerId;
  // Streak och rikets läge räknas mot SÄSONGENS vinster. WinEvent.streakCount sparas vid
  // skrivning, så utan detta skulle en pågående streak fortsätta rakt över säsongsgränsen.
  const previousEvents=await prisma.winEvent.findMany({where:{occurredAt:winOccurredAtFilter(season)},orderBy:{occurredAt:'desc'},take:7}); const previousStreakCount=previousEvents[0]?.streakCount ?? 0; const streakCount=isSameKing?previousStreakCount+1:1;
@@ -114,6 +115,9 @@ export async function recordWin(winnerId:string,note?:string,opts:{ignoreCooldow
   await tx.$executeRaw`SELECT pg_advisory_xact_lock(4711)`;
   if(!opts.ignoreCooldown){ const clash=await tx.winEvent.findFirst({where:{occurredAt:{gt:new Date(now.getTime()-WIN_COOLDOWN_MS)}},select:{id:true}}); if(clash) throw new Error('En vinnare sattes nyss. Vänta innan nästa kröning.'); }
   if(current && !isSameKing){ await tx.reign.update({where:{id:current.id}, data:{endedAt:now}}); await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} if(!current){ await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} const win=await tx.winEvent.create({data:{winnerId,previousKingId:current?.playerId,occurredAt:now,eventType,streakCount,previousStreakCount,note,announcementText:ann.text,nationState,isFridayFinal:isFriday(now)}}); const a=await tx.announcement.create({data:{winEventId:win.id,text:ann.text,layout:ann.layout,persona:ann.persona}}); return {win,a}; });
+ // Loggen skrivs utanför transaktionen: en kröning som gått igenom ska aldrig kunna
+ // rullas tillbaka av att dess egen logg-rad fallerar.
+ await audit('WIN_RECORDED', describeWin({winner:winner.name, previousKing:current?.player.name ?? null, streakCount}), opts.actor);
  return { ...result, stage: { returningStreak, beatRival } }; }
 
 // Utan säsong: oförändrat all-time-beteende (används av testerna). Med säsong: spelarens

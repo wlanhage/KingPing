@@ -9,12 +9,19 @@
  * och öppnar nästa. Det är den enda operationen som ändrar befintliga rader, så den
  * kräver --yes. Utan flaggan skrivs bara ut vad som skulle hända.
  */
+import { userInfo } from 'node:os';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import type { AuditAction } from '../lib/audit';
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error('DATABASE_URL saknas.');
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+
+// I terminalen är aktören en känd person, till skillnad från i webben där ingen loggar in.
+// Scriptet skriver med sin egen klient i stället för lib/audit, som hör till appen.
+const actor = `cli:${userInfo().username}`;
+const logged = (action: AuditAction, summary: string) => prisma.auditLog.create({ data: { action, actor, summary } });
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -57,6 +64,7 @@ async function bootstrap() {
       endedAt: null,
     },
   });
+  await logged('SEASON_CREATED', `Säsong ${season.slug} (${season.name}) skapad, tema ${season.theme}.`);
   console.log(`Skapade säsong ${season.slug} (${season.name}) från ${startedAt.toISOString()}.`);
   return list();
 }
@@ -90,6 +98,7 @@ async function newSeason() {
     return tx.season.create({ data: { slug, name, theme, startedAt: now, endedAt: null } });
   });
 
+  await logged('SEASON_ROLLED', `${active ? `${active.slug} avslutad. ` : ''}Säsong ${created.slug} (${created.name}) startad, tema ${theme}.`);
   console.log(`\nSäsong ${created.slug} är igång. Tronen står tom tills någon vinner.`);
   return list();
 }
@@ -104,6 +113,7 @@ async function setTheme() {
     : await prisma.season.findFirst({ where: { endedAt: null }, orderBy: { startedAt: 'desc' } });
   if (!season) throw new Error('Hittade ingen säsong att uppdatera.');
   await prisma.season.update({ where: { id: season.id }, data: { theme } });
+  await logged('SEASON_THEME_CHANGED', `${season.slug}: tema ${season.theme} → ${theme}.`);
   console.log(`${season.slug}: tema ${season.theme} → ${theme}`);
   return list();
 }
