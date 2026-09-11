@@ -4,6 +4,7 @@ import { Cinzel, Cinzel_Decorative, EB_Garamond } from 'next/font/google';
 import { RealmLogo } from '@/components/RealmLogo';
 import { FakeAd } from '@/components/FakeAd';
 import { Starfield } from '@/components/Starfield';
+import { StarfieldShips } from '@/components/StarfieldShips';
 import { getActiveTheme } from '@/lib/theme/server';
 import { themeCssVars, type PageKey } from '@/lib/theme';
 import { siteUrl } from '@/lib/site-url';
@@ -57,6 +58,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <body>
         {theme.backdrop === 'starfield' && <Starfield />}
+        {theme.backdrop === 'starfield' && <StarfieldShips />}
         <div className='app-shell'>
           <header className='realm-banner'>
             <Link href='/' className='realm-crest'>
