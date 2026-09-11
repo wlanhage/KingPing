@@ -1840,6 +1840,17 @@ html[data-theme='star-wars'] body {
     linear-gradient(180deg, color-mix(in srgb, var(--bg) 85%, #000) 0%, var(--bg) 42%);
   background-attachment: fixed;
 }
+/* Skeppen (components/StarfieldShips.tsx): ett eget lager ovanpå stjärnfältet, med samma maskning nedåt. */
+.starfield-ships { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 45%, transparent 100%); mask-image: radial-gradient(120% 90% at 50% 0%, #000 45%, transparent 100%); }
+.starfield-ship { position: absolute; left: 0; width: 34px; height: 34px; opacity: 0; color: rgba(190, 205, 240, .6); filter: drop-shadow(0 0 3px rgba(120, 160, 255, .35)); }
+.starfield-ship svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+.starfield-ship-tie { top: 58%; animation: starfield-ship-ltr 75s linear 9s infinite; }
+.starfield-ship-xwing { top: 30%; animation: starfield-ship-rtl 97s linear 41s infinite; }
+@keyframes starfield-ship-ltr { 0% { transform: translateX(-12vw) rotate(-6deg); opacity: 0; } 1% { opacity: 1; } 12% { transform: translateX(112vw) rotate(-6deg); opacity: 1; } 12.5%, 100% { transform: translateX(-12vw) rotate(-6deg); opacity: 0; } }
+@keyframes starfield-ship-rtl { 0% { transform: translateX(112vw) rotate(4deg) scaleX(-1); opacity: 0; } 1% { opacity: 1; } 10% { transform: translateX(-12vw) rotate(4deg) scaleX(-1); opacity: 1; } 10.5%, 100% { transform: translateX(112vw) rotate(4deg) scaleX(-1); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .starfield-ship { display: none; } }
+
 /* Stjärnhimlen (components/Starfield.tsx): lager som driver med olika hastighet + blinkande stjärnor.
    Varje lager är 2× viewporten och flyttas exakt en kakel-period per varv, så loopen är sömlös. */
 .starfield { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
