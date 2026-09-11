@@ -14,11 +14,12 @@ if (!connectionString) throw new Error('DATABASE_URL saknas.');
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 
 async function main() {
-  const [players, reigns, winEvents, announcements] = await Promise.all([
+  const [players, reigns, winEvents, announcements, seasons] = await Promise.all([
     prisma.player.findMany(),
     prisma.reign.findMany(),
     prisma.winEvent.findMany(),
     prisma.announcement.findMany(),
+    prisma.season.findMany(),
   ]);
 
   const host = connectionString!.split('@')[1]?.split('/')[0] ?? 'okänd';
@@ -30,8 +31,9 @@ async function main() {
       reigns: reigns.length,
       winEvents: winEvents.length,
       announcements: announcements.length,
+      seasons: seasons.length,
     },
-    data: { players, reigns, winEvents, announcements },
+    data: { players, reigns, winEvents, announcements, seasons },
   };
 
   mkdirSync('backups', { recursive: true });
