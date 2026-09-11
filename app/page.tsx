@@ -22,7 +22,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ d
   const seasons = await listSeasons();
   const endedSeason = seasons.filter((s) => s.endedAt).sort((a, b) => b.endedAt!.getTime() - a.endedAt!.getTime())[0] ?? null;
   const king = kingdom.currentKing;
-  const players = await prisma.player.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true } });
+  const players = await prisma.player.findMany({ where: { isActive: true }, orderBy: { name: 'asc' }, select: { id: true, name: true } });
   const lastEvent = await prisma.winEvent.findFirst({ orderBy: { occurredAt: 'desc' }, select: { occurredAt: true } });
   const latestInSeason = await prisma.winEvent.findFirst({ where: { occurredAt: winOccurredAtFilter(await resolveSeason()) }, orderBy: { occurredAt: 'desc' }, select: { nationState: true } });
   const initial = king?.name?.trim()?.[0]?.toUpperCase() ?? '–';

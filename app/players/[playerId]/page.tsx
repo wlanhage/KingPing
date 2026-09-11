@@ -16,6 +16,10 @@ import { formatDate } from '@/lib/format';
 import { nextBadges } from '@/lib/badges/badge-progress';
 import { formatDuration, formatShortDuration, formatRelativeDate } from '@/lib/format';
 import { getTheme, themedBadge } from '@/lib/theme';
+import { afkSummary } from '@/lib/domain/afk';
+import { AfkToggle } from '@/components/player/AfkToggle';
+
+const days = (n: number) => `${n} ${n === 1 ? 'dag' : 'dagar'}`;
 
 export async function generateMetadata({ params }: { params: Promise<{ playerId: string }> }) {
   const { playerId } = await params;
@@ -34,12 +38,16 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
   const weekdayWins = await getPlayerWeekdayWins(playerId, profile.season);
   // Badge-namnen döps om av temat på ett ställe; orbiten och modalen ärver det.
   const s = { ...profile.stats, badges: (profile.stats.badges ?? []).map((b) => ({ ...b, definition: themedBadge(b.definition, theme) })) };
+  const afk = afkSummary(profile.player.afkPeriods);
 
   return (
     <main className='page-stack'>
       <div className='profile-topbar'>
         <Link href='/players' className='royal-back-link'>{theme.profile.back}</Link>
-        <AllBadgesButton badges={s.badges ?? []} />
+        <div className='profile-topbar-actions'>
+          {!season.endedAt && <AfkToggle playerId={playerId} isAfk={!profile.player.isActive} />}
+          <AllBadgesButton badges={s.badges ?? []} />
+        </div>
       </div>
       {season.endedAt && (
         <p className='season-banner'>
@@ -59,6 +67,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
         { label: 'Senaste vinst', value: formatRelativeDate(s.lastWinAt) },
         { label: 'Snittregering', value: formatShortDuration(s.averageReignMs) },
         { label: 'Kronrating', value: s.ratedRounds ? Math.round(s.crownRating) : '—', icon: '📊' },
+        ...(afk.times ? [{ label: 'AFK', value: afk.currentDays !== null ? `Sedan ${days(afk.currentDays)}` : `${afk.times} ${afk.times === 1 ? 'gång' : 'gånger'} · ${days(afk.totalDays)}`, icon: '💤' }] : []),
       ]}
       >
         <PlayerNemesis nemesis={profile.nemesis} playerName={profile.player.name} copy={theme.profile} />

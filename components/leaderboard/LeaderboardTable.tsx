@@ -39,13 +39,13 @@ export function LeaderboardTable({ rows, theme, trend, seasonSlug }: { rows: any
           {rows.map((r) => {
             const epithet = r.rank === 1 ? theme.epithets.rank1 : r.rank === 2 ? theme.epithets.rank2 : r.rank === 3 ? theme.epithets.rank3 : '';
             return (
-              <tr key={r.id} className={r.isCurrentKing ? 'lb-king-row' : ''}>
-                <td className='lb-rank' data-label='#'>{r.rank}<Trend delta={trend?.[r.id]} /></td>
+              <tr key={r.id} className={r.isCurrentKing ? 'lb-king-row' : r.isAfk ? 'lb-afk-row' : ''}>
+                <td className='lb-rank' data-label='#'>{r.rank ?? '—'}<Trend delta={trend?.[r.id]} /></td>
                 <td className='lb-player' data-label='Spelare'>
                   <Link href={playerHref(r.id)} className='lb-name'>{r.name}</Link>
                   {epithet && <div className='lb-epithet'>{epithet}</div>}
                 </td>
-                <td data-label='Status'>{r.isCurrentKing ? `👑 Nuvarande ${theme.roles.monarchLower}` : theme.roles.challenger}</td>
+                <td data-label='Status'>{r.isCurrentKing ? `👑 Nuvarande ${theme.roles.monarchLower}` : r.isAfk ? '💤 AFK' : theme.roles.challenger}</td>
                 <td data-label='Trontid'>{formatDuration(r.totalReignMs)}</td>
                 <td data-label='Kronrating'><CrownRating rating={r.crownRating} rounds={r.ratedRounds} /></td>
                 <td data-label='Vinster'>{r.totalWins}</td>
