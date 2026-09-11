@@ -26,15 +26,17 @@ const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) })
 
 async function main() {
   const backup = JSON.parse(readFileSync(file, 'utf8'));
-  const { players, reigns, winEvents, announcements } = backup.data;
+  const { players, reigns, winEvents, announcements, seasons } = backup.data;
 
   // Tömmer i beroendeordning innan återställning.
   await prisma.announcement.deleteMany();
   await prisma.winEvent.deleteMany();
   await prisma.reign.deleteMany();
   await prisma.player.deleteMany();
-  await prisma.season.deleteMany();
+  // Backuper tagna före seasons fanns med kan inte fylla tabellen igen — töm den inte.
+  if (seasons) await prisma.season.deleteMany();
 
+  if (seasons) await prisma.season.createMany({ data: seasons });
   await prisma.player.createMany({ data: players });
   await prisma.reign.createMany({ data: reigns });
   await prisma.winEvent.createMany({ data: winEvents });
@@ -46,6 +48,7 @@ async function main() {
     reigns: await prisma.reign.count(),
     winEvents: await prisma.winEvent.count(),
     announcements: await prisma.announcement.count(),
+    seasons: await prisma.season.count(),
   });
 }
 

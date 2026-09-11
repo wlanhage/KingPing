@@ -73,7 +73,9 @@ function reignLine(stats: any, copy: Theme['profile']): string {
 export function PlayerHero({ player, stats, theme }: { player: any; stats: any; theme: Theme }) {
   const initials = player.name.split(' ').map((s: string) => s[0]).join('').slice(0, 1).toUpperCase();
   const title = stats?.isCurrentKing ? `Nuvarande ${theme.roles.monarchLower}` : stats?.isAfk ? '💤 AFK — utanför tabellen' : stats?.totalWins ? `Tidigare ${theme.roles.monarchLower}` : theme.roles.challenger;
-  const line = stats?.isCurrentKing ? theme.profile.quoteKing : stats?.fridayWins ? theme.profile.quoteFriday : stats?.totalWins ? theme.profile.quoteFormer : theme.profile.quoteNever;
+  const quote = stats?.isCurrentKing ? theme.profile.quoteKing : stats?.fridayWins ? theme.profile.quoteFriday : stats?.totalWins ? theme.profile.quoteFormer : theme.profile.quoteNever;
+  // Har temat ett hologram är det hologrammet som talar: en rad i stället för temats citat.
+  const hologram = theme.profile.hologram?.replace('{name}', player.name);
   const badges: ComputedPlayerBadge[] = stats?.badges ?? [];
   const topBadges = sortBadges(badges).slice(0, 8);
 
@@ -104,7 +106,7 @@ export function PlayerHero({ player, stats, theme }: { player: any; stats: any; 
           <h1>{player.name}</h1>
           <p className='royal-player-title'>{title}</p>
           <p className='royal-player-reign'>{reignLine(stats, theme.profile)}</p>
-          <p className='royal-player-quote'>&ldquo;{line}&rdquo;</p>
+          <p className={`royal-player-quote${hologram ? ' is-holo' : ''}`}>&ldquo;{hologram ?? quote}&rdquo;</p>
         </div>
 
         <div className='royal-mobile-badges'>

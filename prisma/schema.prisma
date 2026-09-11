@@ -101,3 +101,15 @@ model Announcement {
   slackTs       String?
   createdAt     DateTime @default(now())
 }
+
+/// Loggbok över handlingar som ändrar riket. Avsiktligt utan främmande nycklar: en logg
+/// ska stå kvar oförändrad även om raden den beskriver skrivs om eller försvinner.
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  actor     String
+  summary   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
