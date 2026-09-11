@@ -25,8 +25,11 @@ MVP byggd med Next.js, Prisma och Slack-integration.
 - Modal för `/pingis win`
 - Slack signaturverifiering
 - CSV export
-- Börja använda elo-system för rejting. [Elo rating system](https://en.wikipedia.org/wiki/Elo_rating_system)
-- Sammanställ vad användarna tänker om time on throne metric....
+- ~~Börja använda elo-system för rejting.~~ Klassisk Elo går inte: vi sparar bara vem som vann
+  rundan, aldrig vilka som spelade den. I stället ratas kronbytena — se
+  `docs/superpowers/specs/2026-09-11-crown-rating-design.md`.
+- Sammanställ vad användarna tänker om time on throne metric. Kronratingen ligger nu bredvid
+  trontiden i tabellen så att de går att jämföra — trontiden rankar fortfarande.
 - Ta bort write access för @rosendahlaxel
 - Fundera på om stora stygga Bandeiras ska vara med som tema..
 - Va

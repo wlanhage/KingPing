@@ -2,7 +2,17 @@ import Link from 'next/link';
 import { formatDate, formatDuration } from '@/lib/format';
 import type { Theme } from '@/lib/theme';
 
-const headers = ['#', 'Spelare', 'Status', 'Trontid', 'Vinster', 'Längsta regering', 'Nuvarande streak', 'Längsta streak', 'Fredagsvinster', 'Senaste vinst'];
+const headers = ['#', 'Spelare', 'Status', 'Trontid', 'Kronrating', 'Vinster', 'Längsta regering', 'Nuvarande streak', 'Längsta streak', 'Fredagsvinster', 'Senaste vinst'];
+
+/**
+ * Kronratingen står bredvid trontiden med flit: de mäter olika saker. Trontiden räknar
+ * kalendern med — en fredagsvinst ger kronan hela helgen — medan ratingen bara rör sig
+ * när någon faktiskt vinner en runda.
+ */
+function CrownRating({ rating, rounds }: { rating?: number; rounds?: number }) {
+  if (!rounds) return <span className='lb-rating-empty' title='Har inte varit inblandad i något kronbyte den här säsongen'>—</span>;
+  return <span className='lb-rating' title={`${rounds} kröningar har flyttat ratingen`}>{Math.round(rating ?? 0)}</span>;
+}
 
 function Trend({ delta }: { delta: number | null | undefined }) {
   if (delta === null || delta === undefined) return null;
@@ -37,6 +47,7 @@ export function LeaderboardTable({ rows, theme, trend, seasonSlug }: { rows: any
                 </td>
                 <td data-label='Status'>{r.isCurrentKing ? `👑 Nuvarande ${theme.roles.monarchLower}` : theme.roles.challenger}</td>
                 <td data-label='Trontid'>{formatDuration(r.totalReignMs)}</td>
+                <td data-label='Kronrating'><CrownRating rating={r.crownRating} rounds={r.ratedRounds} /></td>
                 <td data-label='Vinster'>{r.totalWins}</td>
                 <td data-label='Längsta regering'>{formatDuration(r.longestReignMs)}</td>
                 <td data-label='Nuvarande streak'>{r.currentStreak}</td>

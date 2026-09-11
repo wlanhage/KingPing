@@ -636,7 +636,8 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 
 .royal-rank-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* auto-fit i stället för ett fast antal: korten är en per rankning och de blir fler. */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: .8rem;
 }
 
@@ -1924,6 +1925,8 @@ html[data-theme='star-wars'] body {
 .lb-trend.up { color: #6fcf8a; }
 .lb-trend.down { color: #e07070; }
 .lb-trend.flat { color: var(--muted); opacity: .6; }
+.lb-rating { font-variant-numeric: tabular-nums; font-weight: 700; color: #ffe2a1; }
+.lb-rating-empty { color: var(--muted); opacity: .6; }
 
 /* Profil: vinster per veckodag */
 .weekday-panel { padding: 1.2rem 1.4rem 1rem; border: 1px solid var(--border); border-radius: 14px; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.18)), var(--panel); }

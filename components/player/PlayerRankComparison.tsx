@@ -5,6 +5,7 @@ const RANKS: { key: string; label: string; icon: string }[] = [
   { key: 'rankByWins', label: 'Vinster', icon: '🏓' },
   { key: 'rankByLongestStreak', label: 'Längsta streak', icon: '🔥' },
   { key: 'rankByFridayWins', label: 'Fredagsvinster', icon: '📅' },
+  { key: 'rankByCrownRating', label: 'Kronrating', icon: '⚔️' },
 ];
 
 function ordinalSuffix(rank: number, top: [string, string, string]): string {

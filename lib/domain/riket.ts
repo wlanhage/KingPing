@@ -9,6 +9,7 @@ import { getPlayerBadges } from '../badges/badge-engine';
 import { clampReignToSeason, getPreviousSeason, isWinInSeason, resolveSeason, scopePlayerToSeason, seasonNow, winOccurredAtFilter, type SeasonWindow } from './season';
 import { describeSeasonEcho, ECHO_WINDOW, pickSeasonEcho, type SeasonEcho } from './season-echo';
 import { isStreakReturn } from './stage-triggers';
+import { crownRatings, START_RATING } from './crown-rating';
 import { getTheme } from '../theme';
 
 
@@ -139,9 +140,12 @@ export async function getLeaderboard(season?: SeasonWindow) {
   // Parvis övertag kräver allas vinster i säsongen — räknas här, inte per spelare.
   const seasonWins = players.flatMap((p) => p.wins.filter((w) => isWinInSeason(w.occurredAt, s)));
   const dom = dominance(seasonWins);
+  // Kronratingen räknas på samma underlag som övertagen, men är ordningsberoende —
+  // crownRatings sorterar därför själv, seasonWins kommer grupperat per spelare.
+  const ratings = crownRatings(seasonWins);
   const seasonReigns = players.flatMap((p) => p.reigns.flatMap((r) => { const c = clampReignToSeason(r, s, now); return c ? [{ playerId: p.id, startedAt: c.startedAt, endedAt: c.endedAt }] : []; }));
   const stolen = stolenReign(seasonWins, seasonReigns);
-  const rawRows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId, s, now, previous), maxNetTakeovers: dom[p.id]?.net ?? 0, dominatedRivalId: dom[p.id]?.rivalId ?? null, stolenReignMs: stolen[p.id] ?? 0 })).sort((a,b)=>b.totalReignMs-a.totalReignMs);
+  const rawRows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId, s, now, previous), maxNetTakeovers: dom[p.id]?.net ?? 0, dominatedRivalId: dom[p.id]?.rivalId ?? null, stolenReignMs: stolen[p.id] ?? 0, crownRating: ratings[p.id]?.rating ?? START_RATING, ratedRounds: ratings[p.id]?.played ?? 0 })).sort((a,b)=>b.totalReignMs-a.totalReignMs);
   const ranked = rawRows.map((row, i) => ({ ...row, rank: i + 1 }));
   const statMap = Object.fromEntries(ranked.map((r) => [r.id, r]));
   const globalStats = calculateGlobalStats(Object.values(statMap) as any, current?.playerId ?? null);
@@ -184,6 +188,12 @@ export async function getPlayerStats(playerId: string, season?: SeasonWindow) {
     rankByWins: [...board].sort((a,b)=>b.totalWins-a.totalWins).findIndex((r)=>r.id===playerId)+1 || null,
     rankByLongestStreak: [...board].sort((a,b)=>b.longestStreak-a.longestStreak).findIndex((r)=>r.id===playerId)+1 || null,
     rankByFridayWins: [...board].sort((a,b)=>b.fridayWins-a.fridayWins).findIndex((r)=>r.id===playerId)+1 || null,
+    // Ratingen räknas fram över hela säsongen på en gång, så den hämtas ur tabellen.
+    crownRating: statMap[playerId]?.crownRating ?? START_RATING,
+    ratedRounds: statMap[playerId]?.ratedRounds ?? 0,
+    // Bara spelare som varit med i ett kronbyte rankas. Övriga ligger kvar på startvärdet,
+    // och deras inbördes ordning vore ren gissning — samma skäl som trendpilarna utelämnas.
+    rankByCrownRating: board.filter((r)=>r.ratedRounds>0).sort((a,b)=>b.crownRating-a.crownRating).findIndex((r)=>r.id===playerId)+1 || null,
   };
 }
 

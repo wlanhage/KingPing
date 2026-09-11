@@ -58,6 +58,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
         { label: 'Fredagsvinster', value: s.fridayWins },
         { label: 'Senaste vinst', value: formatRelativeDate(s.lastWinAt) },
         { label: 'Snittregering', value: formatShortDuration(s.averageReignMs) },
+        { label: 'Kronrating', value: s.ratedRounds ? Math.round(s.crownRating) : '—', icon: '📊' },
       ]}
       >
         <PlayerNemesis nemesis={profile.nemesis} playerName={profile.player.name} copy={theme.profile} />
