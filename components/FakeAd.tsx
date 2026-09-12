@@ -1,25 +1,33 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 
+const ADS = [
+  { src: '/ads/axels-forehand-kurs.jpg', alt: 'Axels Forehand-Kurs — sluta försvara, börja bestämma', buy: 'KÖP NU!' },
+  { src: '/ads/william-och-oliver.png', alt: 'William & Oliver — Oliver Emote Pack', buy: 'SÄKRA OLIVER EMOTE PACK NU!' },
+];
+
 /**
- * FEJKANNONS: "Axels Forehand-Kurs".
+ * FEJKANNONS: slumpar en av annonserna i ADS.
  * Poppar upp av sig själv efter en slumpad fördröjning (default 15–100 s) och
  * visar annonsbilden i ~70 % av skärmen, med en riktig KÖP NU-knapp under och
  * ett riktigt X uppe till höger. Rent skämt — inget köps på riktigt.
  */
 export function FakeAd({
-  src = '/ads/axels-forehand-kurs.jpg',
   minSeconds = 15,
   maxSeconds = 100,
-}: { src?: string; minSeconds?: number; maxSeconds?: number }) {
+}: { minSeconds?: number; maxSeconds?: number }) {
   const [show, setShow] = useState(false);
+  const [ad, setAd] = useState(ADS[0]);
   const [imgBroken, setImgBroken] = useState(false);
   const closeRef = useRef<HTMLButtonElement | null>(null);
 
   // Slumpa fördröjning och schemalägg popupen (klient-only → ingen hydration-mismatch).
   useEffect(() => {
     const delayS = Math.floor(minSeconds + Math.random() * (maxSeconds - minSeconds + 1));
-    const id = setTimeout(() => setShow(true), delayS * 1000);
+    const id = setTimeout(() => {
+      setAd(ADS[Math.floor(Math.random() * ADS.length)]);
+      setShow(true);
+    }, delayS * 1000);
     return () => clearTimeout(id);
   }, [minSeconds, maxSeconds]);
 
@@ -47,11 +55,11 @@ export function FakeAd({
             <p className='fakead-fallback-note'>(Lägg annonsbilden i <code>public/ads/axels-forehand-kurs.jpg</code>.)</p>
           </div>
         ) : (
-          <img className='fakead-img' src={src} alt='Axels Forehand-Kurs — sluta försvara, börja bestämma' onError={() => setImgBroken(true)} draggable={false} />
+          <img className='fakead-img' src={ad.src} alt={ad.alt} onError={() => setImgBroken(true)} draggable={false} />
         )}
 
         <button type='button' className='fakead-buy' onClick={() => setShow(false)}>
-          KÖP NU!
+          {ad.buy}
         </button>
       </div>
     </div>
