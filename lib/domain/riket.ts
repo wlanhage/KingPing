@@ -2,6 +2,7 @@ import { countByWeekday } from './local-time';
 import { dominance, stolenReign } from '../badges/player-stats';
 import { EventType, NationState } from '@prisma/client';
 import { differenceInDays, isFriday } from 'date-fns';
+import { trace } from '@opentelemetry/api';
 import { prisma } from '../prisma';
 import { audit, describeWin, type Actor } from '../audit';
 import { realm } from '../theme/themes/realm';
@@ -118,6 +119,28 @@ export async function recordWin(winnerId:string,note?:string,opts:{ignoreCooldow
  // Loggen skrivs utanför transaktionen: en kröning som gått igenom ska aldrig kunna
  // rullas tillbaka av att dess egen logg-rad fallerar.
  await audit('WIN_RECORDED', describeWin({winner:winner.name, previousKing:current?.player.name ?? null, streakCount}), opts.actor);
+ // Kröningens innebörd läggs på request-spanet. Utan den kan telemetrin bara svara
+ // "en POST tog 200 ms" — aldrig vem som krönts, med vilken svit eller i vilket rikstillstånd.
+ // Sätts efter transaktionen: en kröning som rullats tillbaka ska aldrig synas som genomförd.
+ const span = trace.getActiveSpan();
+ span?.setAttributes({
+  'pingis.winner': winner.name,
+  // Tom tron är ett eget läge (säsongens första vinst), inte ett saknat värde.
+  'pingis.previous_king': current?.player.name ?? 'ingen',
+  'pingis.event_type': eventType,
+  'pingis.nation_state': nationState,
+  'pingis.streak': streakCount,
+  'pingis.previous_streak': previousStreakCount,
+  'pingis.first_win': isFirstWin,
+  'pingis.friday_final': isFriday(now),
+  'pingis.beat_rival': beatRival,
+  'pingis.season': season.slug,
+  'pingis.theme': season.theme,
+  // Samma default som audit() använder, annars skiljer sig loggen från spåret.
+  'pingis.actor': opts.actor ?? 'web',
+ });
+ // Saknas vid första vinsten. Ett påhittat 0 hade lästs som "vann igen samma dag".
+ if (daysSinceLastWin !== null) span?.setAttribute('pingis.days_since_last_win', daysSinceLastWin);
  return { ...result, stage: { returningStreak, beatRival } }; }
 
 // Utan säsong: oförändrat all-time-beteende (används av testerna). Med säsong: spelarens
