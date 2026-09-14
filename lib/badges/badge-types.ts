@@ -7,7 +7,8 @@ export type BadgeTone = 'prestige' | 'dramatic' | 'roast' | 'meme' | 'neutral';
 // både längsta-streak-trappan och Tronsförsvararen i kategorin 'streak', men de mäter
 // olika saker).
 /** `icon` är en bild-URL som ersätter emojin där badgen visas. */
-export type BadgeDefinition = { id: string; name: string; emoji: string; icon?: string; description: string; rarity: BadgeRarity; category: BadgeCategory; tone: BadgeTone; ladder?: string; tier?: number };
+/** `comparative`: badgen avgörs mot resten av fältet (flest, minst, näst mest) — ges aldrig till AFK-spelare. */
+export type BadgeDefinition = { id: string; name: string; emoji: string; icon?: string; description: string; rarity: BadgeRarity; category: BadgeCategory; tone: BadgeTone; ladder?: string; tier?: number; comparative?: boolean };
 export type BadgeId = string;
 export type PlayerStats = { playerId: string; totalWins: number; totalReignMs: number; longestReignMs: number; currentReignMs: number; currentStreak: number; longestStreak: number; fridayWins: number; winsLast30Days: number; winsLast7Days: number; daysSinceLastWin: number | null; daysSincePreviousWin: number | null; streaksBroken: number; biggestStreakBroken: number; takeoverWins: number; timesDethroned: number; averageReignMs: number; crownEfficiencyMsPerWin: number; isCurrentKing: boolean;
   /** Måndag = 0 … söndag = 6, i svensk tid. */
@@ -22,7 +23,9 @@ export type PlayerStats = { playerId: string; totalWins: number; totalReignMs: n
   stolenReignMs: number;
   /** Kronrating och antalet kröningar som flyttat den. Kräver hela säsongens vinster i
    * kronologisk ordning — fylls därför i av tabellbygget, inte per spelare. */
-  crownRating: number; ratedRounds: number };
+  crownRating: number; ratedRounds: number;
+  /** AFK vid säsongens "nu". Fylls i av tabellbygget. */
+  isAfk?: boolean };
 export type GlobalStats = { maxTotalReignMs: number; maxTotalWins: number; maxLongestStreak: number; maxFridayWins: number; maxWinsLast30Days: number; maxStreaksBroken: number; maxBiggestStreakBroken: number; maxCrownEfficiencyMsPerWin: number; currentKingId: string | null; earliestWinAt: Date | null; secondTotalReignMs: number; maxWinGrowth: number;
   /** Hur många spelare som saknar vinst, och minsta trontid bland alla — för Jar Jar Binks. */
   winlessCount: number; minTotalReignMs: number; maxStolenReignMs: number };

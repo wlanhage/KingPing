@@ -29,7 +29,7 @@ function collapseLadders(badges: ComputedPlayerBadge[]): ComputedPlayerBadge[] {
 export function getPlayerBadges(playerId: string, context: PlayerBadgeContext): ComputedPlayerBadge[] {
   const s = context.playerStats[playerId];
   if (!s) return [];
-  const all = Object.values(context.playerStats);
+  const all = Object.values(context.playerStats).filter((p) => !p.isAfk);
   const push = (items: ComputedPlayerBadge[], id: string, reason: string, value?: number | string) => {
     const d = BADGE_BY_ID[id as keyof typeof BADGE_BY_ID];
     if (d) items.push({ id, definition: d, reason, value });
@@ -111,6 +111,8 @@ export function getPlayerBadges(playerId: string, context: PlayerBadgeContext): 
   // TODO: eagle_has_landed kräver särskilt event/trigger i datamodell eller manuell/persisted tilldelning.
   // TODO: merge persisted earned badges here when historical badge table exists.
 
-  const unique = collapseLadders(Array.from(new Map(res.map((b) => [b.id, b])).values()));
+  // AFK: inga jämförelser med fältet, och ingen roast för att man inte vinner när man inte spelar.
+  const earned = s.isAfk ? res.filter((b) => !b.definition.comparative && b.definition.ladder !== 'inactivity') : res;
+  const unique = collapseLadders(Array.from(new Map(earned.map((b) => [b.id, b])).values()));
   return unique.sort((a, b) => (rarityRank[b.definition.rarity] - rarityRank[a.definition.rarity]) || ((categoryRank[a.definition.category] ?? 99) - (categoryRank[b.definition.category] ?? 99)) || a.definition.name.localeCompare(b.definition.name));
 }
