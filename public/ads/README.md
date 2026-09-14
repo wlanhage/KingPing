@@ -1,8 +1,9 @@
 # Fejkannons-bilder
 
-Lägg annonsbilden här:
+Bilderna som `FakeAd` (se `components/FakeAd.tsx`) slumpar mellan, med lika chans:
 
-- `axels-forehand-kurs.jpg` — bilden som `FakeAd`-komponenten visar.
+- `axels-forehand-kurs.jpg` — Axels Forehand-Kurs
+- `william-och-oliver.png` — William & Oliver, Oliver Emote Pack
+- `olivers-smash.jpg` — Lär dig Olivers smash
 
-`FakeAd` (se `components/FakeAd.tsx`) pekar på `/ads/axels-forehand-kurs.jpg`.
-Saknas filen visas en enkel fallback-ruta i stället.
+Saknas en fil visas en enkel fallback-ruta i stället.
