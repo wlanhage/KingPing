@@ -25,8 +25,8 @@ MVP byggd med Next.js, Prisma och Slack-integration.
 MCP-server med rikets data som verktyg (`scripts/mcp.ts`), för Claude Code/Desktop.
 - Den pratar med appens API-rutter, så starta `npm run dev` (eller sätt `KINGPING_URL` till prod-urlen).
 - `.mcp.json` i repot registrerar den i Claude Code — svara ja när den frågar.
-- Verktyg: `pingis_current_king`, `pingis_players`, `pingis_leaderboard`, `pingis_player`, `pingis_history`, `pingis_record_win`.
-- Protokollkoll utan databas: `node scripts/mcp.ts --selfcheck`
+- Verktyg: `pingis_current_king`, `pingis_players`, `pingis_leaderboard`, `pingis_player`, `pingis_history`, `pingis_record_win`. Spelare anges med namn eller id.
+- Test utan app och databas: `npx vitest run tests/mcp.test.ts` — startar servern precis som `.mcp.json` gör.
 
 ## Förbättringar
 - Modal för `/pingis win`

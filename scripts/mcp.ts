@@ -7,18 +7,16 @@
  *
  *   npx tsx scripts/mcp.ts                         # mot http://localhost:3030
  *   KINGPING_URL=https://riket.exempel npx tsx scripts/mcp.ts
- *   node scripts/mcp.ts --selfcheck                # protokollkoll, ingen app behövs
+ *   npx vitest run tests/mcp.test.ts               # startar servern som .mcp.json gör, mot en påhittad app
  *
  * ponytail: handrullad JSON-RPC (initialize + ping + tools/*). Byt till
  * @modelcontextprotocol/sdk först om vi vill ha resources, prompts eller sampling.
  */
-import { strict as assert } from 'node:assert';
-import { createServer } from 'node:http';
 import { createInterface } from 'node:readline';
 
-const SERVER_INFO = { name: 'rundpingisriket', version: '0.1.0' };
+const SERVER_INFO = { name: 'rundpingisriket', version: '0.2.0' };
 // Samma default som lib/site-url.ts: dev-servern kör på 3030.
-let baseUrl = (process.env.KINGPING_URL ?? 'http://localhost:3030').replace(/\/+$/, '');
+const baseUrl = (process.env.KINGPING_URL ?? 'http://localhost:3030').replace(/\/+$/, '');
 
 class RpcError extends Error {
   code: number;
@@ -41,7 +39,22 @@ async function api(path: string, init?: RequestInit) {
 }
 
 const schema = (properties: Record<string, unknown> = {}, required: string[] = []) => ({ type: 'object', properties, required, additionalProperties: false });
-const playerId = { type: 'string', description: 'Spelarens id (hämtas med pingis_players).' };
+const playerName = (description: string) => ({ type: 'string', description: `${description} Namn eller id, oavsett versaler.` });
+
+type Player = { id: string; name: string };
+type Badge = { definition: { emoji: string; name: string }; reason: string };
+
+async function findPlayer(query: string): Promise<Player> {
+  const players: Player[] = await api('/api/players');
+  const wanted = query.trim().toLowerCase();
+  const player = players.find((p) => p.id === query || p.name.toLowerCase() === wanted);
+  if (!player) throw new Error(`Ingen spelare matchar "${query}". Spelarna heter: ${players.map((p) => p.name).join(', ')}.`);
+  return player;
+}
+
+// Varje badge bär hela sin definition (beskrivning, raritet, kategori …), ungefär 70 % av tabellen.
+// Namn och skäl räcker för att svara på frågor om badges.
+const badgeLabels = (badges: Badge[]) => badges.map((b) => `${b.definition.emoji} ${b.definition.name}: ${b.reason}`);
 
 type Tool = {
   name: string;
@@ -54,16 +67,27 @@ type Tool = {
 const TOOLS: Tool[] = [
   { name: 'pingis_current_king', description: 'Vem som sitter på tronen nu, med regeringens start.', inputSchema: schema(), annotations: { readOnlyHint: true },
     run: () => api('/api/state') },
-  { name: 'pingis_players', description: 'Alla spelare med id och namn. Börja här när ett playerId behövs.', inputSchema: schema(), annotations: { readOnlyHint: true },
+  { name: 'pingis_players', description: 'Alla spelare med id, namn och om de är aktiva.', inputSchema: schema(), annotations: { readOnlyHint: true },
     run: () => api('/api/players') },
-  { name: 'pingis_leaderboard', description: 'Ligatabellen för aktuell säsong: rank, vinster, tid på tronen, streaks och badges.', inputSchema: schema(), annotations: { readOnlyHint: true },
-    run: () => api('/api/leaderboard') },
-  { name: 'pingis_player', description: 'En spelares profil: statistik, senaste kröningar och ärkefiende.', inputSchema: schema({ playerId }, ['playerId']), annotations: { readOnlyHint: true },
-    run: (a) => api(`/api/players/${encodeURIComponent(String(a.playerId))}`) },
-  { name: 'pingis_history', description: 'Senaste kröningarna ur krönikan, nyast först.', inputSchema: schema({ limit: { type: 'integer', minimum: 1, maximum: 100, description: 'Antal händelser (standard 10).' } }), annotations: { readOnlyHint: true },
-    run: async (a) => (await api('/api/history')).slice(0, a.limit ?? 10) },
-  { name: 'pingis_record_win', description: 'Kröner en ny vinnare. Skriver i databasen och syns direkt på sajten. Blockeras en stund efter föregående kröning.', inputSchema: schema({ winnerId: playerId, note: { type: 'string', description: 'Valfri notering om matchen.' } }, ['winnerId']), annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
-    run: (a) => api('/api/wins', { method: 'POST', body: JSON.stringify({ winnerId: a.winnerId, note: a.note }) }) },
+  { name: 'pingis_leaderboard', description: 'Ligatabellen för aktuell säsong: rank, vinster, tid på tronen (ms), streaks och badges.', inputSchema: schema(), annotations: { readOnlyHint: true },
+    run: async () => (await api('/api/leaderboard')).map((row: any) => ({ ...row, badges: badgeLabels(row.badges) })) },
+  { name: 'pingis_player', description: 'En spelares profil: statistik, badges, senaste kröningar och ärkefiende.', inputSchema: schema({ player: playerName('Spelaren.') }, ['player']), annotations: { readOnlyHint: true },
+    run: async (a) => {
+      const { id } = await findPlayer(String(a.player));
+      const profile = await api(`/api/players/${encodeURIComponent(id)}`);
+      return { ...profile, stats: { ...profile.stats, badges: badgeLabels(profile.stats.badges) } };
+    } },
+  { name: 'pingis_history', description: 'Senaste kröningarna ur krönikan, nyast först, med vinnarens och den avsattes namn.', inputSchema: schema({ limit: { type: 'integer', minimum: 1, maximum: 100, description: 'Antal händelser (standard 10).' } }), annotations: { readOnlyHint: true },
+    run: async (a) => {
+      const [events, players]: [any[], Player[]] = await Promise.all([api('/api/history'), api('/api/players')]);
+      const nameOf = new Map(players.map((p) => [p.id, p.name]));
+      return events.slice(0, a.limit ?? 10).map((e) => ({ ...e, winner: nameOf.get(e.winnerId), previousKing: nameOf.get(e.previousKingId) ?? null }));
+    } },
+  { name: 'pingis_record_win', description: 'Kröner en ny vinnare. Skriver i databasen och syns direkt på sajten. Blockeras en stund efter föregående kröning.', inputSchema: schema({ winner: playerName('Vinnaren.'), note: { type: 'string', description: 'Valfri notering om matchen.' } }, ['winner']), annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    run: async (a) => {
+      const winner = await findPlayer(String(a.winner));
+      return api('/api/wins', { method: 'POST', body: JSON.stringify({ winnerId: winner.id, note: a.note }) });
+    } },
 ];
 
 async function rpc(method: string, params: any): Promise<any> {
@@ -107,35 +131,5 @@ async function handle(line: string) {
   }
 }
 
-/** Kör protokollet mot en påhittad app, så att en trasig server syns utan databas. */
-async function selfcheck() {
-  const app = createServer((req, res) => {
-    res.setHeader('content-type', 'application/json');
-    if (req.url === '/api/history') return res.end(JSON.stringify([{ id: 'a' }, { id: 'b' }]));
-    if (req.url === '/api/wins') return res.writeHead(429).end(JSON.stringify({ error: 'Vänta 5 min.' }));
-    res.end(JSON.stringify({ url: req.url }));
-  }).listen(0, '127.0.0.1');
-  await new Promise((done) => app.once('listening', done));
-  baseUrl = `http://127.0.0.1:${(app.address() as any).port}`;
-
-  assert.equal((await rpc('initialize', { protocolVersion: '2025-06-18' })).serverInfo.name, 'rundpingisriket');
-  const { tools } = await rpc('tools/list', {});
-  assert.equal(tools.length, TOOLS.length);
-  assert.ok(!('run' in tools[0]), 'tools/list läcker run()');
-  assert.match((await rpc('tools/call', { name: 'pingis_current_king', arguments: {} })).content[0].text, /api\/state/);
-  assert.match((await rpc('tools/call', { name: 'pingis_player', arguments: { playerId: 'a b' } })).content[0].text, /a%20b/);
-  assert.equal(JSON.parse((await rpc('tools/call', { name: 'pingis_history', arguments: { limit: 1 } })).content[0].text).length, 1);
-  const denied = await rpc('tools/call', { name: 'pingis_record_win', arguments: { winnerId: 'x' } });
-  assert.equal(denied.isError, true);
-  assert.match(denied.content[0].text, /429.*Vänta/);
-  assert.equal((await rpc('tools/call', { name: 'pingis_nope', arguments: {} }).catch((e) => e)).code, -32602);
-  assert.equal((await rpc('resources/list', {}).catch((e) => e)).code, -32601);
-  app.close();
-  console.log('selfcheck ok');
-}
-
-if (process.argv.includes('--selfcheck')) {
-  await selfcheck();
-} else {
-  for await (const line of createInterface({ input: process.stdin })) void handle(line);
-}
+// Utan top-level await: tsx bygger scriptet som CommonJS, där det kraschar vid start.
+createInterface({ input: process.stdin }).on('line', (line) => void handle(line));
