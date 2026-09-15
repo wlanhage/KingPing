@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Coronation, type CoronationCopy, type CoronationEvent, type LaneWords } from './Coronation';
-import { resolveFinal } from '@/lib/domain/round';
+import { knockoutPlace, standingsFromKnockouts } from '@/lib/domain/standings';
 
 export type WinFormCopy = { crown: string; crowning: string; crowningNow: string; coronation: CoronationCopy; lane: LaneWords };
 
@@ -12,11 +12,10 @@ function formatCountdown(ms: number) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export function RecordWinForm({ players, startingGroup, lastWinAt, cooldownMs, copy }: { players: { id: string; name: string }[]; startingGroup: string[]; lastWinAt: string | null; cooldownMs: number; copy: WinFormCopy }) {
-  // Bordet börjar som förra rundans grupp: oftast noll tryck. Vinnare och finalförlorare är ett tryck var.
-  const [atTable, setAtTable] = useState<string[]>(startingGroup);
-  const [winnerPick, setWinnerPick] = useState<string | null>(null);
-  const [runnerUpPick, setRunnerUpPick] = useState<string | null>(null);
+export function RecordWinForm({ players, startingAbsent, lastWinAt, cooldownMs, copy }: { players: { id: string; name: string }[]; startingAbsent: string[]; lastWinAt: string | null; cooldownMs: number; copy: WinFormCopy }) {
+  // Förra rundans grupp börjar som med, övriga kryssade. `absent` = kryssade, `out` = utslagna i den ordning de trycktes in.
+  const [absent, setAbsent] = useState<string[]>(startingAbsent);
+  const [out, setOut] = useState<string[]>([]);
   const [note, setNote] = useState('');
   const [confirming, setConfirming] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -25,13 +24,29 @@ export function RecordWinForm({ players, startingGroup, lastWinAt, cooldownMs, c
   // null fram till mount → identisk render på server och klient (ingen hydration-mismatch).
   const [now, setNow] = useState<number | null>(null);
 
-  const participants = useMemo(() => players.filter((p) => atTable.includes(p.id)), [players, atTable]);
-  const participantIds = participants.map((p) => p.id);
-  const { winnerId, runnerUpId } = resolveFinal(participantIds, winnerPick, runnerUpPick);
+  const participantIds = useMemo(() => players.filter((p) => !absent.includes(p.id)).map((p) => p.id), [players, absent]);
+  const standings = useMemo(() => standingsFromKnockouts(participantIds, out), [participantIds, out]);
+  const winnerId = standings?.[0] ?? null;
   const nameOf = (id: string | null) => players.find((p) => p.id === id)?.name;
   const winnerName = nameOf(winnerId);
-  const ready = !!winnerId && !!runnerUpId;
-  const toggleAtTable = (id: string) => setAtTable(atTable.includes(id) ? atTable.filter((x) => x !== id) : [...atTable, id]);
+  const remaining = participantIds.length - out.length;
+  const pristine = out.length === 0 && absent.length === startingAbsent.length && absent.every((id) => startingAbsent.includes(id));
+
+  // Tryck på en spelare: åkte ut som nästa. Tryck igen: ångra. Den sista som står kvar är vinnaren
+  // och kan inte slås ut; en kryssad spelare tas med igen.
+  function knock(id: string) {
+    if (absent.includes(id)) return toggleAbsent(id);
+    if (out.includes(id)) return setOut(out.filter((x) => x !== id));
+    if (remaining > 1) setOut([...out, id]);
+  }
+
+  function toggleAbsent(id: string) {
+    if (absent.includes(id)) return setAbsent(absent.filter((x) => x !== id));
+    setAbsent([...absent, id]);
+    // Kryssas den som stod kvar ensam blir den senast utslagna vinnare: minst en ska alltid stå kvar.
+    const nextOut = out.filter((x) => x !== id);
+    setOut(nextOut.slice(0, Math.max(0, participantIds.length - 2)));
+  }
 
   const cooldownEndsAt = lastWinAt ? new Date(lastWinAt).getTime() + cooldownMs : 0;
   const remainingMs = now === null ? 0 : Math.max(0, cooldownEndsAt - now);
@@ -54,7 +69,7 @@ export function RecordWinForm({ players, startingGroup, lastWinAt, cooldownMs, c
   const inFlight = useRef(false);
 
   async function submit() {
-    if (inFlight.current || !ready) return;
+    if (inFlight.current || !winnerId) return;
     inFlight.current = true;
     setSubmitting(true);
     setError(null);
@@ -62,7 +77,7 @@ export function RecordWinForm({ players, startingGroup, lastWinAt, cooldownMs, c
       const res = await fetch('/api/wins', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ winnerId, runnerUpId, participantIds, note }),
+        body: JSON.stringify({ winnerId, standings, note }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -102,65 +117,75 @@ export function RecordWinForm({ players, startingGroup, lastWinAt, cooldownMs, c
     <>
       <form
         className='crown-form'
-        // Medan bekräftelsen är öppen får rundan bakom inte ändras (t.ex. via tangentbordet).
+        // Medan bekräftelsen är öppen får placeringen bakom inte ändras (t.ex. via tangentbordet).
         inert={confirming}
         onSubmit={(e) => {
           e.preventDefault();
-          if (!onCooldown && ready) {
+          if (!onCooldown && winnerId) {
             setError(null);
             setConfirming(true);
           }
         }}
       >
-        <fieldset className='round' disabled={onCooldown}>
-          <legend className='crown-label'>Vid bordet <em>({participants.length})</em></legend>
-          <div className='chips'>
-            {players.map((p) => (
-              <label key={p.id} className='chip'>
-                <input type='checkbox' checked={atTable.includes(p.id)} onChange={() => toggleAtTable(p.id)} />
-                <span>{p.name}</span>
-              </label>
-            ))}
-          </div>
+        <fieldset className='standings' disabled={onCooldown}>
+          <legend className='crown-label'>Placering</legend>
+          <p className='standings-prompt' aria-live='polite'>
+            {onCooldown
+              ? `Nästa ${copy.crowning} om ${formatCountdown(remainingMs)}.`
+              : participantIds.length < 2
+              ? 'Minst två måste ha spelat.'
+              : winnerId
+                ? `${winnerName} står kvar och vinner rundan.`
+                : out.length === 0
+                  ? 'Vem åkte ut först?'
+                  : `Vem åkte ut sedan? ${remaining} kvar.`}
+          </p>
+          <p className='standings-help'>Tryck på spelarna i den ordning de åkte ut. Kryssa den som inte var med.</p>
+          <ul className='standings-list'>
+            {players.map((p) => {
+              const index = out.indexOf(p.id);
+              const state = absent.includes(p.id) ? 'absent' : index >= 0 ? 'out' : p.id === winnerId ? 'winner' : 'in';
+              const place = knockoutPlace(participantIds.length, index);
+              return (
+                <li key={p.id} className='standing-row' data-state={state}>
+                  <button
+                    type='button'
+                    className='standing-main'
+                    onClick={() => knock(p.id)}
+                    aria-label={
+                      state === 'absent' ? `${p.name} var inte med. Tryck för att ta med.`
+                        : state === 'out' ? `${p.name}, plats ${place}. Tryck för att ångra.`
+                          : state === 'winner' ? `${p.name} vinner rundan.`
+                            : `${p.name} åkte ut som nästa.`
+                    }
+                  >
+                    <span className='standing-place' aria-hidden>{state === 'out' ? place : state === 'winner' ? '👑' : ''}</span>
+                    <span className='standing-name'>{p.name}</span>
+                  </button>
+                  <button
+                    type='button'
+                    className='standing-cross'
+                    onClick={() => toggleAbsent(p.id)}
+                    aria-pressed={state === 'absent'}
+                    aria-label={`${p.name} var inte med`}
+                    title={state === 'absent' ? 'Ta med igen' : 'Var inte med'}
+                  >
+                    {state === 'absent' ? '↺' : '✕'}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          {/* Alltid monterad: försvann knappen när man tryckte på den tappade tangentbordet fokus. */}
+          <button type='button' className='btn-ghost standings-reset' aria-disabled={pristine} onClick={() => { setOut([]); setAbsent(startingAbsent); }}>Börja om</button>
         </fieldset>
-
-        {participants.length < 2 ? (
-          <p className='crown-hint'>Minst två måste ha stått vid bordet.</p>
-        ) : (
-          <>
-            <fieldset className='round' disabled={onCooldown}>
-              <legend className='crown-label'>Vann finalen</legend>
-              <div className='chips'>
-                {participants.map((p) => (
-                  <label key={p.id} className='chip chip-winner'>
-                    <input type='radio' name='winner' checked={winnerId === p.id} onChange={() => setWinnerPick(p.id)} />
-                    <span>{p.name}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-
-            <fieldset className='round' disabled={onCooldown}>
-              <legend className='crown-label'>Förlorade finalen</legend>
-              <div className='chips'>
-                {/* Vinnaren står kvar men går inte att välja, så inga chips flyttar sig under fingret. */}
-                {participants.map((p) => (
-                  <label key={p.id} className='chip'>
-                    <input type='radio' name='runnerUp' checked={runnerUpId === p.id} disabled={winnerId === p.id} onChange={() => setRunnerUpPick(p.id)} />
-                    <span>{p.name}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-          </>
-        )}
 
         <label className='crown-field'>
           <span className='crown-label'>Anteckning <em>(valfritt)</em></span>
           <input className='crown-input' placeholder='Vad hände? Ett ord eller en hel saga' value={note} onChange={(e) => setNote(e.target.value)} disabled={onCooldown} />
         </label>
 
-        <button className='crown-btn' disabled={!ready || onCooldown}>
+        <button className='crown-btn' disabled={!winnerId || onCooldown}>
           {onCooldown ? `Ny vinnare om ${formatCountdown(remainingMs)}` : `${copy.crown} ${winnerName ?? 'vinnaren'}`}
         </button>
 
@@ -181,10 +206,12 @@ export function RecordWinForm({ players, startingGroup, lastWinAt, cooldownMs, c
           <div className='modal' onClick={(e) => e.stopPropagation()}>
             <h3 id='confirm-title' className='modal-title'>Bekräfta {copy.crowning}</h3>
             <p className='modal-body'>Är du säker på att du vill sätta <strong>{winnerName}</strong> som vinnare?</p>
-            <p className='modal-body round-summary'>Finalen mot <strong>{nameOf(runnerUpId)}</strong>. Vid bordet: {participants.map((p) => p.name).join(', ')}.</p>
+            <ol className='standing-summary' aria-label='Placering'>
+              {standings?.map((id) => <li key={id}>{nameOf(id)}</li>)}
+            </ol>
             <div className='modal-actions'>
               <button type='button' className='btn-ghost' onClick={() => setConfirming(false)} disabled={submitting}>Avbryt</button>
-              <button type='button' className='crown-btn' onClick={submit} disabled={submitting || !ready}>
+              <button type='button' className='crown-btn' onClick={submit} disabled={submitting || !winnerId}>
                 {submitting ? copy.crowningNow : `Ja, ${copy.crown.toLowerCase()} ${winnerName}`}
               </button>
             </div>

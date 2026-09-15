@@ -1225,75 +1225,144 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   font-size: .9rem;
 }
 
-/* Rundan: chips för vilka som stod vid bordet, vem som vann och vem som förlorade finalen.
-   Riktiga checkbox- och radioknappar under ytan, så tangentbord och skärmläsare fungerar utan extra kod. */
-.round {
+/* Placeringen: tryck i den ordning spelarna åkte ut, kryssa den som inte var med.
+   Raderna står still i bokstavsordning, så inget flyttar sig under fingret medan man trycker. */
+.standings {
   display: grid;
+  gap: .5rem;
   min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
 }
 
-.round legend { padding: 0; margin-bottom: .45rem; }
+.standings legend { padding: 0; margin-bottom: .4rem; }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .45rem;
-}
-
-.chip { position: relative; }
-
-.chip input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
+.standings-prompt {
   margin: 0;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.chip span {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  padding: .5rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: rgba(0, 0, 0, .28);
-  color: var(--muted);
-  cursor: pointer;
-  user-select: none;
-  transition: border-color .15s ease, background .15s ease, color .15s ease, opacity .15s ease;
-}
-
-.chip span:hover { border-color: var(--muted); }
-
-.chip input:checked + span {
-  border-color: color-mix(in srgb, var(--gold) 65%, transparent);
-  background: color-mix(in srgb, var(--gold) 14%, transparent);
   color: var(--text);
+  font-weight: 600;
 }
 
-/* Bara färg, ingen fetstil: bredare text hade knuffat grannchipsen under fingret. */
-.chip-winner input:checked + span { color: var(--gold); }
+.standings-help {
+  margin: 0 0 .25rem;
+  color: var(--muted);
+  font-size: .85rem;
+}
 
-.chip input:focus-visible + span {
+.standings-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr));
+  gap: .45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.standing-row {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, .28);
+  transition: border-color .15s ease, background .15s ease, opacity .15s ease;
+}
+
+.standing-main,
+.standing-cross {
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.standing-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: .6rem;
+  min-width: 0;
+  min-height: 2.9rem;
+  padding: .45rem .7rem;
+  color: var(--text);
+  text-align: left;
+}
+
+.standing-place {
+  display: grid;
+  flex: 0 0 1.9rem;
+  height: 1.9rem;
+  place-content: center;
+  border: 1px dashed var(--border);
+  border-radius: 50%;
+  color: var(--text);
+  font-size: .85rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.standing-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.standing-cross {
+  flex: 0 0 2.9rem;
+  border-left: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.standing-main:hover:not(:disabled),
+.standing-cross:hover:not(:disabled) { background: rgba(255, 255, 255, .05); }
+
+.standing-main:focus-visible,
+.standing-cross:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--gold) 70%, transparent);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
-.chip input:disabled + span { opacity: .35; cursor: not-allowed; }
-.round:disabled .chip span { opacity: .5; cursor: not-allowed; }
+.standing-main:disabled,
+.standing-cross:disabled { cursor: not-allowed; }
+.standings:disabled .standing-row { opacity: .5; }
 
-.round-summary { color: var(--muted); }
+.standing-row[data-state='out'] .standing-place { border-style: solid; }
+.standing-row[data-state='out'] .standing-name { color: var(--muted); }
 
-/* Högkontrastläge ersätter färgerna, och de är det enda som skiljer valda chips från andra. */
-@media (forced-colors: active) {
-  .chip input:checked + span { forced-color-adjust: none; border-color: Highlight; background: Highlight; color: HighlightText; }
-  .chip input:disabled + span { color: GrayText; }
+.standing-row[data-state='winner'] {
+  border-color: color-mix(in srgb, var(--gold) 65%, transparent);
+  background: color-mix(in srgb, var(--gold) 12%, transparent);
 }
+.standing-row[data-state='winner'] .standing-place { border: 0; font-size: 1.15rem; }
+.standing-row[data-state='winner'] .standing-name { color: var(--gold); font-weight: 700; }
+
+/* Bara namnet tonas: ↺-knappen ska synas fullt, den är vägen tillbaka. */
+.standing-row[data-state='absent'] .standing-main { opacity: .5; }
+.standing-row[data-state='absent'] .standing-name { text-decoration: line-through; }
+.standing-row[data-state='absent'] .standing-place { border-color: transparent; }
+
+.btn-ghost.standings-reset {
+  justify-self: start;
+  padding: .45rem .8rem;
+  font-family: inherit;
+  font-size: .85rem;
+}
+
+.standings-reset[aria-disabled='true'] { opacity: .45; cursor: default; }
+
+/* Med många spelare får listan scrolla, annars hamnar bekräfta-knappen utanför skärmen. */
+.standing-summary {
+  max-height: min(40vh, 320px);
+  overflow-y: auto;
+  margin: .75rem 0 1.25rem;
+  padding-left: 1.5rem;
+  color: var(--muted);
+  text-align: left;
+}
+.standing-summary li:first-child { color: var(--gold); font-weight: 700; }
 
 /* ===== Modal ===== */
 .modal-overlay {

@@ -78,22 +78,21 @@ const TOOLS: Tool[] = [
       const profile = await api(`/api/players/${encodeURIComponent(id)}`);
       return { ...profile, stats: { ...profile.stats, badges: badgeLabels(profile.stats.badges) } };
     } },
-  { name: 'pingis_history', description: 'Senaste kröningarna ur krönikan, nyast först, med vinnarens och den avsattes namn, och vilka som stod vid bordet och vem som förlorade finalen när det spelats in.', inputSchema: schema({ limit: { type: 'integer', minimum: 1, maximum: 100, description: 'Antal händelser (standard 10).' } }), annotations: { readOnlyHint: true },
+  { name: 'pingis_history', description: 'Senaste kröningarna ur krönikan, nyast först, med vinnarens och den avsattes namn, och rundans placering när den spelats in.', inputSchema: schema({ limit: { type: 'integer', minimum: 1, maximum: 100, description: 'Antal händelser (standard 10).' } }), annotations: { readOnlyHint: true },
     run: async (a) => {
       const [events, players]: [any[], Player[]] = await Promise.all([api('/api/history'), api('/api/players')]);
       const nameOf = new Map(players.map((p) => [p.id, p.name]));
-      return events.slice(0, a.limit ?? 10).map((e) => ({ ...e, winner: nameOf.get(e.winnerId), previousKing: nameOf.get(e.previousKingId) ?? null, runnerUp: nameOf.get(e.runnerUpId) ?? null, participants: (e.participantIds ?? []).map((id: string) => nameOf.get(id) ?? id) }));
+      return events.slice(0, a.limit ?? 10).map((e) => ({ ...e, winner: nameOf.get(e.winnerId), previousKing: nameOf.get(e.previousKingId) ?? null, standings: (e.standings ?? []).map((id: string) => nameOf.get(id) ?? id) }));
     } },
-  { name: 'pingis_record_win', description: 'Kröner en ny vinnare. Skriver i databasen och syns direkt på sajten. Blockeras en stund efter föregående kröning.', inputSchema: schema({ winner: playerName('Vinnaren.'), runnerUp: playerName('Valfri: den som förlorade finalen.'), participants: { type: 'array', items: { type: 'string' }, description: 'Valfri: alla som stod vid bordet, vinnaren och finalförloraren inräknade. Namn eller id.' }, note: { type: 'string', description: 'Valfri notering om matchen.' } }, ['winner']), annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+  { name: 'pingis_record_win', description: 'Kröner en ny vinnare. Skriver i databasen och syns direkt på sajten. Blockeras en stund efter föregående kröning.', inputSchema: schema({ winner: playerName('Vinnaren.'), standings: { type: 'array', items: { type: 'string' }, description: 'Valfri: hela rundans placering, vinnaren först och den som åkte ut först sist. Bara de som spelade. Namn eller id.' }, note: { type: 'string', description: 'Valfri notering om matchen.' } }, ['winner']), annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     run: async (a) => {
-      // Servern validerar inte mot inputSchema. Deltagare som inte är en lista (t.ex. en sträng) får inte
-      // tyst försvinna: då kröns vinnaren utan dem, och kröningen går inte att göra om.
-      if (a.participants !== undefined && !Array.isArray(a.participants)) throw new Error('participants måste vara en lista med namn.');
+      // Servern validerar inte mot inputSchema. En placering som inte är en lista (t.ex. en sträng) får
+      // inte tyst försvinna: då kröns vinnaren utan placering, och kröningen går inte att göra om.
+      if (a.standings !== undefined && !Array.isArray(a.standings)) throw new Error('standings måste vara en lista med namn, vinnaren först.');
       const players: Player[] = await api('/api/players');
       const winner = await findPlayer(String(a.winner), players);
-      const runnerUp = a.runnerUp === undefined ? undefined : await findPlayer(String(a.runnerUp), players);
-      const participantIds = a.participants ? await Promise.all(a.participants.map(async (n: unknown) => (await findPlayer(String(n), players)).id)) : undefined;
-      return api('/api/wins', { method: 'POST', body: JSON.stringify({ winnerId: winner.id, runnerUpId: runnerUp?.id, participantIds, note: a.note }) });
+      const standings = a.standings ? await Promise.all(a.standings.map(async (n: unknown) => (await findPlayer(String(n), players)).id)) : undefined;
+      return api('/api/wins', { method: 'POST', body: JSON.stringify({ winnerId: winner.id, standings, note: a.note }) });
     } },
 ];
 

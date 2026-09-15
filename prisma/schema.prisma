@@ -87,11 +87,10 @@ model WinEvent {
   announcementText    String
   nationState         NationState
   isFridayFinal       Boolean       @default(false)
-  /// Vilka som stod vid bordet, och vem som förlorade finalen (de två sista spelar 1v1). Tom lista
-  /// och null = okänt, som för alla rundor innan detta spelades in. Validering i lib/domain/round.ts.
-  /// Ingen relation, precis som previousKingId: spelare raderas aldrig.
-  participantIds      String[]      @default([])
-  runnerUpId          String?
+  /// Rundans placering som spelar-id, vinnaren först (se lib/domain/standings.ts). Tom = okänd,
+  /// som för alla rundor innan placeringar spelades in. En lista i stället för en egen tabell:
+  /// placeringen skrivs och läses alltid hel, tillsammans med sin vinst, och spelare raderas aldrig.
+  standings           String[]      @default([])
   announcement        Announcement?
 }
 
