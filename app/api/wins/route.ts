@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { recordWin, WIN_COOLDOWN_MS } from '@/lib/domain/riket';
 import { prisma } from '@/lib/prisma';
 
-// standings: hela placeringen, vinnaren först. Valfri; recordWin validerar den.
-const schema = z.object({ winnerId: z.string().min(1), note: z.string().optional(), standings: z.array(z.string().min(1)).max(100).optional() });
+// participantIds: vilka som stod vid bordet. runnerUpId: vem som förlorade finalen. Båda valfria; recordWin validerar.
+const schema = z.object({ winnerId: z.string().min(1), note: z.string().optional(), participantIds: z.array(z.string().min(1)).max(100).optional(), runnerUpId: z.string().min(1).nullish() });
 
 export async function POST(req: Request) {
   try {
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const result = await recordWin(body.winnerId, body.note, { actor: 'web', standings: body.standings });
+    const result = await recordWin(body.winnerId, body.note, { actor: 'web', participantIds: body.participantIds, runnerUpId: body.runnerUpId });
     return Response.json(result);
   } catch (e: any) {
     return Response.json({ error: e.message }, { status: 400 });
