@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 const ADS = [
   { src: '/ads/axels-forehand-kurs.jpg', alt: 'Axels Forehand-Kurs — sluta försvara, börja bestämma', buy: 'KÖP NU!' },
   { src: '/ads/william-och-oliver.png', alt: 'William & Oliver — Oliver Emote Pack', buy: 'SÄKRA OLIVER EMOTE PACK NU!' },
+  { src: '/ads/olivers-smash.jpg', alt: 'Lär dig Olivers smash — från medioker till bordstennis-brutal', buy: 'BÖRJA SMASHA NU!' },
 ];
 
 /**
