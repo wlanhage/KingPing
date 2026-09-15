@@ -63,7 +63,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ d
 
       <section className='dash-crown-panel'>
         <h2>{theme.verbs.crown} ny vinnare</h2>
-        <p className='dash-crown-sub'>Välj spelaren som tog hem rundan.</p>
+        <p className='dash-crown-sub'>Den som står kvar sist tar hem rundan.</p>
         <RecordWinForm
           players={players}
           lastWinAt={lastEvent?.occurredAt.toISOString() ?? null}
