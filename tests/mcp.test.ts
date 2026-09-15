@@ -11,7 +11,7 @@ const routes: Record<string, unknown> = {
   '/api/players': players,
   '/api/players/p1': { player: players[0], stats: { totalWins: 3, badges: [badge] }, timeline: [], nemesis: null },
   '/api/leaderboard': [{ id: 'p1', name: 'Erik', rank: 1, badges: [badge] }],
-  '/api/history': [{ id: 'w2', winnerId: 'p2', previousKingId: 'p1' }, { id: 'w1', winnerId: 'p1', previousKingId: null }],
+  '/api/history': [{ id: 'w2', winnerId: 'p2', previousKingId: 'p1', standings: ['p2', 'p1'] }, { id: 'w1', winnerId: 'p1', previousKingId: null }],
 };
 const postedWins: unknown[] = [];
 
@@ -77,6 +77,19 @@ describe('MCP-servern', () => {
     expect(result.content[0].text).toMatch(/429.*Vänta/);
   });
 
+  it('placeringen skickas som id i samma ordning, vinnaren först', async () => {
+    await callTool('pingis_record_win', { winner: 'Anna', standings: ['anna', 'Erik'] });
+    expect(postedWins.at(-1)).toEqual({ winnerId: 'p2', standings: ['p2', 'p1'] });
+  });
+
+  it('en placering som inte är en lista kröner ingen, i stället för att tyst tappas', async () => {
+    const before = postedWins.length;
+    const result = await callTool('pingis_record_win', { winner: 'Anna', standings: 'Anna, Erik' });
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toMatch(/lista/);
+    expect(postedWins.length).toBe(before);
+  });
+
   it('okänt namn kröner ingen och räknar upp vilka som finns', async () => {
     const before = postedWins.length;
     const result = await callTool('pingis_record_win', { winner: 'Anakin' });
@@ -86,7 +99,7 @@ describe('MCP-servern', () => {
   });
 
   it('historiken namnger vinnaren och den avsatte', async () => {
-    expect(await toolJson('pingis_history', { limit: 1 })).toEqual([expect.objectContaining({ winner: 'Anna', previousKing: 'Erik' })]);
+    expect(await toolJson('pingis_history', { limit: 1 })).toEqual([expect.objectContaining({ winner: 'Anna', previousKing: 'Erik', standings: ['Anna', 'Erik'] })]);
   });
 
   it('tabellen och profilen visar badges som emoji, namn och skäl', async () => {

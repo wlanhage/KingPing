@@ -2,7 +2,8 @@ import { z } from 'zod';
 import { recordWin, WIN_COOLDOWN_MS } from '@/lib/domain/riket';
 import { prisma } from '@/lib/prisma';
 
-const schema = z.object({ winnerId: z.string().min(1), note: z.string().optional() });
+// standings: hela placeringen, vinnaren först. Valfri; recordWin validerar den.
+const schema = z.object({ winnerId: z.string().min(1), note: z.string().optional(), standings: z.array(z.string().min(1)).max(100).optional() });
 
 export async function POST(req: Request) {
   try {
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const result = await recordWin(body.winnerId, body.note, { actor: 'web' });
+    const result = await recordWin(body.winnerId, body.note, { actor: 'web', standings: body.standings });
     return Response.json(result);
   } catch (e: any) {
     return Response.json({ error: e.message }, { status: 400 });

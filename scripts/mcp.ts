@@ -44,8 +44,9 @@ const playerName = (description: string) => ({ type: 'string', description: `${d
 type Player = { id: string; name: string };
 type Badge = { definition: { emoji: string; name: string }; reason: string };
 
-async function findPlayer(query: string): Promise<Player> {
-  const players: Player[] = await api('/api/players');
+// Skicka med listan när flera namn slås upp i samma anrop, så hämtas den en gång.
+async function findPlayer(query: string, players?: Player[]): Promise<Player> {
+  players ??= (await api('/api/players')) as Player[];
   const wanted = query.trim().toLowerCase();
   const player = players.find((p) => p.id === query || p.name.toLowerCase() === wanted);
   if (!player) throw new Error(`Ingen spelare matchar "${query}". Spelarna heter: ${players.map((p) => p.name).join(', ')}.`);
@@ -77,16 +78,21 @@ const TOOLS: Tool[] = [
       const profile = await api(`/api/players/${encodeURIComponent(id)}`);
       return { ...profile, stats: { ...profile.stats, badges: badgeLabels(profile.stats.badges) } };
     } },
-  { name: 'pingis_history', description: 'Senaste kröningarna ur krönikan, nyast först, med vinnarens och den avsattes namn.', inputSchema: schema({ limit: { type: 'integer', minimum: 1, maximum: 100, description: 'Antal händelser (standard 10).' } }), annotations: { readOnlyHint: true },
+  { name: 'pingis_history', description: 'Senaste kröningarna ur krönikan, nyast först, med vinnarens och den avsattes namn, och rundans placering när den spelats in.', inputSchema: schema({ limit: { type: 'integer', minimum: 1, maximum: 100, description: 'Antal händelser (standard 10).' } }), annotations: { readOnlyHint: true },
     run: async (a) => {
       const [events, players]: [any[], Player[]] = await Promise.all([api('/api/history'), api('/api/players')]);
       const nameOf = new Map(players.map((p) => [p.id, p.name]));
-      return events.slice(0, a.limit ?? 10).map((e) => ({ ...e, winner: nameOf.get(e.winnerId), previousKing: nameOf.get(e.previousKingId) ?? null }));
+      return events.slice(0, a.limit ?? 10).map((e) => ({ ...e, winner: nameOf.get(e.winnerId), previousKing: nameOf.get(e.previousKingId) ?? null, standings: (e.standings ?? []).map((id: string) => nameOf.get(id) ?? id) }));
     } },
-  { name: 'pingis_record_win', description: 'Kröner en ny vinnare. Skriver i databasen och syns direkt på sajten. Blockeras en stund efter föregående kröning.', inputSchema: schema({ winner: playerName('Vinnaren.'), note: { type: 'string', description: 'Valfri notering om matchen.' } }, ['winner']), annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+  { name: 'pingis_record_win', description: 'Kröner en ny vinnare. Skriver i databasen och syns direkt på sajten. Blockeras en stund efter föregående kröning.', inputSchema: schema({ winner: playerName('Vinnaren.'), standings: { type: 'array', items: { type: 'string' }, description: 'Valfri: hela rundans placering, vinnaren först och den som åkte ut först sist. Bara de som spelade. Namn eller id.' }, note: { type: 'string', description: 'Valfri notering om matchen.' } }, ['winner']), annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     run: async (a) => {
-      const winner = await findPlayer(String(a.winner));
-      return api('/api/wins', { method: 'POST', body: JSON.stringify({ winnerId: winner.id, note: a.note }) });
+      // Servern validerar inte mot inputSchema. En placering som inte är en lista (t.ex. en sträng) får
+      // inte tyst försvinna: då kröns vinnaren utan placering, och kröningen går inte att göra om.
+      if (a.standings !== undefined && !Array.isArray(a.standings)) throw new Error('standings måste vara en lista med namn, vinnaren först.');
+      const players: Player[] = await api('/api/players');
+      const winner = await findPlayer(String(a.winner), players);
+      const standings = a.standings ? await Promise.all(a.standings.map(async (n: unknown) => (await findPlayer(String(n), players)).id)) : undefined;
+      return api('/api/wins', { method: 'POST', body: JSON.stringify({ winnerId: winner.id, standings, note: a.note }) });
     } },
 ];
 

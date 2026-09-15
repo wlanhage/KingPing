@@ -10,6 +10,7 @@ import { FinaleIcon } from '@/components/finale/FinaleIcon';
 import { SeasonStrip } from '@/components/SeasonStrip';
 import { NationSeal } from '@/components/NationSeal';
 import { StageDemo } from '@/components/stage/StageDemo';
+import { startingAbsent } from '@/lib/domain/standings';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +25,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ d
   const king = kingdom.currentKing;
   const players = await prisma.player.findMany({ where: { isActive: true }, orderBy: { name: 'asc' }, select: { id: true, name: true } });
   const lastEvent = await prisma.winEvent.findFirst({ orderBy: { occurredAt: 'desc' }, select: { occurredAt: true } });
+  const lastRound = await prisma.winEvent.findFirst({ where: { standings: { isEmpty: false } }, orderBy: { occurredAt: 'desc' }, select: { standings: true } });
   const latestInSeason = await prisma.winEvent.findFirst({ where: { occurredAt: winOccurredAtFilter(await resolveSeason()) }, orderBy: { occurredAt: 'desc' }, select: { nationState: true } });
   const initial = king?.name?.trim()?.[0]?.toUpperCase() ?? '–';
 
@@ -63,9 +65,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ d
 
       <section className='dash-crown-panel'>
         <h2>{theme.verbs.crown} ny vinnare</h2>
-        <p className='dash-crown-sub'>Välj spelaren som tog hem rundan.</p>
+        <p className='dash-crown-sub'>Den som står kvar sist tar hem rundan.</p>
         <RecordWinForm
           players={players}
+          startingAbsent={startingAbsent(players.map((p) => p.id), lastRound?.standings ?? [])}
           lastWinAt={lastEvent?.occurredAt.toISOString() ?? null}
           cooldownMs={WIN_COOLDOWN_MS}
           copy={{ crown: theme.verbs.crown, crowning: theme.verbs.crowning, crowningNow: theme.verbs.crowningNow, coronation: theme.coronation, lane: { crowning: theme.verbs.crowning, tyranny: theme.nationStates.TYRANNY.name } }}
