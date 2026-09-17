@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { crownRatings, K_FACTOR, START_RATING } from '../lib/domain/crown-rating';
+import { classicCrownRatings, crownRatings, K_FACTOR, START_RATING } from '../lib/domain/crown-rating';
 
 let clock = Date.parse('2026-03-02T09:00:00Z');
 /** Varje kröning en timme efter den förra, så ordningen i listan är entydig. */
 const next = () => new Date((clock += 60 * 60 * 1000));
 const crown = (winnerId: string, previousKingId: string | null) => ({ winnerId, previousKingId, occurredAt: next() });
+/** En runda där hela utslagsordningen är känd, vinnaren först. previousKingId spelar ingen roll här. */
+const placement = (standings: string[]) => ({ winnerId: standings[0], previousKingId: null, standings, occurredAt: next() });
 
 /** Bygger en sekvens av namn till kröningar; previousKingId följer av föregående vinnare. */
 function season(names: string[]) {
@@ -70,5 +72,53 @@ describe('kronrating', () => {
   it('spelare som aldrig varit inblandade i ett kronbyte saknas i tabellen', () => {
     const table = crownRatings(season(['Erik', 'Anna']));
     expect(table.Sara).toBeUndefined();
+  });
+});
+
+describe('kronrating med full placering', () => {
+  it('en placering med två spelare ger exakt samma resultat som ett övertag', () => {
+    const viaPlacement = crownRatings([placement(['Anna', 'Erik'])]);
+    const viaCrownEvent = crownRatings(season(['Erik', 'Anna']));
+    expect(viaPlacement.Anna.rating).toBeCloseTo(viaCrownEvent.Anna.rating);
+    expect(viaPlacement.Erik.rating).toBeCloseTo(viaCrownEvent.Erik.rating);
+  });
+
+  it('tre jämnstarka spelare: vinnaren stiger dubbelt så mycket som mittenspelaren står still', () => {
+    const table = crownRatings([placement(['Anna', 'Erik', 'Calle'])]);
+    const shift = K_FACTOR / (3 - 1) / 2; // share * (1 - expected(lika, lika))
+    expect(table.Anna.rating).toBeCloseTo(START_RATING + 2 * shift);
+    expect(table.Erik.rating).toBeCloseTo(START_RATING); // vann en, förlorade en
+    expect(table.Calle.rating).toBeCloseTo(START_RATING - 2 * shift);
+    expect(table.Anna.played).toBe(1);
+  });
+
+  it('en runda med full placering är nollsummespel för alla inblandade', () => {
+    const table = crownRatings([placement(['Anna', 'Erik', 'Calle', 'Lucas'])]);
+    const total = table.Anna.rating + table.Erik.rating + table.Calle.rating + table.Lucas.rating;
+    expect(total).toBeCloseTo(4 * START_RATING);
+  });
+
+  it('en placering med färre än två spelare räknas som ingen placering alls', () => {
+    const withEmpty = crownRatings([{ ...crown('Anna', 'Erik'), standings: [] }]);
+    const withoutField = crownRatings([crown('Anna', 'Erik')]);
+    expect(withEmpty).toEqual(withoutField);
+  });
+
+  it('ordningen i inlistan spelar ingen roll även med placeringar inblandade', () => {
+    const wins = [placement(['Anna', 'Erik', 'Calle']), crown('Calle', 'Anna'), placement(['Erik', 'Calle'])];
+    const grouped = [...wins].sort((a, b) => a.winnerId.localeCompare(b.winnerId));
+    expect(crownRatings(grouped)).toEqual(crownRatings(wins));
+  });
+
+  it('klassisk kronrating ignorerar placeringen — bara kronbytet räknas', () => {
+    const win = { winnerId: 'Anna', previousKingId: 'Erik', standings: ['Anna', 'Erik', 'Calle'], occurredAt: next() };
+    const classic = classicCrownRatings([win]);
+    const withPlacement = crownRatings([win]);
+
+    expect(classic.Calle).toBeUndefined(); // klassisk bryr sig aldrig om placeringen
+    expect(classic.Erik.rating).toBeCloseTo(START_RATING - K_FACTOR / 2);
+
+    expect(withPlacement.Calle).toBeDefined(); // nya varianten ser hela fältet
+    expect(withPlacement.Erik.rating).toBeCloseTo(START_RATING); // förlorade mot Anna, vann mot Calle — jämnar ut
   });
 });

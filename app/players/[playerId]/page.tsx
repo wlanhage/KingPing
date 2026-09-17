@@ -71,6 +71,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
         { label: 'Senaste vinst', value: formatRelativeDate(s.lastWinAt) },
         { label: 'Snittregering', value: formatShortDuration(s.averageReignMs) },
         { label: 'Kronrating', value: s.ratedRounds ? Math.round(s.crownRating) : '—', icon: '📊' },
+        { label: 'Kronrating (klassisk)', value: s.classicRatedRounds ? Math.round(s.classicCrownRating) : '—', icon: '📊' },
         ...(afk.times ? [{ label: 'AFK', value: afk.currentDays !== null ? `Sedan ${days(afk.currentDays)}` : `${afk.times} ${afk.times === 1 ? 'gång' : 'gånger'} · ${days(afk.totalDays)}`, icon: '💤' }] : []),
       ]}
       >
