@@ -18,7 +18,13 @@ export const START_RATING = 1000;
 /** Litet dataunderlag (tiotal kröningar per säsong) kräver att ratingen hinner röra sig. */
 export const K_FACTOR = 32;
 
-type RatedWin = { winnerId: string; previousKingId: string | null; occurredAt: Date | string };
+type RatedWin = {
+  winnerId: string;
+  previousKingId: string | null;
+  occurredAt: Date | string;
+  /** Hela rundans utslagsordning, vinnaren först (se lib/domain/standings.ts). Saknas/kort = okänd, då gäller kronbytet ensamt. */
+  standings?: string[];
+};
 
 export type CrownRating = {
   rating: number;
@@ -44,6 +50,17 @@ const expected = (a: number, b: number) => 1 / (1 + 10 ** ((b - a) / 400));
  *  3. TOM TRON (ingen tidigare kung) — säsongens första kröning. Ingen besegrad, ingen
  *     ratingändring; spelaren tar bara plats i tabellen.
  *
+ * En fjärde sort finns när hela rundans utslagsordning är känd (`standings`, se
+ * lib/domain/standings.ts): då slår vi ihop alla tre ovan till en enda beräkning i stället för
+ * att gissa på fältets snitt. Ordningen bryts ner i varje par "X slog Y", och alla par uppdateras
+ * mot ratingen som den såg ut INNAN rundan — annars skulle ett senare par se en motståndare som
+ * redan hunnit flytta sig av ett tidigare par i samma runda. Var och en möter (n-1) andra i en
+ * full placering, så K-faktorn delas på det: en runda med många deltagare ska inte flytta mer
+ * totalt än dagens envägsuppdatering. Vid två spelare blir det K_FACTOR/(2-1) = K_FACTOR, dvs
+ * exakt övertagsformeln — den nya vägen är en generalisering, inte en ny modell bredvid den gamla.
+ * Till skillnad från ett vanligt försvar (fältet tappar ingen rating) blir en runda med känd
+ * placering nollsummespel för sina deltagare, eftersom vi här vet exakt vilka som var med.
+ *
  * Bara de namngivna parterna flyttas — vid ett övertag vinnaren och den avsatta kungen,
  * vid ett försvar kungen ensam. Fältet tappar alltså ingen rating på ett försvar, trots
  * att kungen i praktiken besegrade det: vi vet inte vilka som spelade, och den som är
@@ -54,6 +71,18 @@ const expected = (a: number, b: number) => 1 / (1 + 10 ** ((b - a) / 400));
  * `isAfkAt` håller spelare som var AFK vid försvaret utanför fältets snitt — de satt inte vid bordet.
  */
 export function crownRatings(wins: RatedWin[], isAfkAt: (playerId: string, at: Date) => boolean = () => false): Record<string, CrownRating> {
+  return ratingsFor(wins, isAfkAt, true);
+}
+
+/**
+ * Samma kronrating, fast som om placeringarna aldrig fanns — bara kronbytet räknas, precis som
+ * innan den funktionen fanns. Finns kvar vid sidan av `crownRatings()` för den som vill jämföra.
+ */
+export function classicCrownRatings(wins: RatedWin[], isAfkAt: (playerId: string, at: Date) => boolean = () => false): Record<string, CrownRating> {
+  return ratingsFor(wins, isAfkAt, false);
+}
+
+function ratingsFor(wins: RatedWin[], isAfkAt: (playerId: string, at: Date) => boolean, useStandings: boolean): Record<string, CrownRating> {
   // Elo är ordningsberoende. Anroparen samlar vinsterna per spelare och får dem därmed
   // grupperade, inte kronologiska — ordningen sätts här i stället för att litas på.
   const ordered = [...wins].sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime());
@@ -61,6 +90,28 @@ export function crownRatings(wins: RatedWin[], isAfkAt: (playerId: string, at: D
   const seat = (id: string) => (table[id] ??= { rating: START_RATING, played: 0 });
 
   for (const win of ordered) {
+    const standings = useStandings ? (win.standings ?? []) : [];
+    if (standings.length >= 2) {
+      const n = standings.length;
+      const before = Object.fromEntries(standings.map((id) => [id, seat(id).rating]));
+      const share = K_FACTOR / (n - 1);
+      const delta: Record<string, number> = {};
+      for (let i = 0; i < n; i += 1) {
+        for (let j = i + 1; j < n; j += 1) {
+          const [above, below] = [standings[i], standings[j]];
+          const shift = share * (1 - expected(before[above], before[below]));
+          delta[above] = (delta[above] ?? 0) + shift;
+          delta[below] = (delta[below] ?? 0) - shift;
+        }
+      }
+      for (const id of standings) {
+        const player = seat(id);
+        player.rating += delta[id];
+        player.played += 1;
+      }
+      continue;
+    }
+
     const winner = seat(win.winnerId);
     if (!win.previousKingId) continue; // tom tron
 

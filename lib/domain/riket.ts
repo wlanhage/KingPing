@@ -12,7 +12,7 @@ import { clampReignToSeason, getPreviousSeason, isWinInSeason, resolveSeason, sc
 import { isAfkAt } from './afk';
 import { describeSeasonEcho, ECHO_WINDOW, pickSeasonEcho, type SeasonEcho } from './season-echo';
 import { isStreakReturn } from './stage-triggers';
-import { crownRatings, START_RATING } from './crown-rating';
+import { classicCrownRatings, crownRatings, START_RATING } from './crown-rating';
 import { standingsError } from './standings';
 import { getTheme } from '../theme';
 
@@ -182,9 +182,11 @@ export async function getLeaderboard(season?: SeasonWindow) {
   // Kronratingen räknas på samma underlag som övertagen, men är ordningsberoende —
   // crownRatings sorterar därför själv, seasonWins kommer grupperat per spelare.
   const ratings = crownRatings(seasonWins, afkAt);
+  // Klassisk kronrating: samma underlag, men bara kronbytet räknas — som innan placeringarna fanns.
+  const classicRatings = classicCrownRatings(seasonWins, afkAt);
   const seasonReigns = players.flatMap((p) => p.reigns.flatMap((r) => { const c = clampReignToSeason(r, s, now); return c ? [{ playerId: p.id, startedAt: c.startedAt, endedAt: c.endedAt }] : []; }));
   const stolen = stolenReign(seasonWins, seasonReigns);
-  const rawRows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId, s, now, previous), maxNetTakeovers: dom[p.id]?.net ?? 0, dominatedRivalId: dom[p.id]?.rivalId ?? null, stolenReignMs: stolen[p.id] ?? 0, crownRating: ratings[p.id]?.rating ?? START_RATING, ratedRounds: ratings[p.id]?.played ?? 0, isAfk: afkAt(p.id, asOf) })).sort((a,b)=>Number(a.isAfk)-Number(b.isAfk) || b.totalReignMs-a.totalReignMs);
+  const rawRows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId, s, now, previous), maxNetTakeovers: dom[p.id]?.net ?? 0, dominatedRivalId: dom[p.id]?.rivalId ?? null, stolenReignMs: stolen[p.id] ?? 0, crownRating: ratings[p.id]?.rating ?? START_RATING, ratedRounds: ratings[p.id]?.played ?? 0, classicCrownRating: classicRatings[p.id]?.rating ?? START_RATING, classicRatedRounds: classicRatings[p.id]?.played ?? 0, isAfk: afkAt(p.id, asOf) })).sort((a,b)=>Number(a.isAfk)-Number(b.isAfk) || b.totalReignMs-a.totalReignMs);
   // AFK-spelare står sist utan placering, så att ingen av dem kan bli "sist i tabellen".
   const ranked = rawRows.map((row, i) => ({ ...row, rank: row.isAfk ? null : i + 1 }));
   const statMap = Object.fromEntries(ranked.map((r) => [r.id, r]));
@@ -236,6 +238,8 @@ export async function getPlayerStats(playerId: string, season?: SeasonWindow) {
     // Ratingen räknas fram över hela säsongen på en gång, så den hämtas ur tabellen.
     crownRating: statMap[playerId]?.crownRating ?? START_RATING,
     ratedRounds: statMap[playerId]?.ratedRounds ?? 0,
+    classicCrownRating: statMap[playerId]?.classicCrownRating ?? START_RATING,
+    classicRatedRounds: statMap[playerId]?.classicRatedRounds ?? 0,
     // Bara spelare som varit med i ett kronbyte rankas. Övriga ligger kvar på startvärdet,
     // och deras inbördes ordning vore ren gissning — samma skäl som trendpilarna utelämnas.
     rankByCrownRating: board.filter((r)=>r.ratedRounds>0).sort((a,b)=>b.crownRating-a.crownRating).findIndex((r)=>r.id===playerId)+1 || null,
