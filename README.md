@@ -18,6 +18,7 @@ MVP byggd med Next.js, Prisma och Slack-integration.
 - Interactivity -> `{APP_URL}/api/slack/interactivity`
 - Installera appen i workspace.
 - Sätt `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET`, `SLACK_CHANNEL_ID`.
+- Varje anrop till `/api/slack/*` verifieras mot `SLACK_SIGNING_SECRET`. Saknas den, eller stämmer inte signaturen, blir svaret 401.
 ## ngrok
 - `ngrok http 3000`
 - Sätt `NEXT_PUBLIC_APP_URL` till ngrok-url.
@@ -30,7 +31,7 @@ MCP-server med rikets data som verktyg (`scripts/mcp.ts`), för Claude Code/Desk
 
 ## Förbättringar
 - Modal för `/pingis win`
-- Slack signaturverifiering
+- ~~Slack signaturverifiering~~ Klar: `lib/security/slack-signature.ts`.
 - CSV export
 - ~~Börja använda elo-system för rejting.~~ Klassisk Elo går inte: vi sparar bara vem som vann
   rundan, aldrig vilka som spelade den. I stället ratas kronbytena — se
