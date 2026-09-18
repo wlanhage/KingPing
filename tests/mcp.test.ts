@@ -14,6 +14,7 @@ const routes: Record<string, unknown> = {
   '/api/history': [{ id: 'w2', winnerId: 'p2', previousKingId: 'p1', standings: ['p2', 'p1'] }, { id: 'w1', winnerId: 'p1', previousKingId: null }],
 };
 const postedWins: unknown[] = [];
+const realmKeysSent: unknown[] = [];
 
 let app: Server;
 let server: ChildProcess;
@@ -40,6 +41,7 @@ beforeAll(async () => {
       let body = '';
       for await (const chunk of req) body += chunk;
       postedWins.push(JSON.parse(body));
+      realmKeysSent.push(req.headers['x-realm-key']);
       return res.writeHead(429).end(JSON.stringify({ error: 'Vänta 5 min.' }));
     }
     if (!(req.url! in routes)) return res.writeHead(404).end();
@@ -49,7 +51,7 @@ beforeAll(async () => {
 
   // Startas med kommandot ur .mcp.json: det är den starten Claude Code gör, och den som kan krascha.
   const { command, args } = JSON.parse(readFileSync('.mcp.json', 'utf8')).mcpServers.rundpingisriket;
-  server = spawn(command, args, { env: { ...process.env, KINGPING_URL: `http://127.0.0.1:${(app.address() as AddressInfo).port}` } });
+  server = spawn(command, args, { env: { ...process.env, KINGPING_URL: `http://127.0.0.1:${(app.address() as AddressInfo).port}`, KINGPING_KEY: 'hemligt' } });
   server.stderr!.on('data', (chunk) => (stderr += chunk));
   server.on('exit', (code) => pending.forEach(({ reject }) => reject(new Error(`MCP-servern avslutades med kod ${code}:\n${stderr}`))));
   createInterface({ input: server.stdout! }).on('line', (line) => {
@@ -75,6 +77,11 @@ describe('MCP-servern', () => {
     expect(postedWins.at(-1)).toEqual({ winnerId: 'p1', note: 'Jämn match' });
     expect(result.isError).toBe(true);
     expect(result.content[0].text).toMatch(/429.*Vänta/);
+  });
+
+  it('skickar rikets lösen från KINGPING_KEY i x-realm-key', async () => {
+    await callTool('pingis_record_win', { winner: 'Erik' });
+    expect(realmKeysSent.at(-1)).toBe('hemligt');
   });
 
   it('placeringen skickas som id i samma ordning, vinnaren först', async () => {

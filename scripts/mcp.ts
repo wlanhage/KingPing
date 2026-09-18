@@ -7,6 +7,7 @@
  *
  *   npx tsx scripts/mcp.ts                         # mot http://localhost:3030
  *   KINGPING_URL=https://riket.exempel npx tsx scripts/mcp.ts
+ *   KINGPING_KEY=<rikets lösenord> ...            # krävs för att kröna när servern har REALM_KEY
  *   npx vitest run tests/mcp.test.ts               # startar servern som .mcp.json gör, mot en påhittad app
  *
  * ponytail: handrullad JSON-RPC (initialize + ping + tools/*). Byt till
@@ -17,6 +18,8 @@ import { createInterface } from 'node:readline';
 const SERVER_INFO = { name: 'rundpingisriket', version: '0.2.0' };
 // Samma default som lib/site-url.ts: dev-servern kör på 3030.
 const baseUrl = (process.env.KINGPING_URL ?? 'http://localhost:3030').replace(/\/+$/, '');
+// Rikets lösen, samma värde som REALM_KEY på servern. Lokalt utan REALM_KEY behövs det inte.
+const realmKey = process.env.KINGPING_KEY;
 
 class RpcError extends Error {
   code: number;
@@ -29,11 +32,12 @@ class RpcError extends Error {
 async function api(path: string, init?: RequestInit) {
   let res: Response;
   try {
-    res = await fetch(`${baseUrl}${path}`, { ...init, headers: { 'content-type': 'application/json' } });
+    res = await fetch(`${baseUrl}${path}`, { ...init, headers: { 'content-type': 'application/json', ...(realmKey ? { 'x-realm-key': realmKey } : {}) } });
   } catch (e: any) {
     throw new Error(`Nådde inte ${baseUrl} (${e?.message ?? e}). Starta appen med "npm run dev", eller peka KINGPING_URL mot en körande instans.`);
   }
   const body = await res.text();
+  if (res.status === 401) throw new Error(`${init?.method ?? 'GET'} ${path} nekades: riket är låst. Sätt KINGPING_KEY till rikets lösenord.`);
   if (!res.ok) throw new Error(`${init?.method ?? 'GET'} ${path} svarade ${res.status}: ${body.slice(0, 500)}`);
   return body ? JSON.parse(body) : null;
 }

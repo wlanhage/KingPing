@@ -2262,3 +2262,6 @@ html[data-theme='star-wars'] .skeleton-text::after { content: 'Hoppar till hyper
 @keyframes stage-slam { 0% { transform: scale(3.2) rotate(-6deg); opacity: 0; } 55% { transform: scale(.94) rotate(1deg); opacity: 1; } 100% { transform: scale(1) rotate(-2deg); opacity: 1; } }
 @keyframes stage-rise { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .stage-word { animation: none !important; } }
+
+/* Rikets lösen */
+.unlock-card { max-width: 30rem; margin: 8vh auto 0; }
