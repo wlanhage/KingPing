@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma'; import { z } from 'zod'; import { audit } from '@/lib/audit';
-const schema=z.object({name:z.string().min(2),slackUserId:z.string().optional()});
+import { prisma } from '@/lib/prisma'; import { z } from 'zod'; import { audit } from '@/lib/audit'; import { NAME_MAX, PLAYERS_MAX } from '@/lib/domain/limits';
+const schema=z.object({name:z.string().trim().min(2,'Namnet måste vara minst 2 tecken.').max(NAME_MAX,`Namnet får vara högst ${NAME_MAX} tecken.`),slackUserId:z.string().trim().max(32,'Ogiltigt Slack-id.').optional()});
 export async function GET(){return Response.json(await prisma.player.findMany());}
-export async function POST(req:Request){try{const body=schema.parse(await req.json());const player=await prisma.player.create({data:body});await audit('PLAYER_CREATED',`${player.name} lades till.`,'web');return Response.json(player);}catch(e:any){return Response.json({error:e.message},{status:400});}}
+export async function POST(req:Request){try{const body=schema.parse(await req.json());if(await prisma.player.count()>=PLAYERS_MAX)return Response.json({error:`Riket har redan ${PLAYERS_MAX} spelare. Fler får inte plats.`},{status:400});const player=await prisma.player.create({data:body});await audit('PLAYER_CREATED',`${player.name} lades till.`,'web');return Response.json(player);}catch(e:any){return Response.json({error:e instanceof z.ZodError?e.issues[0].message:e.message},{status:400});}}
