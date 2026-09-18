@@ -21,9 +21,15 @@ MVP byggd med Next.js, Prisma och Slack-integration.
 ## ngrok
 - `ngrok http 3000`
 - Sätt `NEXT_PUBLIC_APP_URL` till ngrok-url.
+## Rikets lösen
+Alla kan titta, men att registrera rundor, lägga till spelare och sätta AFK kräver ett delat lösenord.
+- Sätt `REALM_KEY` i Vercel (Production och Preview). Utan den är skrivningarna stängda i produktion men öppna lokalt.
+- Webbläsaren låser upp på `/unlock` och får en kaka i ett år. Byts lösenordet måste alla låsa upp igen.
+- Andra klienter skickar lösenordet i headern `x-realm-key`.
 ## MCP
 MCP-server med rikets data som verktyg (`scripts/mcp.ts`), för Claude Code/Desktop.
 - Den pratar med appens API-rutter, så starta `npm run dev` (eller sätt `KINGPING_URL` till prod-urlen).
+- Mot produktion krävs även `KINGPING_KEY` med rikets lösenord, annars nekas `pingis_record_win`.
 - `.mcp.json` i repot registrerar den i Claude Code — svara ja när den frågar.
 - Verktyg: `pingis_current_king`, `pingis_players`, `pingis_leaderboard`, `pingis_player`, `pingis_history`, `pingis_record_win`. Spelare anges med namn eller id.
 - Test utan app och databas: `npx vitest run tests/mcp.test.ts` — startar servern precis som `.mcp.json` gör.

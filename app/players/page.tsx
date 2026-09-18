@@ -5,6 +5,7 @@ import { getActiveTheme } from '@/lib/theme/server';
 import { getCurrentKing } from '@/lib/domain/riket';
 import { playerPortrait } from '@/lib/og/sigil';
 import { assignCharacters } from '@/lib/domain/heraldry';
+import { UnlockGate } from '@/components/UnlockGate';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +24,9 @@ export default async function Players() {
       <section className='card add-knight-panel'>
         <h2 style={{ margin: '0 0 .2rem' }}>{theme.profile.addTitle}</h2>
         <p className='muted' style={{ margin: '0 0 1rem' }}>{theme.profile.addSubtitle}</p>
-        <AddPlayerForm copy={{ placeholder: theme.profile.addPlaceholder, button: theme.profile.addButton, busy: theme.profile.addBusy, duplicate: theme.profile.addDuplicate }} />
+        <UnlockGate next='/players' label='Lås upp för att lägga till spelare'>
+          <AddPlayerForm copy={{ placeholder: theme.profile.addPlaceholder, button: theme.profile.addButton, busy: theme.profile.addBusy, duplicate: theme.profile.addDuplicate }} />
+        </UnlockGate>
       </section>
 
       <section className='grid cols-3'>

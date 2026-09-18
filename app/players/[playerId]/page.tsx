@@ -19,6 +19,7 @@ import { getTheme, themedBadge } from '@/lib/theme';
 import { assignCharacters } from '@/lib/domain/heraldry';
 import { afkSummary } from '@/lib/domain/afk';
 import { AfkToggle } from '@/components/player/AfkToggle';
+import { UnlockGate } from '@/components/UnlockGate';
 
 const days = (n: number) => `${n} ${n === 1 ? 'dag' : 'dagar'}`;
 
@@ -49,7 +50,11 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
       <div className='profile-topbar'>
         <Link href='/players' className='royal-back-link'>{theme.profile.back}</Link>
         <div className='profile-topbar-actions'>
-          {!season.endedAt && <AfkToggle playerId={playerId} isAfk={!profile.player.isActive} />}
+          {!season.endedAt && (
+            <UnlockGate next={`/players/${playerId}`} label='Lås upp för AFK'>
+              <AfkToggle playerId={playerId} isAfk={!profile.player.isActive} />
+            </UnlockGate>
+          )}
           <AllBadgesButton badges={s.badges ?? []} />
         </div>
       </div>

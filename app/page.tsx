@@ -11,6 +11,7 @@ import { SeasonStrip } from '@/components/SeasonStrip';
 import { NationSeal } from '@/components/NationSeal';
 import { StageDemo } from '@/components/stage/StageDemo';
 import { startingAbsent } from '@/lib/domain/standings';
+import { UnlockGate } from '@/components/UnlockGate';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,13 +67,15 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ d
       <section className='dash-crown-panel'>
         <h2>{theme.verbs.crown} ny vinnare</h2>
         <p className='dash-crown-sub'>Den som står kvar sist tar hem rundan.</p>
-        <RecordWinForm
-          players={players}
-          startingAbsent={startingAbsent(players.map((p) => p.id), lastRound?.standings ?? [])}
-          lastWinAt={lastEvent?.occurredAt.toISOString() ?? null}
-          cooldownMs={WIN_COOLDOWN_MS}
-          copy={{ crown: theme.verbs.crown, crowning: theme.verbs.crowning, crowningNow: theme.verbs.crowningNow, coronation: theme.coronation, lane: { crowning: theme.verbs.crowning, tyranny: theme.nationStates.TYRANNY.name } }}
-        />
+        <UnlockGate next='/' label='Lås upp för att registrera rundor'>
+          <RecordWinForm
+            players={players}
+            startingAbsent={startingAbsent(players.map((p) => p.id), lastRound?.standings ?? [])}
+            lastWinAt={lastEvent?.occurredAt.toISOString() ?? null}
+            cooldownMs={WIN_COOLDOWN_MS}
+            copy={{ crown: theme.verbs.crown, crowning: theme.verbs.crowning, crowningNow: theme.verbs.crowningNow, coronation: theme.coronation, lane: { crowning: theme.verbs.crowning, tyranny: theme.nationStates.TYRANNY.name } }}
+          />
+        </UnlockGate>
       </section>
 
       {latestInSeason && <NationSeal state={latestInSeason.nationState} theme={theme} />}
