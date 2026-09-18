@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { prisma } from '../prisma';
 
 /**
@@ -28,9 +29,16 @@ export function afkSummary(periods: AfkPeriodLike[], now: Date = new Date()): Af
   };
 }
 
+/**
+ * Kröningar och AFK-byten turas om. Utan det kunde en spelare krönas och gå AFK samtidigt:
+ * båda läste den andras läge innan någon av dem hunnit skriva.
+ */
+export const lockThrone = (tx: Prisma.TransactionClient) => tx.$executeRaw`SELECT pg_advisory_xact_lock(4711)`;
+
 export async function setPlayerAfk(playerId: string, afk: boolean) {
   const now = new Date();
   return prisma.$transaction(async (tx) => {
+    await lockThrone(tx);
     const player = await tx.player.findUniqueOrThrow({ where: { id: playerId } });
     if (afk === !player.isActive) return player;
     if (afk) {

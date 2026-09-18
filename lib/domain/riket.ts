@@ -9,7 +9,7 @@ import { realm } from '../theme/themes/realm';
 import { calculateGlobalStats, calculatePlayerStats } from '../badges/player-stats';
 import { getPlayerBadges } from '../badges/badge-engine';
 import { clampReignToSeason, getPreviousSeason, isWinInSeason, resolveSeason, scopePlayerToSeason, seasonNow, winOccurredAtFilter, type SeasonWindow } from './season';
-import { isAfkAt } from './afk';
+import { isAfkAt, lockThrone } from './afk';
 import { describeSeasonEcho, ECHO_WINDOW, pickSeasonEcho, type SeasonEcho } from './season-echo';
 import { isStreakReturn } from './stage-triggers';
 import { classicCrownRatings, crownRatings, START_RATING } from './crown-rating';
@@ -118,8 +118,10 @@ export async function recordWin(winnerId:string,note?:string,opts:{ignoreCooldow
  const result = await prisma.$transaction(async(tx)=>{
   // Två samtidiga anrop (dubbelklick) passerade båda API:ets cooldown-kontroll och skrev varsin
   // vinst och regering. Låset serialiserar kröningar, och kontrollen görs om innanför låset.
-  await tx.$executeRaw`SELECT pg_advisory_xact_lock(4711)`;
+  await lockThrone(tx);
   if(!opts.ignoreCooldown){ const clash=await tx.winEvent.findFirst({where:{occurredAt:{gt:new Date(now.getTime()-WIN_COOLDOWN_MS)}},select:{id:true}}); if(clash) throw new Error('En vinnare sattes nyss. Vänta innan nästa kröning.'); }
+  // Samma sak för AFK: bytet tar samma lås, så först här är AFK-läget säkert.
+  if(!(await tx.player.findUniqueOrThrow({where:{id:winnerId},select:{isActive:true}})).isActive) throw new Error(`${winner.name} är AFK. Aktivera spelaren innan hen kan krönas.`);
   if(current && !isSameKing){ await tx.reign.update({where:{id:current.id}, data:{endedAt:now}}); await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} if(!current){ await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} const win=await tx.winEvent.create({data:{winnerId,previousKingId:current?.playerId,occurredAt:now,eventType,streakCount,previousStreakCount,note,announcementText:ann.text,nationState,isFridayFinal:isFriday(now),standings}}); const a=await tx.announcement.create({data:{winEventId:win.id,text:ann.text,layout:ann.layout,persona:ann.persona}}); return {win,a}; });
  // Loggen skrivs utanför transaktionen: en kröning som gått igenom ska aldrig kunna
  // rullas tillbaka av att dess egen logg-rad fallerar.
