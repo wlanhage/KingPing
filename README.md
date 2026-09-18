@@ -21,6 +21,9 @@ MVP byggd med Next.js, Prisma och Slack-integration.
 ## ngrok
 - `ngrok http 3000`
 - Sätt `NEXT_PUBLIC_APP_URL` till ngrok-url.
+## Telemetri
+Spåren går till Honeycomb och Better Stack (se `lib/telemetry.ts`).
+- Sätt `HONEYCOMB_KEY`, `BETTERSTACK_URL` och `BETTERSTACK_TOKEN` i Vercel. Saknas en mottagares värden skickas inget dit.
 ## MCP
 MCP-server med rikets data som verktyg (`scripts/mcp.ts`), för Claude Code/Desktop.
 - Den pratar med appens API-rutter, så starta `npm run dev` (eller sätt `KINGPING_URL` till prod-urlen).

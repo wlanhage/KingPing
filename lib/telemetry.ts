@@ -2,20 +2,18 @@
  * Vart spåren skickas. Två mottagare: Honeycomb för att gräva i enskilda
  * requests, Better Stack för att larma och korrelera mot loggarna.
  *
- * Nycklarna ligger incheckade med flit (Axels beslut). OBS: repot är publikt,
- * så båda är att betrakta som röjda — de ska roteras i Honeycomb respektive
- * Better Stack. Vid rotation: flytta hellre hit-värdena till process.env än att
- * checka in nya, annars är vi tillbaka på samma ruta.
+ * Nycklarna läses från miljön, som alla andra hemligheter. Saknas de står
+ * platshållarna kvar och mottagaren hoppas över.
  */
 
 // Honeycomb: ingest-nyckel från Environment settings.
 export const HONEYCOMB_URL = 'https://api.honeycomb.io/v1/traces';
-export const HONEYCOMB_KEY = 'hcaik_01m2a9wd56d2h7srwnvsd7s07fn4gww74zxmdkwcjb1rprs9w5a23bj9tz';
+export const HONEYCOMB_KEY = process.env.HONEYCOMB_KEY || 'PASTE_HONEYCOMB_INGEST_KEY';
 
 // Better Stack: source token + den per-source-host som visas under
 // "Connect OpenTelemetry" för telemetrikällan.
-export const BETTERSTACK_URL = 'https://s2754741.us-west-2a.betterstackdata.com/v1/traces';
-export const BETTERSTACK_TOKEN = 'ju9MwWfFL2iur4BYurgovptx';
+export const BETTERSTACK_URL = process.env.BETTERSTACK_URL || 'https://PASTE_SOURCE_ID.betterstackdata.com/v1/traces';
+export const BETTERSTACK_TOKEN = process.env.BETTERSTACK_TOKEN || 'PASTE_BETTERSTACK_SOURCE_TOKEN';
 
 /**
  * En mottagare som fortfarande har platshållare kvar hoppas över, annars
