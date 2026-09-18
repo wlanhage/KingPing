@@ -84,7 +84,7 @@ const TOOLS: Tool[] = [
       const nameOf = new Map(players.map((p) => [p.id, p.name]));
       return events.slice(0, a.limit ?? 10).map((e) => ({ ...e, winner: nameOf.get(e.winnerId), previousKing: nameOf.get(e.previousKingId) ?? null, standings: (e.standings ?? []).map((id: string) => nameOf.get(id) ?? id) }));
     } },
-  { name: 'pingis_record_win', description: 'Kröner en ny vinnare. Skriver i databasen och syns direkt på sajten. Blockeras en stund efter föregående kröning.', inputSchema: schema({ winner: playerName('Vinnaren.'), standings: { type: 'array', items: { type: 'string' }, description: 'Valfri: hela rundans placering, vinnaren först och den som åkte ut först sist. Bara de som spelade. Namn eller id.' }, note: { type: 'string', description: 'Valfri notering om matchen.' } }, ['winner']), annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+  { name: 'pingis_record_win', description: 'Kröner en ny vinnare. Skriver i databasen och syns direkt på sajten. Blockeras en stund efter föregående kröning.', inputSchema: schema({ winner: playerName('Vinnaren.'), standings: { type: 'array', items: { type: 'string' }, description: 'Valfri: hela rundans placering, vinnaren först och den som åkte ut först sist. Bara de som spelade. Namn eller id.' }, note: { type: 'string', maxLength: 280, description: 'Valfri notering om matchen, högst 280 tecken.' } }, ['winner']), annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     run: async (a) => {
       // Servern validerar inte mot inputSchema. En placering som inte är en lista (t.ex. en sträng) får
       // inte tyst försvinna: då kröns vinnaren utan placering, och kröningen går inte att göra om.
