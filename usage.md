@@ -13,6 +13,11 @@
 - Tidslinje över tidigare matcher och kungörelser.
 - Bra för att förstå streaks och regimskiften.
 
+## Rundan i repris (`/rundor/[id]`)
+- Varje runda med sparad placering har ▶ Repris i krönikan.
+- Sidan visar placeringen och spelar upp rundan i 3D: Jeditemplet på Coruscant, ewoks på läktaren, tre liv var och final mellan de två sista. Ordningen är den riktiga; bollarna däremellan är påhittade men likadana varje gång.
+- Länken går att klistra in i Slack — delningsbilden visar vinnaren och placeringen.
+
 ## Leaderboard (`/leaderboard`)
 - Jämför spelare på vinster och regeringsdata.
 

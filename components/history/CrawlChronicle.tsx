@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 
-export type CrawlItem = { id: string; date: string; winner: string; text: string };
+export type CrawlItem = { id: string; date: string; winner: string; text: string; replayHref?: string };
 
 /** Hur många pixlar texten flyttas i planet per skrollad pixel. Lite över 1 kompenserar för att planet lutar. */
 const SPEED = 1.15;
@@ -49,7 +49,7 @@ export function CrawlChronicle({ eyebrow, title, subtitle, items }: { eyebrow?: 
             <div ref={crawlRef} className='crawl'>
               {items.map((it) => (
                 <p key={it.id} className='crawl-item'>
-                  <span className='crawl-item-meta'>{it.date} · {it.winner}</span>
+                  <span className='crawl-item-meta'>{it.date} · {it.winner}{it.replayHref && <> · <a href={it.replayHref} className='crawl-replay'>▶ Repris</a></>}</span>
                   {it.text}
                 </p>
               ))}

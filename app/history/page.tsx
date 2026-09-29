@@ -29,7 +29,7 @@ export default async function History({ searchParams }: { searchParams: Promise<
         eyebrow={label}
         title={theme.pages.history.title}
         subtitle={theme.pages.history.subtitle}
-        items={events.map((e) => ({ id: e.id, date: formatDate(e.occurredAt), winner: e.winner.name, text: e.announcementText }))}
+        items={events.map((e) => ({ id: e.id, date: formatDate(e.occurredAt), winner: e.winner.name, text: e.announcementText, replayHref: e.standings.length >= 2 ? `/rundor/${e.id}` : undefined }))}
       />
     );
   }
@@ -53,6 +53,7 @@ export default async function History({ searchParams }: { searchParams: Promise<
             <div className='muted'>{formatDate(event.occurredAt)}</div>
             <div>
               <strong>{event.winner.name}</strong> — {event.announcementText}
+              {event.standings.length >= 2 && <Link href={`/rundor/${event.id}`} className='replay-link'>▶ Repris</Link>}
             </div>
           </div>
         ))}
