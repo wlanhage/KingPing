@@ -33,7 +33,8 @@ export function Face({ mood = 'happy', scale = 1, position = [0, 0, 0] as Vec3, 
           {mood === 'grim' && <mesh position={[x < 0 ? 0.03 : -0.03, 0.09, 0.1]} rotation={[0, 0, x < 0 ? -0.5 : 0.5]}><boxGeometry args={[0.3, 0.06, 0.03]} /><meshStandardMaterial color='#111' /></mesh>}
         </group>
       ))}
-      <mesh position={[0, mood === 'sad' ? -0.3 : mood === 'grim' ? -0.24 : -0.2, 0]} rotation={[0, 0, mood === 'sad' ? Math.PI : 0]}>
+      {/* En halv torus rakt upp är en båge uppåt (∩, sur); ett halvt varv runt blir den ett leende (∪). */}
+      <mesh position={[0, mood === 'sad' ? -0.4 : mood === 'grim' ? -0.24 : mood === 'shock' ? -0.2 : -0.14, 0]} rotation={[0, 0, mood === 'sad' ? 0 : Math.PI]}>
         {mood === 'shock' ? <sphereGeometry args={[0.1, 12, 12]} /> : mood === 'grim' ? <boxGeometry args={[0.22, 0.04, 0.03]} /> : <torusGeometry args={[mood === 'hope' ? 0.12 : 0.2, 0.035, 8, 20, Math.PI]} />}
         <meshStandardMaterial color='#111' roughness={0.5} />
       </mesh>
