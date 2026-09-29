@@ -21,7 +21,7 @@ men seedat på rundans id: samma runda spelas upp likadant varje gång.
 | Var ses den? | Egen sida `/rundor/[id]`, länkad från krönikan. Kröningen rörs inte |
 | Regler i reprisen | Liv (standard 3), sedan final mellan de två sista |
 | Slumpen | Seedad på rundans id — samma runda, samma repris |
-| Längd | ~20–40 s. Många spelare = snabbare rally, inte längre film |
+| Längd | ~15–45 s. Många spelare = snabbare rally, inte längre film |
 | Rundor utan placering | Ingen ▶ i krönikan. Direktlänk ger en rad om varför, och länk tillbaka |
 | Utan WebGL / reduced motion | Placeringen som lista — den står alltid på sidan |
 | Delning | Og-bild med placeringen, så länken blir fin i Slack |
@@ -58,7 +58,7 @@ Regler planen alltid håller:
 3. Finalisterna (`standings[0]`, `standings[1]`) missar högst `lives - 1` gånger före finalen.
 4. Samma `seed` ger samma plan.
 5. Två spelare: direkt till finalen.
-6. Hela planen ryms inom 40 s; slagintervallet krymper med antalet missar.
+6. Hela planen ryms inom 45 s; slagintervallet krymper med antalet missar.
 
 Påhittade missar före varje utslagning dras bland de spelare som har minst två liv kvar, så att ingen
 annan kan råka åka ut i fel ordning.
