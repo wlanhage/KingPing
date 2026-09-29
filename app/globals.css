@@ -2124,6 +2124,9 @@ html[data-theme='star-wars'] body {
 .lb-rating { font-variant-numeric: tabular-nums; font-weight: 700; color: #ffe2a1; }
 .lb-rating-empty { color: var(--muted); opacity: .6; }
 .lb-afk-row { opacity: .55; }
+.lb-sort { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: inherit; }
+.lb-sort:hover, th[aria-sort]:not([aria-sort='none']) .lb-sort { color: var(--text); }
+.lb-sort:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; border-radius: 4px; }
 
 /* Profil: vinster per veckodag */
 .weekday-panel { padding: 1.2rem 1.4rem 1rem; border: 1px solid var(--border); border-radius: 14px; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.18)), var(--panel); }
