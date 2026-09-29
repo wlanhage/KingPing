@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Cinzel, Cinzel_Decorative, EB_Garamond } from 'next/font/google';
 import { RealmLogo } from '@/components/RealmLogo';
 import { FakeAd } from '@/components/FakeAd';
+import { KonamiBalls } from '@/components/KonamiBalls';
 import { Starfield } from '@/components/Starfield';
 import { StarfieldShips } from '@/components/StarfieldShips';
 import { getActiveTheme } from '@/lib/theme/server';
@@ -76,6 +77,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {children}
         </div>
         <FakeAd />
+        <KonamiBalls />
       </body>
     </html>
   );
