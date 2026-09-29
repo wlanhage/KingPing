@@ -30,7 +30,6 @@ export const RING = { a: 3.4, b: 2.4 };
 export const SCALE = 0.8;
 export const BENCH_Z = -4.4;
 export const BALL_R = 0.07;
-const FINAL_X = 3.3;
 const CONTACT = { x: 2.9, y: 1.0 };
 /** Var på vägen bollen studsar: på mottagarens halva. */
 const BOUNCE = 0.72;
@@ -237,14 +236,15 @@ export function stageAt(plan: RoundPlan, t: number): StageState {
     }
   }
 
-  // Finalen: de två sista går från ringen till var sin kortsida.
+  // Finalen: de två sista går längs ringen till var sin kortsida. Längs ringen, inte rakt: den raka
+  // vägen från andra sidan går tvärs genom bordet.
   const last = segments[segments.length - 1];
   if (!last || t > lastTurn(last).at) {
     const p = ease(span(t, final.at, final.turns[0].at - 0.25), 'inOut');
     for (const id of [final.winner, final.runnerUp]) {
-      const end = id === final.winner ? final.winnerEnd : 1 - final.winnerEnd;
-      const spot: Vec3 = [end === 0 ? FINAL_X : -FINAL_X, 0, 0];
-      pos.set(id, last ? mix(onRing(angleIn(last, id, last.turns.length - 1)), spot, p) : spot);
+      const target = (id === final.winner ? final.winnerEnd : 1 - final.winnerEnd) * Math.PI;
+      const from = last ? angleIn(last, id, last.turns.length - 1) : target;
+      pos.set(id, onRing(from + shortArc(target - from) * p));
     }
   }
 

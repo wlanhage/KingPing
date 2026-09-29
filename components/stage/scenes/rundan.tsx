@@ -158,8 +158,8 @@ function cameraAt(plan: RoundPlan, t: number, firstServe: number, outs: Out[]): 
     return { position: lerp3([w[0] * 0.7, 2.1, 3.4], [w[0] * 0.3, 3.6, 8.2], p), lookAt: lerp3([w[0], 1.3, w[2]], [w[0] * 0.5, 1.6, -3], p), fov: 38, snap: true };
   }
   if (t >= plan.final.at) {
-    // finalen från sidan, lågt, sakta närmare
-    return { position: [0, 1.7, 5.6 - span(t, plan.final.at, plan.crownAt)], lookAt: [0, 0.95, 0], fov: 42, snap: true };
+    // finalen från sidan, lågt, sakta närmare; långt nog bak för att båda kortsidorna ryms i 4:3
+    return { position: [0, 1.9, 8.0 - span(t, plan.final.at, plan.crownAt) * 0.8], lookAt: [0, 0.95, 0], fov: 42, snap: true };
   }
   const out = outs.find(({ turn }) => t >= turn.at && t < turn.at + 1.4);
   if (out) {

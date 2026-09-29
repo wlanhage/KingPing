@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cheer, hitterAt, LIVES, MAX_DURATION, ordinal, planRound, ringStep, stageAt, type RoundPlan } from '../components/stage/rundan';
+import { cheer, hitterAt, LIVES, MAX_DURATION, ordinal, planRound, ringStep, stageAt, TABLE, type RoundPlan } from '../components/stage/rundan';
 import { rundanScene } from '../components/stage/scenes/rundan';
 import type { SceneCtx } from '../components/stage/types';
 
@@ -110,6 +110,17 @@ describe('stageAt', () => {
         const [x, , z] = stageAt(plan, turn.at).actors[turn.player].pos;
         expect(Math.sign(x)).toBe(turn.end === 0 ? 1 : -1);
         expect(Math.abs(z)).toBeLessThan(1e-6);
+      }
+    }
+  });
+  it('ingen går någonsin genom bordet, inte heller finalisterna på väg till sina kortsidor', () => {
+    for (const seed of seeds) {
+      const plan = planRound(ids(6), seed);
+      for (let t = 0; t <= plan.duration; t += 0.05) {
+        for (const [id, a] of Object.entries(stageAt(plan, t).actors)) {
+          const inside = Math.abs(a.pos[0]) < TABLE.length / 2 + 0.3 && Math.abs(a.pos[2]) < TABLE.width / 2 + 0.3;
+          expect(inside, `${id} vid t=${t.toFixed(2)}, seed ${seed}`).toBe(false);
+        }
       }
     }
   });

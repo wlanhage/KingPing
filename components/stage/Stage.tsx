@@ -1,5 +1,5 @@
 'use client';
-import { useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Bloom, ChromaticAberration, EffectComposer, Noise, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
@@ -39,13 +39,20 @@ function Effects() {
 }
 
 export function StageCanvas({ poseRef, children, onContextLost }: { poseRef: React.MutableRefObject<CameraPose>; children: ReactNode; onContextLost?: () => void }) {
+  // R3F tvingar själv fram en förlorad kontext när canvasen avmonteras (stängd, klar, hot reload).
+  // Den ska inte läsas som att grafikkortet släppte taget. Sätts om vid mount för StrictModes dubbelkörning.
+  const leaving = useRef(false);
+  useEffect(() => {
+    leaving.current = false;
+    return () => { leaving.current = true; };
+  }, []);
   return (
     <Canvas
       className='stage-canvas'
       dpr={[1, 1.5]}
       camera={{ position: [0.8, 1.4, -1.5], fov: 40, near: 0.05, far: 120 }}
       gl={{ antialias: false, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
-      onCreated={(state) => { state.gl.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); onContextLost?.(); }); }}
+      onCreated={(state) => { state.gl.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); if (!leaving.current) onContextLost?.(); }); }}
     >
       <color attach='background' args={['#03030a']} />
       <CameraRig poseRef={poseRef} />
