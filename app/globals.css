@@ -1868,6 +1868,32 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
   .fakead-overlay, .fakead-card { animation: none !important; }
 }
 
+/* ─────────────────────────  PÅSKÄGG: Konami-koden regnar pingisbollar  ───────────────────────── */
+
+.konami-rain { position: fixed; inset: 0; z-index: 140; pointer-events: none; overflow: hidden; }
+.konami-ball {
+  position: absolute;
+  top: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, #fff, #f1efe8 45%, #bdb9ad);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .35);
+  transform: translateY(-120%);
+  animation: konami-fall linear both;
+}
+.konami-ball:nth-child(3n) { background: radial-gradient(circle at 32% 30%, #ffd6a8, #ff8a1f 50%, #c45a00); }
+
+/* Faller, studsar en gång mot golvet och trillar ut genom botten. */
+@keyframes konami-fall {
+  0% { transform: translateY(-120%); animation-timing-function: ease-in; }
+  60% { transform: translateY(calc(100vh - 100%)); animation-timing-function: ease-out; }
+  78% { transform: translateY(calc(72vh - 100%)); animation-timing-function: ease-in; }
+  100% { transform: translateY(110vh); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .konami-rain { display: none; }
+}
+
 
 /* ─────────────────────────  SÄSONGSFINALEN: dörr + återse  ───────────────────────── */
 .finale-door { position: fixed; inset: 0; z-index: 130; display: grid; place-items: center; padding: 1rem; background: rgba(3, 4, 8, .9); backdrop-filter: blur(6px); }
