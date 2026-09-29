@@ -25,6 +25,8 @@ men seedat på rundans id: samma runda spelas upp likadant varje gång.
 | Rundor utan placering | Ingen ▶ i krönikan. Direktlänk ger en rad om varför, och länk tillbaka |
 | Utan WebGL / reduced motion | Placeringen som lista — den står alltid på sidan |
 | Delning | Og-bild med placeringen, så länken blir fin i Slack |
+| Plats | En sal i Jeditemplet på Coruscant: pelare, templets golvemblem, höga fönster mot stadens ljus |
+| Publik | Ewoks på en läktare längs långsidan |
 
 ## Arkitektur
 
@@ -65,6 +67,11 @@ annan kan råka åka ut i fel ordning.
 
 `rundanScene(plan, names): Scene`. Allt är funktioner av tiden, som i övriga scener.
 
+- **Salen:** Jeditemplet på Coruscant. Golvet med emblemet (som i `temple.tsx`), pelare längs väggarna
+  och höga fönster i fonden med Coruscant bakom — `Coruscant` exporteras ur `senate.tsx` och återanvänds.
+- **Ewoks på läktaren** längs ena långsidan: päls, läderhuva med öron, stora svarta ögon, spjut. De
+  gungar i takt med rallyt, hoppar och viftar med spjuten vid varje utslagning och går bananas när
+  kronan faller. De utslagna sätter sig på bänken framför läktaren. Ny prop `Ewok` i `props.tsx`.
 - **Bordet** i mitten med nät. Spelarna (`Racket`) på en oval bana runt bordet, i en färg ur namnet
   (samma hash som vapnet), med namn och livsprickar (●●○) ovanför — `Billboard` + `Text` som i finalen.
 - **Varven:** varje `hit` är en bollbåge mellan kortsidorna, och ringen roterar ett steg.
