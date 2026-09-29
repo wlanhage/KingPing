@@ -3,9 +3,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { StageCanvas } from './Stage';
 import { SCENES } from './scenes';
 import { locate } from './sequence';
-import type { CameraPose, CueName, SceneCtx, SceneKey } from './types';
+import type { CameraPose, CueName, Scene, SceneCtx, SceneKey } from './types';
 
 const REST: CameraPose = { position: [0.8, 1.4, -1.5], lookAt: [0, 1, -6], fov: 40 };
+const NO_SCENES: SceneKey[] = [];
 
 /** Klockan: sekunder sedan start, eller fryst vid frozenT (stillbilder i demoläget). */
 function useClock(frozenT?: number, run = 0) {
@@ -22,8 +23,9 @@ function useClock(frozenT?: number, run = 0) {
   return t;
 }
 
-export function StageShow({ ctx, sequence, onDone, onCue, onFail, frozenT }: { ctx: SceneCtx; sequence: SceneKey[]; onDone?: () => void; onCue?: (cue: CueName) => void; onFail?: () => void; frozenT?: number }) {
-  const scenes = useMemo(() => sequence.map((k) => SCENES[k]), [sequence]);
+export function StageShow({ ctx, sequence = NO_SCENES, scenes: given, onDone, onCue, onFail, frozenT }: { ctx: SceneCtx; sequence?: SceneKey[]; scenes?: Scene[]; onDone?: () => void; onCue?: (cue: CueName) => void; onFail?: () => void; frozenT?: number }) {
+  // Kröningen väljer scener ur registret; reprisen bygger sin egen ur rundans data.
+  const scenes = useMemo(() => given ?? sequence.map((k) => SCENES[k]), [given, sequence]);
   const [run, setRun] = useState(0);
   const raw = useClock(frozenT, run);
   const totalLength = scenes.reduce((a, c) => a + c.duration, 0);
