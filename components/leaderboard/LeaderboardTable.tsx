@@ -9,7 +9,6 @@ const columns: SortColumn[] = [
   { key: 'status', label: 'Status' },
   { key: 'totalReignMs', label: 'Trontid', desc: true },
   { key: 'crownRating', label: 'Kronrating', desc: true },
-  { key: 'classicCrownRating', label: 'Kronrating (klassisk)', desc: true },
   { key: 'totalWins', label: 'Vinster', desc: true },
   { key: 'longestReignMs', label: 'Längsta regering', desc: true },
   { key: 'currentStreak', label: 'Nuvarande streak', desc: true },
@@ -25,7 +24,6 @@ const sortValues = (r: any): Record<string, SortValue> => ({
   status: r.isCurrentKing ? 0 : r.isAfk ? 2 : 1,
   totalReignMs: r.totalReignMs,
   crownRating: r.ratedRounds ? r.crownRating : null,
-  classicCrownRating: r.classicRatedRounds ? r.classicCrownRating : null,
   totalWins: r.totalWins,
   longestReignMs: r.longestReignMs,
   currentStreak: r.currentStreak,
@@ -75,7 +73,6 @@ export function LeaderboardTable({ rows, theme, trend, seasonSlug }: { rows: any
               <td data-label='Status'>{r.isCurrentKing ? `👑 Nuvarande ${theme.roles.monarchLower}` : r.isAfk ? '💤 AFK' : theme.roles.challenger}</td>
               <td data-label='Trontid'>{formatDuration(r.totalReignMs)}</td>
               <td data-label='Kronrating'><CrownRating rating={r.crownRating} rounds={r.ratedRounds} /></td>
-              <td data-label='Kronrating (klassisk)'><CrownRating rating={r.classicCrownRating} rounds={r.classicRatedRounds} /></td>
               <td data-label='Vinster'>{r.totalWins}</td>
               <td data-label='Längsta regering'>{formatDuration(r.longestReignMs)}</td>
               <td data-label='Nuvarande streak'>{r.currentStreak}</td>
