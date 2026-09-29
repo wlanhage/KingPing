@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cheer, hitterAt, LIVES, MAX_DURATION, ordinal, planRound, ringStep, stageAt, type RoundPlan } from '../components/stage/rundan';
+import { rundanScene } from '../components/stage/scenes/rundan';
+import type { SceneCtx } from '../components/stage/types';
 
 const ids = (n: number) => Array.from({ length: n }, (_, i) => `p${i}`);
 const lapTurns = (plan: RoundPlan) => plan.segments.flatMap((s) => s.turns);
@@ -123,5 +125,24 @@ describe('stageAt', () => {
 describe('ordinal', () => {
   it('svenska ordningstal', () => {
     expect([1, 2, 3, 4, 11, 12, 21, 22].map(ordinal)).toEqual(['1:a', '2:a', '3:e', '4:e', '11:e', '12:e', '21:a', '22:a']);
+  });
+});
+
+describe('rundanScene', () => {
+  const ctx: SceneCtx = { winner: 'P0', deposed: null, streak: 1, previousStreak: 0, days: null, cosmic: false, crowningWord: 'kröning', tyrannyWord: '' };
+  it.each([2, 3, 7, 12])('%i spelare: kamera, ord och ljud håller genom hela reprisen', (n) => {
+    const plan = planRound(ids(n), 77);
+    const cast = Object.fromEntries(ids(n).map((id) => [id, { name: id.toUpperCase(), color: '#ffffff' }]));
+    const scene = rundanScene(plan, cast);
+    expect(scene.duration).toBe(plan.duration);
+    for (let t = 0; t <= scene.duration + 0.5; t += 0.1) {
+      const cam = scene.camera(t, ctx);
+      expect([...cam.position, ...cam.lookAt].every(Number.isFinite), `kamera vid ${t.toFixed(1)}`).toBe(true);
+      expect(Number.isFinite(scene.fade?.(t) ?? 0)).toBe(true);
+    }
+    expect(scene.words(ctx).filter((w) => w.text.includes('åker ut'))).toHaveLength(n - 2);
+    // StageShow nycklar cues på tiden: två cues på samma tid och den andra hörs aldrig.
+    const times = (scene.cues ?? []).map((c) => c.at);
+    expect(new Set(times).size).toBe(times.length);
   });
 });
