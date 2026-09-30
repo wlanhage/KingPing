@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { NAME_MAX } from '@/lib/domain/limits';
 
 export type AddPlayerCopy = { placeholder: string; button: string; busy: string; duplicate: string };
 
@@ -41,6 +42,7 @@ export function AddPlayerForm({ copy }: { copy: AddPlayerCopy }) {
         className='crown-input'
         placeholder={copy.placeholder}
         value={name}
+        maxLength={NAME_MAX}
         onChange={(e) => setName(e.target.value)}
         aria-label={copy.placeholder}
       />
