@@ -44,14 +44,14 @@ const SHARDS = (() => {
   return Array.from({ length: 30 }, () => ({ dir: [(r() - 0.5) * 1.2, (r() - 0.3) * 0.9, -0.6 - r() * 0.8] as Vec3, speed: 3 + r() * 5, w: 0.2 + r() * 0.45, h: 0.2 + r() * 0.45, spin: 2 + r() * 8, ph: r() * 6 }));
 })();
 
-/** Coruscant om natten: torn under och bortom kontoret, ett hav av ljus, trafik i strimmor. */
-function Coruscant({ t }: { t: number }) {
+/** Coruscant om natten: torn under och bortom kontoret, ett hav av ljus, trafik i strimmor. Utan `tower` för salar som inte sitter i kanslerns torn. */
+export function Coruscant({ t, tower = true }: { t: number; tower?: boolean }) {
   return (
     <group>
       <mesh position={[0, 0, -95]}><planeGeometry args={[400, 160]} /><meshBasicMaterial color='#1a1240' /></mesh>
       <Sparkles count={300} scale={[200, 60, 20]} position={[0, 40, -85]} size={1.4} speed={0.05} opacity={0.6} color='#ffffff' />
       {/* tornet kontoret sitter i */}
-      <mesh position={[0, -30, -3]}><boxGeometry args={[16, 60, 14]} /><meshStandardMaterial color='#15101f' roughness={0.9} /></mesh>
+      {tower && <mesh position={[0, -30, -3]}><boxGeometry args={[16, 60, 14]} /><meshStandardMaterial color='#15101f' roughness={0.9} /></mesh>}
       {CITY.map((b, i) => (
         <group key={i} position={[b.x, -50, b.z]}>
           <mesh position={[0, b.h / 2, 0]}><boxGeometry args={[b.w, b.h, b.d]} /><meshStandardMaterial color='#100c1c' emissive={b.hue < 0.5 ? '#3a2b66' : '#5a3a4a'} emissiveIntensity={0.35} roughness={0.9} /></mesh>

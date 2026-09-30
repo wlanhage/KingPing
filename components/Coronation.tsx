@@ -34,7 +34,7 @@ export type CoronationEvent = {
 /** Orden scenen behöver från temat: KRÖNING/UPPHÖJELSE och TYRANNI/IMPERIET. */
 export type LaneWords = { crowning: string; tyranny: string };
 
-function hasWebGL(): boolean {
+export function hasWebGL(): boolean {
   try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch { return false; }
 }
 
@@ -202,7 +202,7 @@ function playDroidBeeps(ctx: AudioContext, master: GainNode, at: number) {
 
 /* ── Scenens ljud: sabeln som tänds och brummar, dunsar ── */
 
-function playCueSound(ctx: AudioContext, master: GainNode, cue: CueName) {
+export function playCueSound(ctx: AudioContext, master: GainNode, cue: CueName) {
   const now = ctx.currentTime;
   const noise = (at: number, dur: number, freq: number, vol: number) => {
     const src = ctx.createBufferSource();
@@ -277,6 +277,20 @@ function playCueSound(ctx: AudioContext, master: GainNode, cue: CueName) {
       // kraftblixtar: sprakande stötar och ett elektriskt surr under
       for (let i = 0; i < 6; i++) noise(now + i * 0.09, 0.12, 2600 + (i % 2) * 900, 0.22);
       tone(now, 0.6, 110, 95, 'sawtooth', 0.1, 0.02);
+      break;
+    case 'pok':
+      // pingisbollen mot racket eller bord: kort och ljust
+      tone(now, 0.05, 1500, 1100, 'sine', 0.22, 0.002);
+      noise(now, 0.025, 3500, 0.12);
+      break;
+    case 'cheer':
+      // ewokerna på läktaren: ett sorl och ett gäng pipiga yub nub
+      noise(now, 1.3, 1100, 0.1);
+      for (let i = 0; i < 9; i++) {
+        const at = now + i * 0.09 + Math.random() * 0.05;
+        const f = 700 + Math.random() * 600;
+        tone(at, 0.14, f, f * 1.5, 'triangle', 0.07, 0.01);
+      }
       break;
   }
 }

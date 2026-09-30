@@ -33,7 +33,8 @@ export function Face({ mood = 'happy', scale = 1, position = [0, 0, 0] as Vec3, 
           {mood === 'grim' && <mesh position={[x < 0 ? 0.03 : -0.03, 0.09, 0.1]} rotation={[0, 0, x < 0 ? -0.5 : 0.5]}><boxGeometry args={[0.3, 0.06, 0.03]} /><meshStandardMaterial color='#111' /></mesh>}
         </group>
       ))}
-      <mesh position={[0, mood === 'sad' ? -0.3 : mood === 'grim' ? -0.24 : -0.2, 0]} rotation={[0, 0, mood === 'sad' ? Math.PI : 0]}>
+      {/* En halv torus rakt upp är en båge uppåt (∩, sur); ett halvt varv runt blir den ett leende (∪). */}
+      <mesh position={[0, mood === 'sad' ? -0.4 : mood === 'grim' ? -0.24 : mood === 'shock' ? -0.2 : -0.14, 0]} rotation={[0, 0, mood === 'sad' ? 0 : Math.PI]}>
         {mood === 'shock' ? <sphereGeometry args={[0.1, 12, 12]} /> : mood === 'grim' ? <boxGeometry args={[0.22, 0.04, 0.03]} /> : <torusGeometry args={[mood === 'hope' ? 0.12 : 0.2, 0.035, 8, 20, Math.PI]} />}
         <meshStandardMaterial color='#111' roughness={0.5} />
       </mesh>
@@ -145,3 +146,28 @@ export function Racket({ position = [0, 0, 0] as Vec3, rotation = [0, 0, 0] as V
 }
 
 export const lerp3 = (a: Vec3, b: Vec3, p: number): Vec3 => [a[0] + (b[0] - a[0]) * p, a[1] + (b[1] - a[1]) * p, a[2] + (b[2] - a[2]) * p];
+
+/**
+ * En ewok: päls, läderhuva med öronen genom, stora blanka ögon och ett spjut i högerhanden.
+ * `spear` är spjutarmens vinkel — publiken lyfter spjuten när den jublar. Ungefär en meter hög.
+ */
+export function Ewok({ position = [0, 0, 0] as Vec3, rotation = [0, 0, 0] as Vec3, fur = '#5a3d26', hood = '#b36b4a', spear = 0.25, scale = 1 }: { position?: Vec3; rotation?: Vec3; fur?: string; hood?: string; spear?: number; scale?: number }) {
+  const pelt = <meshStandardMaterial color={fur} roughness={1} />;
+  return (
+    <group position={position} rotation={rotation} scale={scale}>
+      <mesh position={[0, 0.34, 0]} scale={[1, 1.15, 0.9]}><sphereGeometry args={[0.3, 16, 14]} />{pelt}</mesh>
+      {[-0.13, 0.13].map((x) => <mesh key={x} position={[x, 0.05, 0.08]} scale={[1, 0.6, 1.4]}><sphereGeometry args={[0.08, 10, 8]} />{pelt}</mesh>)}
+      <mesh position={[0, 0.78, 0]}><sphereGeometry args={[0.27, 18, 16]} />{pelt}</mesh>
+      {/* huvan: läder över hjässan och bakhuvudet, öppen framåt så ansiktet syns */}
+      <mesh position={[0, 0.8, -0.02]} rotation={[-0.35, 0, 0]}><sphereGeometry args={[0.3, 18, 12, 0, Math.PI * 2, 0, Math.PI * 0.55]} /><meshStandardMaterial color={hood} roughness={0.8} side={2} /></mesh>
+      {[-0.17, 0.17].map((x) => <mesh key={x} position={[x, 1.05, -0.04]}><sphereGeometry args={[0.07, 10, 8]} />{pelt}</mesh>)}
+      {[-0.1, 0.1].map((x) => <mesh key={x} position={[x, 0.82, 0.22]}><sphereGeometry args={[0.055, 12, 10]} /><meshPhysicalMaterial color='#050505' roughness={0.1} clearcoat={1} /></mesh>)}
+      <mesh position={[0, 0.71, 0.24]} scale={[1.2, 0.85, 1]}><sphereGeometry args={[0.08, 12, 10]} /><meshStandardMaterial color='#c9a57a' roughness={0.9} /></mesh>
+      <mesh position={[0, 0.74, 0.31]}><sphereGeometry args={[0.028, 8, 8]} /><meshStandardMaterial color='#111111' /></mesh>
+      <group position={[0.3, 0.45, 0.05]} rotation={[0, 0, -spear]}>
+        <mesh position={[0, 0.45, 0]}><cylinderGeometry args={[0.018, 0.018, 1.1, 6]} /><meshStandardMaterial color='#8a6a45' roughness={0.9} /></mesh>
+        <mesh position={[0, 1.05, 0]}><coneGeometry args={[0.04, 0.14, 6]} /><meshStandardMaterial color='#cfcfcf' metalness={0.6} roughness={0.4} /></mesh>
+      </group>
+    </group>
+  );
+}

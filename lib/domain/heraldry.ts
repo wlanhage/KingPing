@@ -5,7 +5,7 @@
  */
 
 /** FNV-1a. Namnet ska ge samma vapen för alltid — över omstarter, säsonger och teman. */
-function hash(input: string): number {
+export function hash(input: string): number {
   let h = 0x811c9dc5;
   for (let i = 0; i < input.length; i++) {
     h ^= input.charCodeAt(i);

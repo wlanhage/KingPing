@@ -2291,3 +2291,18 @@ html[data-theme='star-wars'] .skeleton-text::after { content: 'Hoppar till hyper
 @keyframes stage-slam { 0% { transform: scale(3.2) rotate(-6deg); opacity: 0; } 55% { transform: scale(.94) rotate(1deg); opacity: 1; } 100% { transform: scale(1) rotate(-2deg); opacity: 1; } }
 @keyframes stage-rise { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .stage-word { animation: none !important; } }
+
+/* Rundan i repris */
+.replay-eyebrow { margin: 0 0 .3rem; font-size: .78rem; letter-spacing: .24em; text-transform: uppercase; color: var(--muted); }
+.replay-card { display: grid; gap: 1.2rem; justify-items: start; }
+.replay-standings { margin: 0; padding: 0; list-style: none; display: grid; gap: .45rem; }
+.replay-standings li { display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; }
+.replay-place { min-width: 2.6rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.replay-play { padding: .75rem 1.4rem; border: 1px solid var(--gold); border-radius: 999px; background: var(--gold); color: #1a1200; font: 700 .9rem/1 var(--font-display), Georgia, serif; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+.replay-play:disabled { opacity: .5; cursor: default; }
+.replay-note { margin: 0; color: var(--muted); }
+.replay-close { position: fixed; top: 1rem; right: 1rem; z-index: 140; width: 2.6rem; height: 2.6rem; border: 1px solid rgba(255,255,255,.4); border-radius: 999px; background: rgba(0,0,0,.5); color: #fff; font-size: 1.1rem; cursor: pointer; }
+.replay-close:hover { border-color: #fff; background: rgba(255,255,255,.12); }
+.replay-back { color: var(--muted); }
+.replay-link { margin-left: .5rem; white-space: nowrap; }
+.crawl-replay { color: inherit; text-decoration: underline; text-underline-offset: .2em; }
