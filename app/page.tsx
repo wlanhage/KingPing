@@ -11,6 +11,8 @@ import { SeasonStrip } from '@/components/SeasonStrip';
 import { NationSeal } from '@/components/NationSeal';
 import { StageDemo } from '@/components/stage/StageDemo';
 import { startingAbsent } from '@/lib/domain/standings';
+import { playerPortrait } from '@/lib/og/sigil';
+import { assignCharacters } from '@/lib/domain/heraldry';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +29,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ d
   const lastEvent = await prisma.winEvent.findFirst({ orderBy: { occurredAt: 'desc' }, select: { occurredAt: true } });
   const lastRound = await prisma.winEvent.findFirst({ where: { standings: { isEmpty: false } }, orderBy: { occurredAt: 'desc' }, select: { standings: true } });
   const latestInSeason = await prisma.winEvent.findFirst({ where: { occurredAt: winOccurredAtFilter(await resolveSeason()) }, orderBy: { occurredAt: 'desc' }, select: { nationState: true } });
-  const initial = king?.name?.trim()?.[0]?.toUpperCase() ?? '–';
+  // Figuren tilldelas mot hela truppen (även frånvarande), som på spelarsidorna.
+  const roster = await prisma.player.findMany({ select: { id: true, name: true, createdAt: true } });
+  const portrait = king ? playerPortrait(king.name, { theme, isKing: true, characterIndex: assignCharacters(roster, theme.heraldry.characters?.length ?? 0)[king.playerId] }) : null;
 
   return (
     <main className='dash'>
@@ -40,7 +44,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ d
       <section className='dash-throne'>
         <span className='dash-eyebrow'>Nuvarande {theme.roles.monarchLower}</span>
         <div className='dash-crown' aria-hidden>👑</div>
-        <div className='dash-king-avatar'><span>{initial}</span></div>
+        <div className='dash-king-avatar'>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {portrait ? <img src={portrait.src} alt={portrait.alt} /> : <span>–</span>}
+        </div>
         <h2 className='dash-king-name'>{king?.name ?? `Ingen ${theme.verbs.crowning} ännu`}</h2>
 
         {king ? (
