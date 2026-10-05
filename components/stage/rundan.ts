@@ -11,20 +11,20 @@ import type { Vec3 } from './types';
 
 export const LIVES = 3;
 /** Taket för hela reprisen. Många spelare ger snabbare rally, inte längre film. */
-export const MAX_DURATION = 45;
+export const MAX_DURATION = 90;
 
 // Nominella tider i sekunder. Varven komprimeras om hela reprisen inte ryms under taket.
-const INTRO = 3.0;
-const HIT = 0.4;
-const MISS_PAUSE = 0.8;
-const OUT_PAUSE = 2.0;
+const INTRO = 3.5;
+const HIT = 0.55;
+const MISS_PAUSE = 1.1;
+const OUT_PAUSE = 2.6;
 // Finalintrot rymmer duellen: in till mötet framför bordet, sablarna korsas, ut till kortsidorna.
 const FINAL_INTRO = 3.4;
 export const DUEL = { meet: 1.0, part: 2.3 };
-const FINAL_HIT = 0.5;
+const FINAL_HIT = 0.65;
 const CROWN_DELAY = 1.1;
 const CROWN_FALL = 0.9;
-const OUTRO = 4.2;
+const OUTRO = 5.0;
 
 /** Bordet ligger längs x mitt i salen. Spelarna springer på en ellips runt det; vinkel 0 är östra kortsidan. */
 export const TABLE = { length: 3.0, width: 1.7, height: 0.76 };
