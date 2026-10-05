@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cheer, hitterAt, LIVES, MAX_DURATION, ordinal, planRound, ringStep, stageAt, TABLE, type RoundPlan } from '../components/stage/rundan';
+import { cheer, droidAt, droidTrips, DUEL, hitterAt, LIVES, MAX_DURATION, ordinal, outfit, parries, planRound, ringStep, slowmo, stageAt, TABLE, wieldsSaber, type RoundPlan } from '../components/stage/rundan';
 import { rundanScene } from '../components/stage/scenes/rundan';
 import type { SceneCtx } from '../components/stage/types';
 
@@ -145,7 +145,8 @@ describe('rundanScene', () => {
     const plan = planRound(ids(n), 77);
     const cast = Object.fromEntries(ids(n).map((id) => [id, { name: id.toUpperCase(), color: '#ffffff' }]));
     const scene = rundanScene(plan, cast);
-    expect(scene.duration).toBe(plan.duration);
+    expect(scene.duration).toBeCloseTo(slowmo(plan).real(plan.duration), 9);
+    expect(scene.duration).toBeLessThanOrEqual(MAX_DURATION + 1e-9);
     for (let t = 0; t <= scene.duration + 0.5; t += 0.1) {
       const cam = scene.camera(t, ctx);
       expect([...cam.position, ...cam.lookAt].every(Number.isFinite), `kamera vid ${t.toFixed(1)}`).toBe(true);
@@ -155,5 +156,106 @@ describe('rundanScene', () => {
     // StageShow nycklar cues på tiden: två cues på samma tid och den andra hörs aldrig.
     const times = (scene.cues ?? []).map((c) => c.at);
     expect(new Set(times).size).toBe(times.length);
+  });
+});
+
+describe('outfit', () => {
+  it.each([1, 2, 3, 4, 6, 7, 12])('%i spelare: alla klädda, ett skepp, podracers och blasters enligt antalet', (n) => {
+    const o = outfit(ids(n));
+    const gears = ids(n).map((id) => o[id].gear);
+    const count = (g: string) => gears.filter((x) => x === g).length;
+    expect(count('falcon')).toBe(n >= 2 ? 1 : 0);
+    expect(count('pod')).toBe(n >= 7 ? 2 : n >= 3 ? 1 : 0);
+    if (n >= 4) expect(count('blaster')).toBeGreaterThanOrEqual(1);
+  });
+  it('beror på id:na, inte på ordningen (placeringen)', () => {
+    const a = outfit(ids(8));
+    const b = outfit([...ids(8)].reverse());
+    expect(b).toEqual(a);
+  });
+});
+
+describe('outfit med meriter', () => {
+  it('skeppet till längst regeringstid, grön sabel till mästaren, padawaner utan att ändra prylarna', () => {
+    const o = outfit(ids(6), { falcon: 'p3', master: 'p4', padawans: ['p5', 'p4'] });
+    expect(o.p3.gear).toBe('falcon');
+    expect(Object.values(o).filter((k) => k.gear === 'falcon')).toHaveLength(1);
+    expect(o.p4).toMatchObject({ gear: 'saber', master: true, padawan: false, saber: '#3dff6e' });
+    expect(o.p5.padawan).toBe(true);
+  });
+  it('meriter för någon som inte spelade ignoreras', () => {
+    const o = outfit(ids(4), { falcon: 'x', master: 'y' });
+    expect(Object.values(o).filter((k) => k.gear === 'falcon')).toHaveLength(1);
+    expect(Object.values(o).some((k) => k.master)).toBe(false);
+  });
+});
+
+describe('finalens duell', () => {
+  it('finalisterna möts framför bordet vända mot varandra, ungefär en meter isär', () => {
+    for (const seed of seeds) {
+      const plan = planRound(ids(6), seed);
+      const s = stageAt(plan, plan.final.at + (DUEL.meet + DUEL.part) / 2);
+      const [a, b] = [s.actors[plan.final.winner], s.actors[plan.final.runnerUp]];
+      expect(a.pos[2]).toBeGreaterThan(TABLE.width / 2);
+      expect(Math.abs(a.pos[0] - b.pos[0])).toBeGreaterThan(0.6);
+      expect(Math.abs(a.pos[0] - b.pos[0])).toBeLessThan(1.4);
+      // vänd mot den andra (sidled) och lite mot kameran (+z)
+      expect(Math.sign(Math.sin(a.heading))).toBe(-Math.sign(a.pos[0] - b.pos[0]));
+      expect(Math.cos(a.heading)).toBeGreaterThan(0.2);
+    }
+  });
+});
+
+describe('ultrarapid', () => {
+  it.each([2, 3, 7, 12])('%i spelare: warp och real är varandras inverser och går framåt', (n) => {
+    for (const seed of seeds.slice(0, 10)) {
+      const plan = planRound(ids(n), seed);
+      const { warp, real } = slowmo(plan);
+      let prev = -1;
+      for (let s = 0; s <= plan.duration; s += 0.05) {
+        expect(warp(real(s))).toBeCloseTo(s, 9);
+        expect(real(s)).toBeGreaterThan(prev);
+        prev = real(s);
+      }
+      // varje utslagning går långsamt: en sekund verklig tid nära missen är mindre än en halv i scenen
+      const out = plan.segments[0]?.turns.at(-1)?.at ?? plan.final.turns.at(-1)!.at;
+      expect(warp(real(out) + 0.5) - out).toBeLessThan(0.25);
+    }
+  });
+});
+
+describe('parader', () => {
+  it('bara träffar, bara av den som har sabel just då', () => {
+    for (const seed of seeds) {
+      const plan = planRound(ids(7), seed);
+      const kit = outfit(ids(7));
+      for (const x of parries(plan, kit)) {
+        expect(x.kind).toBe('hit');
+        expect(wieldsSaber(plan, kit, x.player, x.at)).toBe(true);
+      }
+    }
+    const plan = planRound(ids(7), 5);
+    expect(parries(plan, outfit(ids(7))).length).toBeGreaterThan(0);
+  });
+});
+
+describe('droiden', () => {
+  it('en tur per miss, en i taget, och bollen hämtas efter att den landat', () => {
+    for (const seed of seeds.slice(0, 10)) {
+      const plan = planRound(ids(6), seed);
+      const trips = droidTrips(plan);
+      const misses = [...plan.segments.flatMap((s) => s.turns), ...plan.final.turns].filter((x) => x.kind !== 'hit');
+      expect(trips).toHaveLength(misses.length);
+      trips.forEach((x, i) => {
+        expect(x.pick).toBeGreaterThan(x.lands);
+        if (i) expect(x.leave).toBeGreaterThanOrEqual(trips[i - 1].home);
+        expect(x.ball.every(Number.isFinite)).toBe(true);
+      });
+      for (let t = 0; t <= plan.duration + 20; t += 0.1) {
+        const d = droidAt(trips, t);
+        const inside = Math.abs(d.pos[0]) < TABLE.length / 2 + 0.3 && Math.abs(d.pos[2]) < TABLE.width / 2 + 0.3;
+        expect(inside, `droiden genom bordet vid ${t.toFixed(1)}`).toBe(false);
+      }
+    }
   });
 });

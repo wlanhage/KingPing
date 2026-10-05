@@ -58,7 +58,7 @@ export function StageShow({ ctx, sequence = NO_SCENES, scenes: given, onDone, on
 
   return (
     <div className='stage-overlay' onClick={ended ? finish : undefined} role={ended ? 'button' : undefined}>
-      <StageCanvas poseRef={poseRef} onContextLost={onFail}>
+      <StageCanvas poseRef={poseRef} onContextLost={onFail} photo={scene?.photo}>
         {scene && <scene.Scene t={sceneT} ctx={ctx} />}
       </StageCanvas>
       <div className='stage-black' style={{ opacity: black }} />
