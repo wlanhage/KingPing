@@ -1,6 +1,6 @@
 import type { EventType, NationState } from '@prisma/client';
 
-export type PageKey = 'home' | 'leaderboard' | 'history' | 'players' | 'badges' | 'archive' | 'settings';
+export type PageKey = 'home' | 'leaderboard' | 'history' | 'players' | 'badges' | 'archive' | 'alltime' | 'settings';
 
 /** Delvis omdöpning av en badge. Utelämnade fält faller tillbaka på basdefinitionen. */
 export type BadgeOverride = { name?: string; description?: string; emoji?: string; icon?: string };

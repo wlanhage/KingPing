@@ -2309,3 +2309,146 @@ html[data-theme='star-wars'] .skeleton-text::after { content: 'Hoppar till hyper
 .replay-back { color: var(--muted); }
 .replay-link { margin-left: .5rem; white-space: nowrap; }
 .crawl-replay { color: inherit; text-decoration: underline; text-underline-offset: .2em; }
+
+/* ── Genom tiderna ──
+   Diagrammen följer temats palett: text i --text/--muted, aldrig i seriefärgen; rutnät och axlar
+   som hårfina linjer i --border; siffror i systemets sans så att de går att läsa i små storlekar. */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.alltime { --lane-name: 7.5rem; gap: 1.25rem; }
+.alltime-eyebrow { margin: 0 0 .3rem; color: var(--muted); font-family: var(--vz-sans); font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; }
+.alltime-headline { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .5rem 2rem; margin-top: 1.25rem; }
+.vz-hero { margin: 0; font-family: var(--vz-sans); font-weight: 650; font-size: clamp(3rem, 9vw, 4.75rem); line-height: .95; color: var(--gold); letter-spacing: -.02em; }
+.vz-hero span { display: block; margin-top: .35rem; font-size: .85rem; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.alltime-lede { flex: 1 1 22rem; margin: 0; max-width: 40rem; font-size: 1.15rem; line-height: 1.5; }
+.vz-kpis { display: flex; flex-wrap: wrap; gap: 1px; margin: 1.25rem 0 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--border); }
+.vz-kpi { flex: 1 1 9rem; padding: .8rem 1rem; background: var(--panel); }
+.vz-kpi dt { font-family: var(--vz-sans); font-size: .75rem; color: var(--muted); }
+.vz-kpi dd { margin: .2rem 0 0; font-family: var(--vz-sans); font-size: 1.5rem; font-weight: 600; }
+
+.vz-panel { min-width: 0; padding: 1.2rem 1.4rem 1.3rem; border: 1px solid var(--border); border-radius: 14px; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.18)), var(--panel); }
+.vz-panel-head { margin-bottom: 1rem; }
+.vz-panel-head h2 { margin: 0; font-family: var(--font-display), Georgia, serif; font-size: 1.2rem; letter-spacing: .04em; }
+.vz-panel-head p { margin: .3rem 0 0; color: var(--muted); }
+.vz-note { margin: .75rem 0 0; color: var(--muted); font-size: .95rem; }
+.vz-note strong { color: var(--text); }
+.vz-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; }
+.vz-scroll { overflow-x: auto; }
+.vz-dot { display: inline-block; flex: none; width: 8px; height: 8px; margin-right: .45rem; border-radius: 50%; vertical-align: .08em; }
+.vz-line-key { display: inline-block; flex: none; width: 14px; height: 2px; border-radius: 1px; vertical-align: .3em; }
+.vz-nowrap { white-space: nowrap; }
+.vz-num { font-family: var(--vz-sans); font-variant-numeric: tabular-nums; }
+.alltime-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: 1.25rem; }
+
+/* Tooltipen: värdet först och starkast, etiketten under. */
+.vz-tips { --vz-sans: system-ui, -apple-system, 'Segoe UI', sans-serif; position: relative; }
+.vz-tip, .race-tip { position: absolute; z-index: 30; pointer-events: none; padding: .45rem .65rem; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-soft); box-shadow: 0 10px 24px rgba(0,0,0,.45); font-family: var(--vz-sans); font-size: .8rem; }
+.vz-tip { transform: translate(-50%, calc(-100% - 8px)); display: grid; gap: .1rem; max-width: 18rem; text-align: center; }
+.vz-tip strong { font-size: .95rem; color: var(--text); }
+.vz-tip span { color: var(--muted); }
+[data-tip] { cursor: default; }
+[data-tip]:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+
+/* Tronbandet */
+.lanes { font-family: var(--vz-sans); }
+.lanes-head, .lanes-row, .lanes-axis { display: grid; grid-template-columns: var(--lane-name) 1fr; align-items: center; }
+.lanes-track { position: relative; height: 100%; }
+.lanes-head .lanes-track { height: 1.4rem; }
+.lanes-season-label { position: absolute; top: 0; padding-left: .4rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--muted); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; }
+.lanes-body { position: relative; }
+.lanes-bands { position: absolute; inset: 0 0 0 var(--lane-name); }
+.lanes-band { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--border); }
+.lanes-band.is-odd { background: rgba(255,255,255,.025); }
+.lanes-row { height: 26px; }
+.lanes-row + .lanes-row { border-top: 1px solid color-mix(in oklab, var(--border) 45%, transparent); }
+.lanes-name { display: flex; align-items: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: .85rem; }
+.lanes-row .lanes-track { height: 26px; }
+.lanes-reign { position: absolute; top: 7px; height: 12px; border-radius: 2px; transition: filter .12s; }
+.lanes-reign:hover { filter: brightness(1.35); z-index: 2; }
+.lanes-reign.is-record, .lanes-key.is-record { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--gold); z-index: 1; }
+.lanes-reign.is-open { animation: lane-pulse 2.4s ease-in-out infinite; }
+@keyframes lane-pulse { 50% { filter: brightness(1.45); } }
+.lanes-key { display: inline-block; width: 18px; height: 10px; margin: 0 .3rem 0 .2rem; border-radius: 2px; background: var(--muted); vertical-align: -.05em; }
+.lanes-axis .lanes-track { height: 1.4rem; border-top: 1px solid var(--border); }
+.lanes-tick { position: absolute; top: 0; padding: .25rem 0 0 .3rem; border-left: 1px solid var(--border); height: .9rem; color: var(--muted); font-size: .72rem; line-height: 1; }
+
+/* Kapplöpningen */
+.race { font-family: var(--vz-sans); }
+.race-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1.2rem; margin-bottom: 1rem; }
+.vz-segmented { display: inline-flex; padding: 2px; border: 1px solid var(--border); border-radius: 8px; }
+.vz-segmented button { padding: .3rem .8rem; border: 0; border-radius: 6px; background: none; color: var(--muted); font: inherit; font-size: .85rem; cursor: pointer; }
+.vz-segmented button[aria-pressed='true'] { background: var(--panel-soft); color: var(--text); font-weight: 600; }
+.vz-legend { display: flex; flex-wrap: wrap; gap: .15rem .3rem; margin: 0; padding: 0; list-style: none; }
+.vz-legend button { display: inline-flex; align-items: center; gap: .4rem; padding: .25rem .45rem; border: 0; border-radius: 6px; background: none; color: var(--text); font: inherit; font-size: .82rem; cursor: pointer; }
+.vz-legend button:hover, .vz-legend button:focus-visible { background: var(--panel-soft); }
+.race-frame { display: grid; grid-template-columns: 2.5rem 1fr 8.5rem; }
+.race-yaxis { position: relative; height: 300px; }
+.race-yaxis span { position: absolute; right: .5rem; transform: translateY(-50%); color: var(--muted); font-size: .72rem; font-variant-numeric: tabular-nums; }
+.race-plot { position: relative; height: 300px; grid-column: 2 / 4; margin-right: 8.5rem; border-bottom: 1px solid var(--border); outline: none; touch-action: pan-y; }
+.race-plot:focus-visible { box-shadow: 0 0 0 2px var(--gold); border-radius: 2px; }
+.race-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.race-plot polyline { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; transition: opacity .15s; }
+.race-plot .is-faded { opacity: .15; }
+.race-grid { position: absolute; left: 0; right: 0; border-top: 1px solid color-mix(in oklab, var(--border) 55%, transparent); }
+.race-season { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--border); }
+.race-season em { position: absolute; top: 0; left: .35rem; color: var(--muted); font-size: .68rem; font-style: normal; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+.race-end { position: absolute; left: calc(100% + .5rem); transform: translateY(-50%); white-space: nowrap; color: var(--muted); font-size: .78rem; transition: opacity .15s; }
+.race-end b { color: var(--text); font-weight: 600; }
+.race-cross { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--muted); pointer-events: none; }
+.race-dot { position: absolute; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 2px var(--panel); transform: translate(-50%, -50%); pointer-events: none; }
+.race-tip { top: .5rem; margin-left: 12px; min-width: 9.5rem; display: grid; gap: .2rem; }
+.race-tip.is-left { transform: translateX(calc(-100% - 24px)); }
+.race-tip-date { margin-bottom: .15rem; color: var(--muted); }
+.race-tip-row { display: grid; grid-template-columns: 14px 3.2rem 1fr; align-items: center; gap: .45rem; }
+.race-tip-row strong { color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+.race-tip-row span { color: var(--muted); }
+@media (max-width: 640px) {
+  .race-frame { grid-template-columns: 2.2rem 1fr; }
+  .race-plot { margin-right: 0; }
+  .race-end { display: none; }
+}
+
+/* Rekordboken */
+.records { display: grid; grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr)); gap: .75rem; }
+.record { padding: .9rem 1rem; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-soft); }
+.record p { margin: 0; }
+.record-title { color: var(--muted); font-family: var(--vz-sans); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; }
+.record .record-value { margin-top: .35rem; font-family: var(--vz-sans); font-size: 1.6rem; font-weight: 650; color: var(--gold); line-height: 1.1; }
+.record .record-holder { margin-top: .4rem; display: flex; align-items: center; font-weight: 600; }
+.record-holder a { color: var(--text); }
+.record .record-detail { margin-top: .2rem; color: var(--muted); font-size: .9rem; }
+
+/* Rutnäten (säsonger, fejder, klockan): riktiga tabeller, så att de också är sin egen tabellvy. */
+.vz-grid { width: auto; min-width: 0; border-collapse: separate; border-spacing: 2px; font-family: var(--vz-sans); font-size: .85rem; }
+.vz-grid th, .vz-grid td { padding: 0; border: 0; vertical-align: middle; background: none; }
+.vz-grid thead th { color: var(--muted); font-weight: 500; font-size: .75rem; text-align: center; padding-bottom: .3rem; }
+.vz-grid tbody th { padding-right: .7rem; text-align: left; font-weight: 500; white-space: nowrap; }
+.vz-grid-caption { caption-side: top; text-align: left; padding-bottom: .5rem; color: var(--muted); font-size: .78rem; }
+.vz-grid .vz-cell { min-width: 4.2rem; height: 2.1rem; padding: 0 .5rem; border-radius: 4px; background: color-mix(in oklab, var(--panel-soft) 70%, transparent); text-align: center; font-variant-numeric: tabular-nums; transition: filter .12s; }
+.vz-cell:hover { filter: brightness(1.2); }
+.vz-cell.is-empty { color: color-mix(in oklab, var(--muted) 55%, transparent); }
+.vz-grid .vz-cell.is-self { background: repeating-linear-gradient(135deg, transparent 0 4px, color-mix(in oklab, var(--border) 60%, transparent) 4px 5px); }
+.vz-cell.is-champion { font-weight: 700; box-shadow: inset 0 0 0 2px var(--gold); }
+.vz-grid-season { display: grid; gap: .1rem; min-width: 7rem; color: var(--text); text-decoration: none; }
+.vz-grid-season span { font-weight: 600; letter-spacing: .04em; }
+.vz-grid-season small { color: var(--muted); font-size: .72rem; font-weight: 400; }
+.vz-grid-feud .vz-cell { min-width: 2.4rem; padding: 0; }
+.vz-grid .vz-grid-vertical { height: 4.5rem; vertical-align: bottom; }
+.vz-grid-vertical span { display: inline-block; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+.vz-grid .vz-grid-total { padding-left: .6rem; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.pulse-clock .vz-cell { min-width: 1.9rem; height: 1.9rem; padding: 0; font-size: .75rem; }
+
+/* Rikets puls */
+.pulse-cal { display: grid; grid-auto-rows: 14px; gap: 2px; font-family: var(--vz-sans); font-size: .68rem; color: var(--muted); }
+.pulse-month { white-space: nowrap; overflow: visible; line-height: 14px; }
+.pulse-day { line-height: 14px; }
+.pulse-cell { border-radius: 3px; background: color-mix(in oklab, var(--panel-soft) 80%, transparent); }
+.pulse-cell:hover { outline: 1px solid var(--text); }
+.vz-heat-legend { display: flex; align-items: center; gap: 3px; color: var(--muted); font-family: var(--vz-sans); font-size: .72rem; }
+.vz-heat-legend span { margin: 0 .3rem; }
+.vz-heat-swatch { width: 14px; height: 14px; border-radius: 3px; background: color-mix(in oklab, var(--panel-soft) 80%, transparent); }
+
+@media (max-width: 640px) {
+  .alltime { --lane-name: 5.5rem; }
+  .vz-panel { padding: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) { .lanes-reign.is-open { animation: none; } }

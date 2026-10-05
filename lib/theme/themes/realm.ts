@@ -14,6 +14,7 @@ export const realm: Theme = {
     players: 'Riddare',
     badges: 'Utmärkelser',
     archive: 'Arkivet',
+    alltime: 'Genom tiderna',
     settings: 'Rådet',
   },
   pages: {
@@ -23,6 +24,7 @@ export const realm: Theme = {
     players: { title: 'Riddare', subtitle: 'Rikets utmanare. Klicka in på en riddare för full profil.' },
     badges: { title: 'Utmärkelser', subtitle: 'Alla {count} bragder en riddare kan förtjäna i riket.' },
     archive: { title: 'Arkivet', subtitle: 'Säsongerna som varit — och den som pågår.' },
+    alltime: { title: 'Genom tiderna', subtitle: 'Hela rikets historia på en sida — varje regering, varje svit, varje fejd.' },
     settings: { title: 'Rådet', subtitle: 'Miljöstatus för integrationer.' },
   },
   notFound: { title: 'Denna sal finns inte', subtitle: 'Kartan över riket har inget rum med det namnet. Kanske har härolden skrivit fel.', back: 'Tillbaka till Tronsalen' },
