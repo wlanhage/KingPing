@@ -1,9 +1,8 @@
 'use client';
-import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { Billboard, Environment, Lightformer, MeshReflectorMaterial, RoundedBox, Sparkles, SpotLight, Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { lerp3 } from '../props';
-import { Astromech, daylight, HAND_POS, LightSaber, marble as marbleMap, netMap, PodRacer, RealCity, RealCrown, RealEwok, RealRacket, scuffs, Sign, Sparks, stoneGrain, wood, type RacketGear, type Sky } from '../real';
+import { Astromech, daylight, HAND_POS, LightSaber, Lit, marble as marbleMap, netMap, PodRacer, RealCity, RealCrown, RealEwok, RealRacket, scuffs, Sign, Sparks, stoneGrain, wood, type RacketGear, type Sky } from '../real';
 import { ease, rng, span } from '../anim';
 import { hash } from '@/lib/domain/heraldry';
 import { BALL_R, ballPos, BENCH_Z, cheer, droidAt, droidTrips, DUEL, ordinal, outfit, PALETTE, parries, SCALE, seatPos, slowmo, stageAt, TABLE, wieldsSaber, type Actor, type Gear, type Kit, type Merits, type RoundPlan, type Trip, type Turn } from '../rundan';
@@ -49,24 +48,6 @@ const EWOKS = (() => {
     tempo: 0.8 + r() * 0.5,
   })));
 })();
-
-/**
- * Skuggor på allt fast och opakt. Glas, text, livsprickar och stadens fönster (basic-material)
- * varken kastar eller tar emot. `noCast` i userData: tar emot men kastar inte (pälsens skal).
- */
-function Lit({ children }: { children: ReactNode }) {
-  const ref = useRef<THREE.Group>(null);
-  // ponytail: går igenom alla meshar varje render (~700, billigt); flytta till castShadow-props om scenen växer mycket.
-  useLayoutEffect(() => {
-    ref.current?.traverse((o) => {
-      if (!(o instanceof THREE.Mesh)) return;
-      const m = o.material as THREE.Material & { isMeshBasicMaterial?: boolean };
-      o.receiveShadow = !m.transparent && !m.isMeshBasicMaterial;
-      o.castShadow = o.receiveShadow && !o.userData.noCast;
-    });
-  });
-  return <group ref={ref}>{children}</group>;
-}
 
 /**
  * Ljuset som i en riktig sal: en varm takarmatur över bordet, kallt stadsljus genom fönstren som

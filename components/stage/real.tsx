@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, type ReactNode } from 'react';
 import { useThree } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
@@ -133,6 +133,50 @@ const eyeMap = once(() => {
   return tex;
 });
 
+/**
+ * Skuggor på allt fast och opakt. Glas, text, livsprickar och stadens fönster (basic-material)
+ * varken kastar eller tar emot. `noCast` i userData: tar emot men kastar inte (pälsens skal).
+ */
+export function Lit({ children }: { children: ReactNode }) {
+  const ref = useRef<THREE.Group>(null);
+  // ponytail: går igenom alla meshar varje render (~700, billigt); flytta till castShadow-props om scenen växer mycket.
+  useLayoutEffect(() => {
+    ref.current?.traverse((o) => {
+      if (!(o instanceof THREE.Mesh)) return;
+      const m = o.material as THREE.Material & { isMeshBasicMaterial?: boolean };
+      o.receiveShadow = !m.transparent && !m.isMeshBasicMaterial;
+      o.castShadow = o.receiveShadow && !o.userData.noCast;
+    });
+  });
+  return <group ref={ref}>{children}</group>;
+}
+
+/** Sithögat: samma vita, men irisen gul mot en röd kant. Glödkartan är bara irisen. */
+const SITH_IRIS: [number, string][] = [[0, '#fff2a0'], [0.4, '#ffc21a'], [0.8, '#e0480a'], [1, '#3a0604']];
+const sithEyeMap = once(() => {
+  const base = eyeMap().image as HTMLCanvasElement;
+  const tex = canvasTexture(512, 256, 18, (g) => {
+    g.drawImage(base, 0, 0);
+    const iris = g.createRadialGradient(128, 128, 14, 128, 128, 52);
+    SITH_IRIS.forEach(([at, c]) => iris.addColorStop(at, c));
+    g.fillStyle = iris; g.beginPath(); g.arc(128, 128, 52, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#120400'; g.beginPath(); g.ellipse(128, 128, 7, 19, 0, 0, Math.PI * 2); g.fill();
+  });
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  return tex;
+});
+const sithGlowMap = once(() => {
+  const tex = canvasTexture(512, 256, 19, (g) => {
+    g.fillStyle = '#000'; g.fillRect(0, 0, 512, 256);
+    const iris = g.createRadialGradient(128, 128, 18, 128, 128, 50);
+    iris.addColorStop(0, '#ffcc40'); iris.addColorStop(0.7, '#ff7a10'); iris.addColorStop(1, '#000');
+    g.fillStyle = iris; g.beginPath(); g.arc(128, 128, 52, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#000'; g.beginPath(); g.ellipse(128, 128, 7, 19, 0, 0, Math.PI * 2); g.fill();
+  });
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  return tex;
+});
+
 /* ── Racketen ── */
 
 const R = 0.72;
@@ -167,13 +211,15 @@ function rubber(color: string) {
   return m;
 }
 
-function Eye({ r, x, y, look, gaze, lid, tilt, skin }: { r: number; x: number; y: number; look: number; gaze: [number, number]; lid: number; tilt: number; skin: string }) {
+function Eye({ r, x, y, look, gaze, lid, tilt, skin, sith }: { r: number; x: number; y: number; look: number; gaze: [number, number]; lid: number; tilt: number; skin: string; sith?: boolean }) {
   return (
     // ögonen är kupor (tillplattade bakåt) så att de inte sticker ut genom batets baksida
     <group position={[x, y, 0.005]} scale={[1, 1, 0.5]}>
       <mesh rotation={[look + gaze[1], -x * 0.4 + gaze[0], 0]}>
         <sphereGeometry args={[r, 32, 24]} />
-        <meshPhysicalMaterial map={eyeMap()} roughness={0.2} clearcoat={1} clearcoatRoughness={0.03} />
+        {sith
+          ? <meshPhysicalMaterial map={sithEyeMap()} emissiveMap={sithGlowMap()} emissive='#ffffff' emissiveIntensity={1.6} roughness={0.2} clearcoat={1} clearcoatRoughness={0.03} />
+          : <meshPhysicalMaterial map={eyeMap()} roughness={0.2} clearcoat={1} clearcoatRoughness={0.03} />}
       </mesh>
       {/* ögonlocket: en kupa i gummits färg över ögats överdel; sänks för sorg och ilska, lutas utåt */}
       {lid > 0 && (
@@ -188,9 +234,10 @@ function Eye({ r, x, y, look, gaze, lid, tilt, skin }: { r: number; x: number; y
 
 /**
  * Ansiktet: glasögon med iris och ögonlock, och en mun av mörk, blank gummilist. `gaze` vrider
- * ögonen (sida, höjd) mot det figuren tittar på; `blink` 0 → 1 drar ner locken.
+ * ögonen (sida, höjd) mot det figuren tittar på; `blink` 0 → 1 drar ner locken. `sith` ger gula,
+ * glödande ögon. `part` ritar bara ögonen ('top') eller bara munnen ('bottom'), för ett kluvet bat.
  */
-function RealFace({ mood, skin, gaze = [0, 0], blink = 0 }: { mood: Mood; skin: string; gaze?: [number, number]; blink?: number }) {
+function RealFace({ mood, skin, gaze = [0, 0], blink = 0, sith, part }: { mood: Mood; skin: string; gaze?: [number, number]; blink?: number; sith?: boolean; part?: 'top' | 'bottom' }) {
   if (mood === 'none') return null;
   const shock = mood === 'shock';
   const r = shock ? 0.15 : 0.125;
@@ -201,12 +248,12 @@ function RealFace({ mood, skin, gaze = [0, 0], blink = 0 }: { mood: Mood; skin: 
   const lip = <meshPhysicalMaterial color='#2a0c0c' roughness={0.35} clearcoat={0.6} clearcoatRoughness={0.2} />;
   return (
     <group position={[0, 1.05, FRONT]}>
-      {[-0.22, 0.22].map((x) => <Eye key={x} r={r} x={x} y={shock ? 0.15 : 0.12} look={look} gaze={gaze} lid={lid} tilt={tilt * (1 - blink)} skin={skin} />)}
+      {part !== 'bottom' && [-0.22, 0.22].map((x) => <Eye key={x} r={r} x={x} y={shock ? 0.15 : 0.12} look={look} gaze={gaze} lid={lid} tilt={tilt * (1 - blink)} skin={skin} sith={sith} />)}
       {/* En halv torus rakt upp är en båge uppåt (∩, sur); ett halvt varv runt blir den ett leende (∪). */}
-      {shock ? (
+      {part === 'top' ? null : shock ? (
         <mesh position={[0, -0.22, 0.01]} scale={[1, 1.25, 0.4]}><sphereGeometry args={[0.1, 20, 16]} /><meshStandardMaterial color='#140404' roughness={0.6} /></mesh>
       ) : mood === 'grim' ? (
-        <mesh position={[0, -0.24, 0.01]} rotation={[0, Math.PI / 2, 0]}><capsuleGeometry args={[0.022, 0.2, 6, 12]} />{lip}</mesh>
+        <mesh position={[0, -0.24, 0.01]} rotation={[0, 0, Math.PI / 2]}><capsuleGeometry args={[0.022, 0.2, 6, 12]} />{lip}</mesh>
       ) : (
         <mesh position={[0, mood === 'sad' ? -0.4 : -0.14, 0.01]} rotation={[0, 0, mood === 'sad' ? 0 : Math.PI]}><torusGeometry args={[0.2, 0.03, 12, 32, Math.PI]} />{lip}</mesh>
       )}
@@ -269,9 +316,9 @@ const robeMasterWool = once(() => Object.assign((masterWool() as THREE.MeshPhysi
 const linen = once(() => new THREE.MeshPhysicalMaterial({ color: '#cbb690', map: fabric(), bumpMap: fabric(), bumpScale: 0.6, roughness: 0.9, sheen: 0.4, sheenColor: '#fff2dd', side: THREE.DoubleSide }));
 
 /** Ljus i HDR (över 1): blir vitt i tonmappningen och blommar, som en överexponerad lampa på film. */
-const hot = (color: string, k: number) => new THREE.Color(color).multiplyScalar(k);
+export const hot = (color: string, k: number) => new THREE.Color(color).multiplyScalar(k);
 const glowMats = new Map<string, THREE.Material>();
-function glow(color: string, k: number, opacity: number) {
+export function glow(color: string, k: number, opacity: number) {
   const key = `${color}:${k}:${opacity}`;
   let m = glowMats.get(key);
   if (!m) glowMats.set(key, (m = new THREE.MeshBasicMaterial({ color: hot(color, k), transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false })));
@@ -480,7 +527,7 @@ export function PodRacer({ color, t }: { color: string; t: number }) {
   );
 }
 
-export type RacketGear = { robe: boolean; hood?: boolean; master?: boolean; sway?: [number, number]; gaze?: [number, number]; blink?: number; weapon?: 'saber' | 'blaster'; saber?: string; ignite?: number; swing?: number; falcon?: boolean; boost?: number; bolt?: number };
+export type RacketGear = { robe: boolean; hood?: boolean; master?: boolean; sway?: [number, number]; gaze?: [number, number]; blink?: number; sith?: boolean; weapon?: 'saber' | 'blaster'; saber?: string; ignite?: number; swing?: number; falcon?: boolean; boost?: number; bolt?: number };
 
 /**
  * Tävlingsbatet som person: färgat gummi fram, svart bak, plywoodkant och trähandtag. Med `gear`
@@ -503,11 +550,48 @@ export function RealRacket({ position = [0, 0, 0] as Vec3, rotation = [0, 0, 0] 
       </group>
       {falcon && <mesh position={[0, 1.05, FRONT + 0.002]}><ringGeometry args={[R * 0.9, R * 0.95, 72]} /><meshStandardMaterial color={color} roughness={0.6} /></mesh>}
       <mesh geometry={handleGeo()}><meshPhysicalMaterial map={wood()} color='#e8d2b0' roughness={0.45} roughnessMap={rubberGrain()} clearcoat={0.5} clearcoatRoughness={0.3} /></mesh>
-      <RealFace mood={mood} skin={skin} gaze={gear?.gaze} blink={gear?.blink} />
+      <RealFace mood={mood} skin={skin} gaze={gear?.gaze} blink={gear?.blink} sith={gear?.sith} />
       {falcon && <Freighter boost={gear?.boost} />}
       {gear?.robe && <Robe arm={!!gear.weapon} hood={gear.hood ?? true} master={gear.master} sway={gear.sway} />}
       {gear?.weapon === 'saber' && <LightSaber color={gear.saber ?? '#3a9bff'} t={t} on={gear.ignite ?? 1} swing={gear.swing} />}
       {gear?.weapon === 'blaster' && <Blaster bolt={gear.bolt} />}
+    </group>
+  );
+}
+
+/**
+ * Ett bat kluvet tvärs över bladets mitt. 'top' är överhalvan med ögonen, 'bottom' underhalvan med
+ * munnen och handtaget. Snittet visar plywoodens fanér; `heat` 1 → 0 är hur mycket snittet
+ * fortfarande glöder efter sabeln (vitgult, rött, svart).
+ */
+export function RacketHalf({ part, color, mood = 'grim' as Mood, heat = 0, gear }: { part: 'top' | 'bottom'; color: string; mood?: Mood; heat?: number; gear?: Pick<RacketGear, 'sith' | 'gaze'> }) {
+  const theta = part === 'top' ? Math.PI / 2 : -Math.PI / 2;
+  const T = CORE + 2 * SHEET;
+  const ember = new THREE.Color('#2a0400').lerp(new THREE.Color('#ff3a08'), Math.min(1, heat * 1.6)).lerp(new THREE.Color('#ffd27a'), Math.max(0, heat - 0.6) * 2.5);
+  return (
+    <group>
+      <group position={[0, 1.05, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[1.03, 1, 1]}>
+        <mesh material={bladeMats()}><cylinderGeometry args={[R, R, CORE, 36, 1, false, theta, Math.PI]} /></mesh>
+        <mesh position={[0, CORE / 2 + SHEET / 2, 0]} material={rubber(color)}><cylinderGeometry args={[R - 0.004, R - 0.004, SHEET, 36, 1, false, theta, Math.PI]} /></mesh>
+        <mesh position={[0, -(CORE / 2 + SHEET / 2), 0]} material={rubber('#151515')}><cylinderGeometry args={[R - 0.004, R - 0.004, SHEET, 36, 1, false, theta, Math.PI]} /></mesh>
+      </group>
+      {/* snittet: plywoodens skikt tvärs över tjockleken, brända och glödande längs kanten */}
+      <mesh position={[0, 1.05, 0]} rotation={[part === 'top' ? Math.PI / 2 : -Math.PI / 2, 0, 0]} scale={[1.03, 1, 1]}>
+        <planeGeometry args={[2 * R, T]} />
+        <meshStandardMaterial map={ply()} color='#7a5a3a' roughness={0.9} emissive={ember} emissiveIntensity={0.4 + heat * 5} />
+      </mesh>
+      <RealFace mood={mood} skin={color} gaze={gear?.gaze} sith={gear?.sith} part={part} />
+      {part === 'bottom' && <mesh geometry={handleGeo()}><meshPhysicalMaterial map={wood()} color='#e8d2b0' roughness={0.45} roughnessMap={rubberGrain()} clearcoat={0.5} clearcoatRoughness={0.3} /></mesh>}
+    </group>
+  );
+}
+
+/** Manteln som blir kvar när bäraren är borta: `crumple` 0 → 1 sjunker den ihop till en hög tyg. */
+export function RobeHeap({ crumple, master = false }: { crumple: number; master?: boolean }) {
+  const c = THREE.MathUtils.clamp(crumple, 0, 1);
+  return (
+    <group scale={[1 + 0.35 * c, 1 - 0.86 * c, 1 + 0.35 * c]} rotation={[0, c * 0.6, 0]}>
+      <mesh geometry={robeGeo()} material={master ? robeMasterWool() : robeWool()} />
     </group>
   );
 }
