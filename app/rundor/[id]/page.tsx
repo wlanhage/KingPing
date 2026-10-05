@@ -42,7 +42,7 @@ export default async function RoundPage({ params }: { params: Promise<{ id: stri
               </li>
             ))}
           </ol>
-          <RoundReplay roundId={round.id} players={players} crowningWord={theme.verbs.crowning} />
+          <RoundReplay roundId={round.id} players={players} crowningWord={theme.verbs.crowning} hour={round.hour} merits={round.merits} />
         </section>
       )}
       <Link href='/history' className='replay-back'>← Till krönikan</Link>

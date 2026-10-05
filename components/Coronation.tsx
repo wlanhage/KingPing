@@ -202,6 +202,81 @@ function playDroidBeeps(ctx: AudioContext, master: GainNode, at: number) {
 
 /* ── Scenens ljud: sabeln som tänds och brummar, dunsar ── */
 
+/**
+ * Salens eko: en genererad efterklang (brus som klingar av på drygt två sekunder) blandad under det
+ * torra ljudet. Returnerar ingången; allt som spelas dit hörs både torrt och i salen.
+ */
+export function hallReverb(ctx: AudioContext, out: AudioNode, wet = 0.32): GainNode {
+  const len = Math.floor(ctx.sampleRate * 2.4);
+  const ir = ctx.createBuffer(2, len, ctx.sampleRate);
+  for (let c = 0; c < 2; c++) {
+    const d = ir.getChannelData(c);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2);
+  }
+  const conv = ctx.createConvolver();
+  conv.buffer = ir;
+  const input = ctx.createGain();
+  const g = ctx.createGain();
+  g.gain.value = wet;
+  input.connect(out);
+  input.connect(conv).connect(g).connect(out);
+  return input;
+}
+
+/**
+ * Ljudet bakom bilden i reprisen: publikens sorl som andas, ett yub nub här och där, stadens dova
+ * brus genom fönstren, och sabelbrummet som ligger kvar när sablarna väl tänts (`hum`).
+ */
+export function startAmbience(ctx: AudioContext, out: AudioNode) {
+  const now = ctx.currentTime;
+  const buf = ctx.createBuffer(1, ctx.sampleRate * 3, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const sources: AudioScheduledSourceNode[] = [];
+  const gains: GainNode[] = [];
+  const bed = (type: BiquadFilterType, freq: number, vol: number) => {
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = 0.6;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(vol, now + 1.2);
+    src.connect(f).connect(g).connect(out); src.start(now);
+    sources.push(src); gains.push(g);
+    return g;
+  };
+  const crowd = bed('bandpass', 950, 0.035);
+  bed('lowpass', 170, 0.06);
+  // sorlet andas: en långsam svängning i styrkan
+  const lfo = ctx.createOscillator(); lfo.frequency.value = 0.17;
+  const depth = ctx.createGain(); depth.gain.value = 0.012;
+  lfo.connect(depth).connect(crowd.gain); lfo.start(now); sources.push(lfo);
+  const chirps = window.setInterval(() => {
+    const at = ctx.currentTime + Math.random() * 0.4;
+    for (let i = 0; i < 2 + Math.floor(Math.random() * 3); i++) {
+      const o = ctx.createOscillator(); const g = ctx.createGain(); const f = 650 + Math.random() * 700;
+      o.type = 'triangle'; o.frequency.setValueAtTime(f, at + i * 0.1); o.frequency.exponentialRampToValueAtTime(f * 1.4, at + i * 0.1 + 0.12);
+      g.gain.setValueAtTime(0.0001, at + i * 0.1); g.gain.exponentialRampToValueAtTime(0.02, at + i * 0.1 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, at + i * 0.1 + 0.14);
+      o.connect(g).connect(out); o.start(at + i * 0.1); o.stop(at + i * 0.1 + 0.16);
+    }
+  }, 1700);
+  let humming = false;
+  return {
+    hum() {
+      if (humming) return;
+      humming = true;
+      const at = ctx.currentTime;
+      const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 420;
+      const g = ctx.createGain(); g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(0.035, at + 0.8);
+      f.connect(g).connect(out); gains.push(g);
+      for (const hz of [90, 91.3]) { const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = hz; o.connect(f); o.start(at); sources.push(o); }
+    },
+    stop() {
+      window.clearInterval(chirps);
+      const at = ctx.currentTime;
+      for (const g of gains) { g.gain.cancelScheduledValues(at); g.gain.setValueAtTime(g.gain.value, at); g.gain.linearRampToValueAtTime(0, at + 0.4); }
+      for (const src of sources) src.stop(at + 0.45);
+    },
+  };
+}
+
 export function playCueSound(ctx: AudioContext, master: GainNode, cue: CueName) {
   const now = ctx.currentTime;
   const noise = (at: number, dur: number, freq: number, vol: number) => {
@@ -282,6 +357,33 @@ export function playCueSound(ctx: AudioContext, master: GainNode, cue: CueName) 
       // pingisbollen mot racket eller bord: kort och ljust
       tone(now, 0.05, 1500, 1100, 'sine', 0.22, 0.002);
       noise(now, 0.025, 3500, 0.12);
+      break;
+    case 'clash':
+      // sablar som möts (eller sabel mot boll): ett sprakande knaster och ett brum som slår till
+      for (let i = 0; i < 4; i++) noise(now + i * 0.03, 0.08, 3000 + i * 600, 0.3);
+      tone(now, 0.35, 140, 70, 'sawtooth', 0.22, 0.005);
+      break;
+    case 'retract':
+      // sabeln slocknar: brummet faller och dör bort
+      tone(now, 0.45, 160, 40, 'sawtooth', 0.18, 0.01);
+      noise(now, 0.2, 1400, 0.15);
+      break;
+    case 'jump':
+      // hoppet till ljusfart: ett stigande vin och en dov smäll när skeppet är borta
+      tone(now - 0.3, 0.55, 120, 1600, 'sawtooth', 0.12, 0.25);
+      noise(now + 0.22, 0.7, 500, 0.45);
+      tone(now + 0.22, 0.6, 70, 30, 'sine', 0.4, 0.01);
+      break;
+    case 'roar':
+      // podracerns motorer på full gas: ett skrovligt, fladdrande morr som drar förbi
+      for (let i = 0; i < 3; i++) tone(now + i * 0.04, 1.6, 75 + i * 9, 140 + i * 15, 'sawtooth', 0.09, 0.15);
+      noise(now, 1.6, 300, 0.25);
+      break;
+    case 'beep':
+      // droiden: ett par glada pip och en drill
+      tone(now, 0.09, 1800, 2400, 'sine', 0.12, 0.005);
+      tone(now + 0.11, 0.08, 2600, 1500, 'sine', 0.1, 0.005);
+      tone(now + 0.22, 0.2, 1200, 3000, 'square', 0.04, 0.01);
       break;
     case 'cheer':
       // ewokerna på läktaren: ett sorl och ett gäng pipiga yub nub

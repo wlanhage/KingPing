@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Bloom, ChromaticAberration, EffectComposer, Noise, Vignette } from '@react-three/postprocessing';
+import { Bloom, ChromaticAberration, DepthOfField, EffectComposer, N8AO, Noise, ToneMapping, Vignette } from '@react-three/postprocessing';
+import { ToneMappingMode, type DepthOfFieldEffect } from 'postprocessing';
 import * as THREE from 'three';
 import type { CameraPose } from './types';
 
@@ -27,6 +28,28 @@ function CameraRig({ poseRef }: { poseRef: React.MutableRefObject<CameraPose> })
   return null;
 }
 
+/**
+ * Fotoläget: tonmappning som en kamerasensor i stället för klippt linjärt ljus, ambient
+ * occlusion i hörn och under fötter, skärpedjup på det kameran tittar på och ett svagt filmkorn.
+ */
+function PhotoEffects({ poseRef }: { poseRef: React.MutableRefObject<CameraPose> }) {
+  const dof = useRef<DepthOfFieldEffect>(null);
+  useFrame(() => { dof.current?.target?.set(...poseRef.current.lookAt); });
+  return (
+    <EffectComposer multisampling={4}>
+      <N8AO halfRes aoRadius={1.2} distanceFalloff={0.6} intensity={2.2} />
+      <DepthOfField ref={dof} target={[0, 0, 0]} worldFocusRange={5} bokehScale={2.5} />
+      <Bloom intensity={0.35} luminanceThreshold={1} luminanceSmoothing={0.3} mipmapBlur />
+      {/* Khronos PBR Neutral: tar högdagrarna som en sensor men behåller färgerna (AgX bleker dem) */}
+      <ToneMapping mode={ToneMappingMode.NEUTRAL} />
+      {/* objektivets färgfransar, bara ut mot kanterna */}
+      <ChromaticAberration offset={new THREE.Vector2(0.0005, 0.0004)} radialModulation modulationOffset={0.45} />
+      <Noise opacity={0.025} />
+      <Vignette eskil={false} offset={0.35} darkness={0.55} />
+    </EffectComposer>
+  );
+}
+
 function Effects() {
   return (
     <EffectComposer multisampling={0}>
@@ -38,7 +61,7 @@ function Effects() {
   );
 }
 
-export function StageCanvas({ poseRef, children, onContextLost }: { poseRef: React.MutableRefObject<CameraPose>; children: ReactNode; onContextLost?: () => void }) {
+export function StageCanvas({ poseRef, children, onContextLost, photo = false }: { poseRef: React.MutableRefObject<CameraPose>; children: ReactNode; onContextLost?: () => void; photo?: boolean }) {
   // R3F tvingar själv fram en förlorad kontext när canvasen avmonteras (stängd, klar, hot reload).
   // Den ska inte läsas som att grafikkortet släppte taget. Sätts om vid mount för StrictModes dubbelkörning.
   const leaving = useRef(false);
@@ -50,6 +73,7 @@ export function StageCanvas({ poseRef, children, onContextLost }: { poseRef: Rea
     <Canvas
       className='stage-canvas'
       dpr={[1, 1.5]}
+      shadows={photo ? 'percentage' : false}
       camera={{ position: [0.8, 1.4, -1.5], fov: 40, near: 0.05, far: 120 }}
       gl={{ antialias: false, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
       onCreated={(state) => { state.gl.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); if (!leaving.current) onContextLost?.(); }); }}
@@ -57,7 +81,7 @@ export function StageCanvas({ poseRef, children, onContextLost }: { poseRef: Rea
       <color attach='background' args={['#03030a']} />
       <CameraRig poseRef={poseRef} />
       {children}
-      <Effects />
+      {photo ? <PhotoEffects poseRef={poseRef} /> : <Effects />}
     </Canvas>
   );
 }

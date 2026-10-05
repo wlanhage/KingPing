@@ -18,7 +18,7 @@ export type SceneCtx = {
 
 /** Ett ord i HUD-lagret, `at` i verklig tid. subtitle = undertext längst ner, slam = stort, name = namnskylt. */
 export type Word = { at: number; until?: number; text: string; size?: number; color?: string; style?: 'slam' | 'name' | 'subtitle' };
-export type CueName = 'ignite' | 'slam' | 'hum' | 'door' | 'sizzle' | 'smash' | 'boom' | 'breath' | 'blast' | 'lightning' | 'scream' | 'pok' | 'cheer';
+export type CueName = 'ignite' | 'slam' | 'hum' | 'door' | 'sizzle' | 'smash' | 'boom' | 'breath' | 'blast' | 'lightning' | 'scream' | 'pok' | 'cheer' | 'clash' | 'retract' | 'jump' | 'roar' | 'beep';
 export type Cue = { at: number; cue: CueName };
 /** snap = klipp (ingen mjukning), annars glider kameran mot posen. */
 export type CameraPose = { position: Vec3; lookAt: Vec3; fov?: number; shake?: number; snap?: boolean };
@@ -34,5 +34,7 @@ export type Scene = {
   /** Verklig tid → scenens tid (hit-stop, ultrarapid). Ord och cues lever i verklig tid. */
   warp?: (t: number) => number;
   camera: (t: number, ctx: SceneCtx) => CameraPose;
+  /** Fotorealistisk rendering: skuggor, AO, skärpedjup, filmisk tonmappning. */
+  photo?: boolean;
   Scene: (props: { t: number; ctx: SceneCtx }) => ReactNode;
 };
