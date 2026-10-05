@@ -119,7 +119,8 @@ describe('stageAt', () => {
       for (let t = 0; t <= plan.duration; t += 0.05) {
         for (const [id, a] of Object.entries(stageAt(plan, t).actors)) {
           const inside = Math.abs(a.pos[0]) < TABLE.length / 2 + 0.3 && Math.abs(a.pos[2]) < TABLE.width / 2 + 0.3;
-          expect(inside, `${id} vid t=${t.toFixed(2)}, seed ${seed}`).toBe(false);
+          // expect i den här loopen blir 300 000 anrop och spränger tidsgränsen i CI
+          if (inside) expect.fail(`${id} vid t=${t.toFixed(2)}, seed ${seed}`);
         }
       }
     }
