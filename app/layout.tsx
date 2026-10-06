@@ -39,6 +39,7 @@ const navOrder: [PageKey, string][] = [
   ['players', '/players'],
   ['badges', '/badges'],
   ['archive', '/seasons'],
+  ['alltime', '/alltime'],
   ['settings', '/settings'],
 ];
 

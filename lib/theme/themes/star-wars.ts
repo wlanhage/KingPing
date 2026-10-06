@@ -36,6 +36,7 @@ export const starWars: Theme = {
     players: 'Jediriddare',
     badges: 'Utmärkelser',
     archive: 'Tidsvalvet',
+    alltime: 'Holokronet',
     settings: 'Rådet',
   },
   pages: {
@@ -45,6 +46,7 @@ export const starWars: Theme = {
     players: { title: 'Jediriddare', subtitle: 'Galaxens utmanare. Klicka in på en riddare för full profil.' },
     badges: { title: 'Utmärkelser', subtitle: 'Alla {count} bragder en jedi kan förtjäna i galaxen.' },
     archive: { title: 'Tidsvalvet', subtitle: 'Säsongerna som varit — och den som pågår.' },
+    alltime: { title: 'Holokronet', subtitle: 'Galaxens hela historia på en sida — varje regering, varje svit, varje fejd.' },
     settings: { title: 'Rådet', subtitle: 'Miljöstatus för integrationer.' },
   },
   notFound: { title: 'Det här är inte sidan du letar efter', subtitle: 'Koordinaterna leder rakt ut i tomrummet. Hyperrymden har inga rum med det namnet.', back: 'Tillbaka till Tronrummet' },
