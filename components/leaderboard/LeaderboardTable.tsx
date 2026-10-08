@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { formatDate, formatDuration } from '@/lib/format';
 import type { Theme } from '@/lib/theme';
 import { playerPortrait } from '@/lib/og/sigil';
+import { holoTiming } from '@/lib/domain/heraldry';
 import { SortableTable, type SortColumn, type SortValue } from './SortableTable';
 
 const columns: SortColumn[] = [
@@ -70,7 +71,7 @@ export function LeaderboardTable({ rows, theme, trend, seasonSlug, characters }:
               <td className='lb-player' data-label='Spelare'>
                 <div className='lb-player-row'>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <span className='lb-portrait holo' aria-hidden><img src={playerPortrait(r.name, { theme, isKing: r.isCurrentKing, characterIndex: characters[r.id] }).src} alt='' /></span>
+                  <span className='lb-portrait holo' style={holoTiming(`${r.id}:table`)} aria-hidden><img src={playerPortrait(r.name, { theme, isKing: r.isCurrentKing, characterIndex: characters[r.id] }).src} alt='' /></span>
                   <div>
                     <Link href={playerHref(r.id)} className='lb-name'>{r.name}</Link>
                     {epithet && <div className='lb-epithet'>{epithet}</div>}

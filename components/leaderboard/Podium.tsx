@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { formatDuration } from '@/lib/format';
 import type { Theme } from '@/lib/theme';
 import { playerPortrait } from '@/lib/og/sigil';
+import { holoTiming } from '@/lib/domain/heraldry';
 
 const MEDAL: Record<number, string> = { 1: '👑', 2: '🥈', 3: '🥉' };
 
@@ -18,7 +19,7 @@ export function Podium({ rows, theme, seasonSlug, characters }: { rows: any[]; t
         <Link key={r.id} href={`/players/${r.id}${seasonSlug ? `?season=${seasonSlug}` : ''}`} className={`podium-step podium-rank-${r.rank}`}>
           <span className='podium-medal' aria-hidden>{MEDAL[r.rank]}</span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <span className='podium-portrait holo' aria-hidden><img src={playerPortrait(r.name, { theme, isKing: r.isCurrentKing, characterIndex: characters[r.id] }).src} alt='' /></span>
+          <span className='podium-portrait holo' style={holoTiming(`${r.id}:podium`)} aria-hidden><img src={playerPortrait(r.name, { theme, isKing: r.isCurrentKing, characterIndex: characters[r.id] }).src} alt='' /></span>
           <strong className='podium-name'>{r.name}</strong>
           <span className='podium-epithet'>{epithet(r.rank)}</span>
           <span className='podium-stat'>{formatDuration(r.totalReignMs)} · {r.totalWins} vinster</span>
