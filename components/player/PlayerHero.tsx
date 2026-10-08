@@ -2,7 +2,7 @@ import type { ComputedPlayerBadge } from '@/lib/badges/badge-types';
 import { formatDuration } from '@/lib/format';
 import type { Theme } from '@/lib/theme';
 import { BadgeIcon } from '@/components/badges/BadgeIcon';
-import { vesselTier, winsToNextVessel } from '@/lib/domain/heraldry';
+import { holoTiming, vesselTier, winsToNextVessel } from '@/lib/domain/heraldry';
 import { playerPortrait, vesselDataUri } from '@/lib/og/sigil';
 
 type Rarity = 'common' | 'rare' | 'epic' | 'legendary' | 'mythical';
@@ -97,7 +97,7 @@ export function PlayerHero({ player, stats, theme, characterIndex }: { player: a
             <OrbitBadge key={badge.id} badge={badge} position={orbitPosition(i, topBadges.length)} />
           ))}
 
-          <div className={`royal-avatar${stats?.isCurrentKing ? ' is-king' : ''}`}>
+          <div className={`royal-avatar${stats?.isCurrentKing ? ' is-king' : ''}`} style={holoTiming(`${player.id}:profile`)}>
             {/* Figur ur temats rollista, annars vapnet ritat ur namnet — se playerPortrait. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={portrait.src} alt={portrait.alt} />

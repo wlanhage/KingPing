@@ -4,6 +4,8 @@
  * någon förtjänat, temat bara vad det heter. Annars går vapnen sönder vid säsongens temabyte.
  */
 
+import type { CSSProperties } from 'react';
+
 /** FNV-1a. Namnet ska ge samma vapen för alltid — över omstarter, säsonger och teman. */
 export function hash(input: string): number {
   let h = 0x811c9dc5;
@@ -63,6 +65,17 @@ export function vesselTier(totalWins: number): number {
 export function winsToNextVessel(totalWins: number): number | null {
   const next = VESSEL_STEPS[vesselTier(totalWins) + 1];
   return next === undefined ? null : Math.max(0, next - totalWins);
+}
+
+/**
+ * Hologrammets takt per porträtt: egen varvlängd (13–22 s) och startpunkt, så att
+ * porträtten på samma sida inte glitchar samtidigt. Seeden ger samma takt vid varje rendering.
+ */
+export function holoTiming(seed: string): CSSProperties {
+  const h = hash(seed);
+  const duration = 13 + (h % 10);
+  const delay = ((h >>> 8) % (duration * 10)) / 10;
+  return { '--holo-duration': `${duration}s`, '--holo-delay': `-${delay}s` } as CSSProperties;
 }
 
 export type PlayerRef = { id: string; name: string; createdAt: Date | string };
