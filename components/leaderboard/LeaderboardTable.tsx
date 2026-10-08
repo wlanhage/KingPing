@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { formatDate, formatDuration } from '@/lib/format';
 import type { Theme } from '@/lib/theme';
+import { playerPortrait } from '@/lib/og/sigil';
 import { SortableTable, type SortColumn, type SortValue } from './SortableTable';
 
 const columns: SortColumn[] = [
@@ -54,7 +55,7 @@ function Trend({ delta }: { delta: number | null | undefined }) {
 }
 
 /** `trend` är placeringsskillnad mot för en vecka sedan (positivt = klättrat); utelämnas visas inga pilar. */
-export function LeaderboardTable({ rows, theme, trend, seasonSlug }: { rows: any[]; theme: Theme; trend?: Record<string, number | null>; seasonSlug?: string }) {
+export function LeaderboardTable({ rows, theme, trend, seasonSlug, characters }: { rows: any[]; theme: Theme; trend?: Record<string, number | null>; seasonSlug?: string; characters: Record<string, number> }) {
   const playerHref = (id: string) => `/players/${id}${seasonSlug ? `?season=${seasonSlug}` : ''}`;
   if (!rows.length) return <div className='card'>Inga spelare än.</div>;
   return (
@@ -67,8 +68,14 @@ export function LeaderboardTable({ rows, theme, trend, seasonSlug }: { rows: any
             <tr className={r.isCurrentKing ? 'lb-king-row' : r.isAfk ? 'lb-afk-row' : ''}>
               <td className='lb-rank' data-label='#'>{r.rank ?? '—'}<Trend delta={trend?.[r.id]} /></td>
               <td className='lb-player' data-label='Spelare'>
-                <Link href={playerHref(r.id)} className='lb-name'>{r.name}</Link>
-                {epithet && <div className='lb-epithet'>{epithet}</div>}
+                <div className='lb-player-row'>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <span className='lb-portrait holo' aria-hidden><img src={playerPortrait(r.name, { theme, isKing: r.isCurrentKing, characterIndex: characters[r.id] }).src} alt='' /></span>
+                  <div>
+                    <Link href={playerHref(r.id)} className='lb-name'>{r.name}</Link>
+                    {epithet && <div className='lb-epithet'>{epithet}</div>}
+                  </div>
+                </div>
               </td>
               <td data-label='Status'>{r.isCurrentKing ? `👑 Nuvarande ${theme.roles.monarchLower}` : r.isAfk ? '💤 AFK' : theme.roles.challenger}</td>
               <td data-label='Trontid'>{formatDuration(r.totalReignMs)}</td>

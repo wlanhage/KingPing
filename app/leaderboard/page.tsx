@@ -7,6 +7,8 @@ import { rankDeltas, trendReferenceDate } from '@/lib/domain/rank-trend';
 import { resolveSeason } from '@/lib/domain/season';
 import { formatDate } from '@/lib/format';
 import { getTheme } from '@/lib/theme';
+import { prisma } from '@/lib/prisma';
+import { assignCharacters } from '@/lib/domain/heraldry';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +19,9 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
   // Säsongens eget tema: en arkiverad säsong visas med sina egna namn och epitet.
   const theme = getTheme(season.theme);
   const rows = await getLeaderboard(season);
+  // Tilldelningen behöver HELA truppen, så att varje spelare får samma figur som på profilen.
+  const roster = await prisma.player.findMany({ select: { id: true, name: true, createdAt: true } });
+  const characters = assignCharacters(roster, theme.heraldry.characters?.length ?? 0);
   const summary = await getKingdomStats(season);
   // Trenden räknas fram ur historiken: samma tabell, men med säsongen "avslutad" för en vecka sedan.
   const then = trendReferenceDate(season);
@@ -39,9 +44,9 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
           <Link href='/leaderboard'>Till pågående säsong →</Link>
         </p>
       )}
-      <Podium rows={rows} theme={theme} seasonSlug={seasonSlug} />
+      <Podium rows={rows} theme={theme} seasonSlug={seasonSlug} characters={characters} />
       <LeaderboardSummaryCards data={summaryData} kingLabel={ended ? 'Säsongens härskare' : 'Nuvarande kung'} />
-      <LeaderboardTable rows={rows} theme={theme} trend={trend} seasonSlug={seasonSlug} />
+      <LeaderboardTable rows={rows} theme={theme} trend={trend} seasonSlug={seasonSlug} characters={characters} />
     </main>
   );
 }
