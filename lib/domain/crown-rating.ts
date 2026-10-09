@@ -18,7 +18,9 @@ export const START_RATING = 1000;
 /** Litet dataunderlag (tiotal kröningar per säsong) kräver att ratingen hinner röra sig. */
 export const K_FACTOR = 32;
 
-type RatedWin = {
+export type RatedWin = {
+  /** Stable ordering for recorded rounds with identical timestamps. */
+  id?: string;
   winnerId: string;
   previousKingId: string | null;
   occurredAt: Date | string;
@@ -82,10 +84,16 @@ export function classicCrownRatings(wins: RatedWin[], isAfkAt: (playerId: string
   return ratingsFor(wins, isAfkAt, false);
 }
 
-function ratingsFor(wins: RatedWin[], isAfkAt: (playerId: string, at: Date) => boolean, useStandings: boolean): Record<string, CrownRating> {
+function ratingsFor(wins: RatedWin[], isAfkAt: (playerId: string, at: Date) => boolean, useStandings: boolean, observe?: (win: RatedWin, table: Record<string, CrownRating>) => void): Record<string, CrownRating> {
   // Elo är ordningsberoende. Anroparen samlar vinsterna per spelare och får dem därmed
   // grupperade, inte kronologiska — ordningen sätts här i stället för att litas på.
-  const ordered = [...wins].sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime());
+  const ordered = [...wins].sort((a, b) => {
+    const time = new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime();
+    if (time) return time;
+    // Real events always have IDs. Keep legacy synthetic inputs stable when IDs are absent.
+    if (!a.id || !b.id) return 0;
+    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  });
   const table: Record<string, CrownRating> = {};
   const seat = (id: string) => (table[id] ??= { rating: START_RATING, played: 0 });
 
@@ -109,11 +117,12 @@ function ratingsFor(wins: RatedWin[], isAfkAt: (playerId: string, at: Date) => b
         player.rating += delta[id];
         player.played += 1;
       }
+      observe?.(win, table);
       continue;
     }
 
     const winner = seat(win.winnerId);
-    if (!win.previousKingId) continue; // tom tron
+    if (!win.previousKingId) { observe?.(win, table); continue; } // tom tron
 
     if (win.previousKingId === win.winnerId) {
       const at = new Date(win.occurredAt);
@@ -122,6 +131,7 @@ function ratingsFor(wins: RatedWin[], isAfkAt: (playerId: string, at: Date) => b
       const field = others.length ? others.reduce((sum, r) => sum + r, 0) / others.length : START_RATING;
       winner.rating += K_FACTOR * (1 - expected(winner.rating, field));
       winner.played += 1;
+      observe?.(win, table);
       continue;
     }
 
@@ -131,6 +141,31 @@ function ratingsFor(wins: RatedWin[], isAfkAt: (playerId: string, at: Date) => b
     deposed.rating -= K_FACTOR * (1 - odds);
     winner.played += 1;
     deposed.played += 1;
+    observe?.(win, table);
   }
   return table;
+}
+
+export type RatingSnapshot = {
+  at: string;
+  winnerId: string;
+  kind: 'placement' | 'defense' | 'takeover' | 'opening';
+  current: Record<string, CrownRating>;
+  classic: Record<string, CrownRating>;
+};
+
+/** Two linear replays of the shared engine; each snapshot owns its player records. */
+export function crownRatingHistory(wins: RatedWin[], isAfkAt: (playerId: string, at: Date) => boolean = () => false): RatingSnapshot[] {
+  const history: RatingSnapshot[] = [];
+  const copy = (table: Record<string, CrownRating>) => Object.fromEntries(Object.entries(table).map(([id, value]) => [id, { ...value }]));
+  ratingsFor(wins, isAfkAt, true, (win, table) => {
+    history.push({
+      at: new Date(win.occurredAt).toISOString(), winnerId: win.winnerId,
+      kind: (win.standings?.length ?? 0) >= 2 ? 'placement' : !win.previousKingId ? 'opening' : win.previousKingId === win.winnerId ? 'defense' : 'takeover',
+      current: copy(table), classic: {},
+    });
+  });
+  let index = 0;
+  ratingsFor(wins, isAfkAt, false, (_win, table) => { history[index++].classic = copy(table); });
+  return history;
 }

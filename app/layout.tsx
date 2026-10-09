@@ -73,6 +73,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   {theme.nav[key]}
                 </Link>
               ))}
+              <Link href='/elo' className='nav-pill'>Elo Lab</Link>
             </nav>
           </header>
           {children}

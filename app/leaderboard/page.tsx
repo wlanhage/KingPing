@@ -37,6 +37,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
       <section>
         <h1 className='title-xl'>{theme.pages.leaderboard.title}</h1>
         <p className='subtitle'>{theme.pages.leaderboard.subtitle}</p>
+        <Link href={slug ? `/elo?season=${encodeURIComponent(slug)}` : '/elo'} className='royal-back-link'>Utforska rating över tid · Elo Lab →</Link>
       </section>
       {season.endedAt && (
         <p className='season-banner'>
