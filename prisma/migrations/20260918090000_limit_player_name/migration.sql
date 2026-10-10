@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Player" ALTER COLUMN "name" SET DATA TYPE VARCHAR(40);

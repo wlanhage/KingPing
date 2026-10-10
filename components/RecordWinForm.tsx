@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Coronation, type CoronationCopy, type CoronationEvent, type LaneWords } from './Coronation';
 import { knockoutPlace, standingsFromKnockouts } from '@/lib/domain/standings';
+import { NOTE_MAX } from '@/lib/domain/limits';
 
 export type WinFormCopy = { crown: string; crowning: string; crowningNow: string; coronation: CoronationCopy; lane: LaneWords };
 
@@ -182,7 +183,7 @@ export function RecordWinForm({ players, startingAbsent, lastWinAt, cooldownMs, 
 
         <label className='crown-field'>
           <span className='crown-label'>Anteckning <em>(valfritt)</em></span>
-          <input className='crown-input' placeholder='Vad hände? Ett ord eller en hel saga' value={note} onChange={(e) => setNote(e.target.value)} disabled={onCooldown} />
+          <input className='crown-input' placeholder='Vad hände? Ett ord eller en hel saga' value={note} maxLength={NOTE_MAX} onChange={(e) => setNote(e.target.value)} disabled={onCooldown} />
         </label>
 
         <button className='crown-btn' disabled={!winnerId || onCooldown}>
