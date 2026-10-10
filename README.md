@@ -35,7 +35,7 @@ MCP-server med rikets data som verktyg (`scripts/mcp.ts`), för Claude Code/Desk
 - Modal för `/pingis win`
 - Slack signaturverifiering
 - CSV export
-- ~~Börja använda elo-system för rejting.~~ Klassisk Elo går inte: vi sparar bara vem som vann
+- ~~Börja använda elo-system för rejting.~~ ~~Klassisk Elo går inte: vi sparar bara vem som vann~~  funkar nu
   rundan, aldrig vilka som spelade den. I stället ratas kronbytena — se
   `docs/superpowers/specs/2026-09-11-crown-rating-design.md`.
 - Sammanställ vad användarna tänker om time on throne metric. Kronratingen ligger nu bredvid
