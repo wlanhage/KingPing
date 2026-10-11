@@ -25,11 +25,55 @@ MVP byggd med Next.js, Prisma och Slack-integration.
 Spåren går till Honeycomb och Better Stack (se `lib/telemetry.ts`).
 - Sätt `HONEYCOMB_KEY`, `BETTERSTACK_URL` och `BETTERSTACK_TOKEN` i Vercel. Saknas en mottagares värden skickas inget dit.
 ## MCP
-MCP-server med rikets data som verktyg (`scripts/mcp.ts`), för Claude Code/Desktop.
+MCP-server med rikets data som verktyg (`scripts/mcp.ts`), för klienter som stöder stdio.
 - Den pratar med appens API-rutter, så starta `npm run dev` (eller sätt `KINGPING_URL` till prod-urlen).
 - `.mcp.json` i repot registrerar den i Claude Code — svara ja när den frågar.
-- Verktyg: `pingis_current_king`, `pingis_players`, `pingis_leaderboard`, `pingis_player`, `pingis_history`, `pingis_record_win`. Spelare anges med namn eller id.
-- Test utan app och databas: `npx vitest run tests/mcp.test.ts` — startar servern precis som `.mcp.json` gör.
+- Starta manuellt med `npm run --silent mcp`. Servern läser JSON-RPC från stdin och svarar på stdout; `--silent` håller npm:s starttext borta från protokollet.
+- Test utan app och databas: `npm run test:mcp` — startar servern precis som `.mcp.json` gör, mot ett lokalt test-API. Nästlade Claude-worktrees undantas.
+
+| Verktyg | Argument | Funktion |
+| --- | --- | --- |
+| `pingis_current_king` | inga | Nuvarande kung och regeringens start. |
+| `pingis_players` | inga | Alla spelare, även AFK. |
+| `pingis_leaderboard` | inga | Aktuell säsongs tabell, med kompakta badge-texter. |
+| `pingis_player` | `player` | Profil, statistik, badges och ärkefiende. |
+| `pingis_history` | valfria `limit`, `player` | Namngiven historik, valfritt filtrerad på vinnare, avsatt kung eller deltagare. |
+| `pingis_overview` | valfri `limit` | Tron, spelare, tabell och senaste kröningar i ett anrop. |
+| `pingis_record_win` | `winner`, valfria `standings`, `note` | Registrerar en vinst. |
+| `pingis_add_player` | `name`, valfritt `slackUserId` | Lägger till en aktiv spelare. |
+| `pingis_set_afk` | `player`, `afk` | `true` pausar spelaren, `false` aktiverar igen. |
+
+Spelare anges med namn eller id, oavsett versaler och omgivande blanksteg. Om flera namn matchar krävs id; felmeddelandet listar alternativen. `limit` är ett heltal mellan 1 och 100, standard 10. Historiken utgår från API:ets senaste 100 kröningar; spelarfilter tillämpas före `limit` och söker inte äldre händelser.
+
+Exempel på verktygsargument:
+
+```json
+{ "player": "Anna", "limit": 5 }
+```
+
+för `pingis_history`, och
+
+```json
+{ "winner": "Anna", "standings": ["Anna", "Erik"], "note": "Jämn match" }
+```
+
+för `pingis_record_win`. Placeringen måste ha vinnaren först och varje spelare högst en gång, även om namn och id blandas. Utelämnad eller tom placering betyder att bara vinnaren är känd. Felaktiga typer, saknade obligatoriska fält och okända argument avvisas innan API-anrop. Namn för nya spelare trimmas och måste ha minst två tecken.
+
+De tre skrivverktygen ändrar riktiga data när de anropas. Appens regler gäller: kröningar har cooldown och regerande kung kan inte gå AFK. AFK tar bort spelaren ur rankingen men behåller meriterna. Upprepade anrop med samma AFK-status lämnar statusen oförändrad; spelarskapande och kröningar är inte idempotenta.
+
+För en klient som kör från en annan katalog kan följande konfiguration användas efter `npm install`. Byt sökvägen till repots absoluta sökväg och `KINGPING_URL` till önskad appinstans:
+
+```json
+{
+  "mcpServers": {
+    "rundpingisriket": {
+      "command": "npm",
+      "args": ["--prefix", "/absolute/path/to/KingPing", "run", "--silent", "mcp"],
+      "env": { "KINGPING_URL": "http://localhost:3030" }
+    }
+  }
+}
+```
 
 ## Förbättringar
 - Modal för `/pingis win`

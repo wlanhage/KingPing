@@ -13,7 +13,9 @@
     "backup": "tsx --env-file=.env scripts/backup-db.ts",
     "season": "tsx --env-file=.env scripts/season.ts",
     "swapi": "tsx scripts/fetch-swapi.ts",
-    "swapi:people": "tsx scripts/fetch-swapi-people.ts"
+    "swapi:people": "tsx scripts/fetch-swapi-people.ts",
+    "mcp": "tsx scripts/mcp.ts",
+    "test:mcp": "vitest run tests/mcp.test.ts --exclude '.claude/**'"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",
