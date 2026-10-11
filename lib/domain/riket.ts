@@ -1,6 +1,7 @@
+import { WinError, sameWinRequest } from './win-request';
 import { countByWeekday } from './local-time';
 import { dominance, stolenReign } from '../badges/player-stats';
-import { EventType, NationState } from '@prisma/client';
+import { EventType, NationState, type Prisma } from '@prisma/client';
 import { differenceInDays, isFriday } from 'date-fns';
 import { trace } from '@opentelemetry/api';
 import { prisma } from '../prisma';
@@ -8,7 +9,7 @@ import { audit, describeWin, type Actor } from '../audit';
 import { realm } from '../theme/themes/realm';
 import { calculateGlobalStats, calculatePlayerStats } from '../badges/player-stats';
 import { getPlayerBadges } from '../badges/badge-engine';
-import { clampReignToSeason, getPreviousSeason, isWinInSeason, resolveSeason, scopePlayerToSeason, seasonNow, winOccurredAtFilter, type SeasonWindow } from './season';
+import { IMPLICIT_SEASON, previousSeasonOf, clampReignToSeason, getPreviousSeason, isWinInSeason, resolveSeason, scopePlayerToSeason, seasonNow, winOccurredAtFilter, type SeasonWindow } from './season';
 import { isAfkAt, lockThrone } from './afk';
 import { describeSeasonEcho, ECHO_WINDOW, pickSeasonEcho, type SeasonEcho } from './season-echo';
 import { isStreakReturn } from './stage-triggers';
@@ -16,6 +17,9 @@ import { classicCrownRatings, crownRatings, START_RATING } from './crown-rating'
 import { standingsError } from './standings';
 import { getTheme } from '../theme';
 
+
+// Read helpers accept the held transaction so nested reads never need an extra pool connection.
+type ReadClient = Pick<Prisma.TransactionClient, 'player' | 'winEvent' | 'reign' | 'season'>;
 
 // Hur länge efter en kröning man måste vänta innan en ny vinnare kan sättas (skydd mot dubbelsättningar).
 const DEFAULT_COOLDOWN_MS = 20 * 60 * 1000;
@@ -26,9 +30,9 @@ export const WIN_COOLDOWN_MS = Number.isFinite(cooldownOverride) ? cooldownOverr
 
 // För en pågående säsong: den som sitter på tronen nu. För en avslutad säsong: den som
 // satt på tronen när säsongen tog slut.
-export async function getCurrentKing(season?: SeasonWindow) {
-  if (!season?.endedAt) return prisma.reign.findFirst({ where:{ endedAt:null }, include:{ player:true }, orderBy:{ startedAt:'desc' } });
-  return prisma.reign.findFirst({
+export async function getCurrentKing(season?: SeasonWindow, db: ReadClient = prisma) {
+  if (!season?.endedAt) return db.reign.findFirst({ where:{ endedAt:null }, include:{ player:true }, orderBy:{ startedAt:'desc' } });
+  return db.reign.findFirst({
     where: { startedAt: { lte: season.endedAt }, OR: [{ endedAt: null }, { endedAt: { gt: season.endedAt } }] },
     include: { player: true },
     orderBy: { startedAt: 'desc' },
@@ -92,66 +96,103 @@ export async function calculateStreak(winnerId:string){ const events=await prism
  * Underlag för krönikans tillbakablickar: bara under säsongens första ECHO_WINDOW händelser,
  * och bara om det finns en förra säsong som vinnaren var med i.
  */
-async function loadSeasonEcho(season: SeasonWindow, winnerId: string, previousKingId: string | null): Promise<SeasonEcho | null> {
-  const previous = await getPreviousSeason(season);
+async function loadSeasonEcho(season: SeasonWindow, winnerId: string, previousKingId: string | null, db: ReadClient): Promise<SeasonEcho | null> {
+  const previous = previousSeasonOf(await db.season.findMany(), season);
   if (!previous) return null;
-  const eventsSoFar = await prisma.winEvent.count({ where: { occurredAt: winOccurredAtFilter(season) } });
+  const eventsSoFar = await db.winEvent.count({ where: { occurredAt: winOccurredAtFilter(season) } });
   if (eventsSoFar >= ECHO_WINDOW) return null;
-  const winner = await prisma.player.findUnique({ where: { id: winnerId }, select: { createdAt: true } });
+  const winner = await db.player.findUnique({ where: { id: winnerId }, select: { createdAt: true } });
   if (!winner || winner.createdAt.getTime() >= season.startedAt.getTime()) return null;
-  return describeSeasonEcho(previous, (await getLeaderboard(previous)).filter(isRanked), winnerId, previousKingId);
+  return describeSeasonEcho(previous, (await getLeaderboard(previous, db)).filter(isRanked), winnerId, previousKingId);
 }
 
-export async function recordWin(winnerId:string,note?:string,opts:{ignoreCooldown?:boolean;actor?:Actor;standings?:string[]}={}){ const now=new Date(); const season=await resolveSeason(); const current=await getCurrentKing(season); const isSameKing=current?.playerId===winnerId;
- // Streak och rikets läge räknas mot SÄSONGENS vinster. WinEvent.streakCount sparas vid
- // skrivning, så utan detta skulle en pågående streak fortsätta rakt över säsongsgränsen.
- const previousEvents=await prisma.winEvent.findMany({where:{occurredAt:winOccurredAtFilter(season)},orderBy:{occurredAt:'desc'},take:7}); const previousStreakCount=previousEvents[0]?.streakCount ?? 0; const streakCount=isSameKing?previousStreakCount+1:1;
- const winnerWinCount=await prisma.winEvent.count({where:{winnerId}}); const lastWin=await prisma.winEvent.findFirst({where:{winnerId},orderBy:{occurredAt:'desc'}}); const isFirstWin=winnerWinCount===0; const daysSinceLastWin=lastWin?differenceInDays(now,new Date(lastWin.occurredAt)):null;
- const eventType=determineEventType({isSameKing:!!isSameKing, streakCount, previousStreakCount, isFirstWin, daysSinceLastWin}); const nationState=determineNationState({recentWinnerIds:previousEvents.map(e=>e.winnerId),currentStreak:streakCount,brokeBigStreak:!isSameKing&&previousStreakCount>=3}); const winner=await prisma.player.findUniqueOrThrow({where:{id:winnerId}}); if(!winner.isActive) throw new Error(`${winner.name} är AFK. Aktivera spelaren innan hen kan krönas.`);
- // Placeringen är valfri (äldre klienter och MCP skickar bara vinnaren), men skickas den ska den gå att lita på.
- const standings=opts.standings ?? []; let runnerUpName:string|undefined; if(standings.length){ const err=standingsError(winnerId,standings); if(err) throw new Error(err); const inRound=await prisma.player.findMany({where:{id:{in:standings}},select:{id:true,name:true,isActive:true}}); runnerUpName=inRound.find(p=>p.id===standings[1])?.name; if(inRound.length!==standings.length) throw new Error('Någon i placeringen finns inte som spelare.'); const afk=inRound.find(p=>!p.isActive); if(afk) throw new Error(`${afk.name} är AFK. Aktivera spelaren innan hen kan stå i placeringen.`); }
- const echo=await loadSeasonEcho(season, winnerId, current?.playerId ?? null); const ann=generateAnnouncement({eventType,winnerName:winner.name,previousKingName:current?.player.name,previousStreakCount,nationState,isFridayFinal:isFriday(now),daysSinceLastWin,recentTexts:previousEvents.map(e=>e.announcementText),echo}, getTheme(season.theme).announcements);
- // Scenutlösare som kräver historik: återkomst efter tappad svit, och seger över ärkefienden.
- const returningStreak = !isSameKing && isStreakReturn(previousEvents, winnerId);
- const nemesis = !isSameKing && current ? await getPlayerNemesis(winnerId, season) : null;
- const beatRival = !!nemesis && nemesis.rival.id === current?.playerId;
- const result = await prisma.$transaction(async(tx)=>{
-  // Två samtidiga anrop (dubbelklick) passerade båda API:ets cooldown-kontroll och skrev varsin
-  // vinst och regering. Låset serialiserar kröningar, och kontrollen görs om innanför låset.
-  await lockThrone(tx);
-  if(!opts.ignoreCooldown){ const clash=await tx.winEvent.findFirst({where:{occurredAt:{gt:new Date(now.getTime()-WIN_COOLDOWN_MS)}},select:{id:true}}); if(clash) throw new Error('En vinnare sattes nyss. Vänta innan nästa kröning.'); }
-  // Samma sak för AFK: bytet tar samma lås, så först här är AFK-läget säkert.
-  if(!(await tx.player.findUniqueOrThrow({where:{id:winnerId},select:{isActive:true}})).isActive) throw new Error(`${winner.name} är AFK. Aktivera spelaren innan hen kan krönas.`);
-  if(current && !isSameKing){ await tx.reign.update({where:{id:current.id}, data:{endedAt:now}}); await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} if(!current){ await tx.reign.create({data:{playerId:winnerId,startedAt:now}});} const win=await tx.winEvent.create({data:{winnerId,previousKingId:current?.playerId,occurredAt:now,eventType,streakCount,previousStreakCount,note,announcementText:ann.text,nationState,isFridayFinal:isFriday(now),standings}}); const a=await tx.announcement.create({data:{winEventId:win.id,text:ann.text,layout:ann.layout,persona:ann.persona}}); return {win,a}; });
- // Loggen skrivs utanför transaktionen: en kröning som gått igenom ska aldrig kunna
- // rullas tillbaka av att dess egen logg-rad fallerar.
- await audit('WIN_RECORDED', describeWin({winner:winner.name, previousKing:current?.player.name ?? null, streakCount}), opts.actor);
- // Kröningens innebörd läggs på request-spanet. Utan den kan telemetrin bara svara
- // "en POST tog 200 ms" — aldrig vem som krönts, med vilken svit eller i vilket rikstillstånd.
- // Sätts efter transaktionen: en kröning som rullats tillbaka ska aldrig synas som genomförd.
- const span = trace.getActiveSpan();
- span?.setAttributes({
-  'pingis.winner': winner.name,
-  // Tom tron är ett eget läge (säsongens första vinst), inte ett saknat värde.
-  'pingis.previous_king': current?.player.name ?? 'ingen',
-  'pingis.event_type': eventType,
-  'pingis.nation_state': nationState,
-  'pingis.streak': streakCount,
-  'pingis.previous_streak': previousStreakCount,
-  'pingis.first_win': isFirstWin,
-  'pingis.friday_final': isFriday(now),
-  'pingis.beat_rival': beatRival,
-  'pingis.season': season.slug,
-  'pingis.theme': season.theme,
-  // Samma default som audit() använder, annars skiljer sig loggen från spåret.
-  'pingis.actor': opts.actor ?? 'web',
- });
- // Saknas vid första vinsten. Ett påhittat 0 hade lästs som "vann igen samma dag".
- if (daysSinceLastWin !== null) span?.setAttribute('pingis.days_since_last_win', daysSinceLastWin);
- // Bara när placeringen skickats: 0 deltagare vore ett påhittat värde, inte en tom runda.
- if (standings.length) span?.setAttribute('pingis.participants', standings.length);
- if (runnerUpName) span?.setAttribute('pingis.runner_up', runnerUpName);
- return { ...result, stage: { returningStreak, beatRival } }; }
+export async function recordWin(winnerId: string, note?: string, opts: { ignoreCooldown?: boolean; actor?: Actor; standings?: string[]; requestId?: string } = {}) {
+  const standings = opts.standings ?? [];
+  const cleanNote = note?.trim() || undefined;
+  if (cleanNote && cleanNote.length > 500) throw new WinError('Anteckningen får vara högst 500 tecken.', 400);
+  if (standings.length) {
+    const error = standingsError(winnerId, standings);
+    if (error) throw new WinError(error, 400);
+  }
+  const saved = await prisma.$transaction(async (tx) => {
+    // All crown/streak state is read AFTER the same lock used by AFK.
+    await lockThrone(tx);
+    if (opts.requestId) {
+      const existing = await tx.winEvent.findUnique({ where: { requestId: opts.requestId }, include: { announcement: true } });
+      if (existing) {
+        if (!sameWinRequest(existing, winnerId, standings, cleanNote)) {
+          throw new WinError('Den här rundan är redan sparad med ett annat resultat. Öppna krönikan för att kontrollera.', 409);
+        }
+        const { announcement, ...win } = existing;
+        if (!announcement) throw new WinError('Rundan är sparad, men bekräftelsen kunde inte hämtas. Kontrollera krönikan.', 503);
+        // A retry must work even during cooldown or after participants go AFK.
+        return { result: { win, a: announcement, stage: { returningStreak: false, beatRival: false }, replayed: true as boolean }, context: null };
+      }
+    }
+    const now = new Date();
+    if (!opts.ignoreCooldown) {
+      const latest = await tx.winEvent.findFirst({ orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }], select: { occurredAt: true } });
+      const remainingMs = latest ? WIN_COOLDOWN_MS - (now.getTime() - latest.occurredAt.getTime()) : 0;
+      if (remainingMs > 0) throw new WinError(`En vinnare sattes nyligen. Vänta ${Math.ceil(remainingMs / 60000)} min innan en ny kan krönas.`, 429, remainingMs);
+    }
+    const season = (await tx.season.findFirst({ where: { endedAt: null }, orderBy: { startedAt: 'desc' } })) ?? IMPLICIT_SEASON;
+    const current = await tx.reign.findFirst({ where: { endedAt: null }, include: { player: true }, orderBy: { startedAt: 'desc' } });
+    const isSameKing = current?.playerId === winnerId;
+    const previousEvents = await tx.winEvent.findMany({ where: { occurredAt: winOccurredAtFilter(season) }, orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }], take: 7 });
+    const previousStreakCount = previousEvents[0]?.streakCount ?? 0;
+    const streakCount = isSameKing ? previousStreakCount + 1 : 1;
+    const winnerWinCount = await tx.winEvent.count({ where: { winnerId } });
+    const lastWin = await tx.winEvent.findFirst({ where: { winnerId }, orderBy: { occurredAt: 'desc' } });
+    const isFirstWin = winnerWinCount === 0;
+    const daysSinceLastWin = lastWin ? differenceInDays(now, lastWin.occurredAt) : null;
+    const winner = await tx.player.findUniqueOrThrow({ where: { id: winnerId } });
+    if (!winner.isActive) throw new WinError(`${winner.name} är AFK. Aktivera spelaren innan hen kan krönas.`, 400);
+    let runnerUpName: string | undefined;
+    if (standings.length) {
+      const inRound = await tx.player.findMany({ where: { id: { in: standings } }, select: { id: true, name: true, isActive: true } });
+      if (inRound.length !== standings.length) throw new WinError('Någon i placeringen finns inte som spelare.', 400);
+      const afk = inRound.find((p) => !p.isActive);
+      if (afk) throw new WinError(`${afk.name} är AFK. Aktivera spelaren innan hen kan stå i placeringen.`, 400);
+      runnerUpName = inRound.find((p) => p.id === standings[1])?.name;
+    }
+    const eventType = determineEventType({ isSameKing, streakCount, previousStreakCount, isFirstWin, daysSinceLastWin });
+    const nationState = determineNationState({ recentWinnerIds: previousEvents.map((e) => e.winnerId), currentStreak: streakCount, brokeBigStreak: !isSameKing && previousStreakCount >= 3 });
+    const echo = await loadSeasonEcho(season, winnerId, current?.playerId ?? null, tx);
+    const ann = generateAnnouncement({ eventType, winnerName: winner.name, previousKingName: current?.player.name, previousStreakCount, nationState, isFridayFinal: isFriday(now), daysSinceLastWin, recentTexts: previousEvents.map((e) => e.announcementText), echo }, getTheme(season.theme).announcements);
+    const returningStreak = !isSameKing && isStreakReturn(previousEvents, winnerId);
+    const nemesis = !isSameKing && current ? await getPlayerNemesis(winnerId, season, tx) : null;
+    const beatRival = !!nemesis && nemesis.rival.id === current?.playerId;
+    if (current && !isSameKing) {
+      await tx.reign.update({ where: { id: current.id }, data: { endedAt: now } });
+      await tx.reign.create({ data: { playerId: winnerId, startedAt: now } });
+    } else if (!current) {
+      await tx.reign.create({ data: { playerId: winnerId, startedAt: now } });
+    }
+    const win = await tx.winEvent.create({ data: { winnerId, previousKingId: current?.playerId, occurredAt: now, eventType, streakCount, previousStreakCount, note: cleanNote, announcementText: ann.text, nationState, isFridayFinal: isFriday(now), standings, requestId: opts.requestId } });
+    const a = await tx.announcement.create({ data: { winEventId: win.id, text: ann.text, layout: ann.layout, persona: ann.persona } });
+    return {
+      result: { win, a, stage: { returningStreak, beatRival }, replayed: false as boolean },
+      context: { winnerName: winner.name, previousKingName: current?.player.name ?? null, eventType, nationState, streakCount, previousStreakCount, isFirstWin, isFridayFinal: isFriday(now), beatRival, season, daysSinceLastWin, runnerUpName },
+    };
+  }, { maxWait: 10_000, timeout: 15_000 });
+  if (!saved.context) return saved.result;
+  const c = saved.context;
+  // A committed retry never adds another audit row or a second recording span.
+  await audit('WIN_RECORDED', describeWin({ winner: c.winnerName, previousKing: c.previousKingName, streakCount: c.streakCount }), opts.actor);
+  const span = trace.getActiveSpan();
+  span?.setAttributes({
+    'pingis.winner': c.winnerName, 'pingis.previous_king': c.previousKingName ?? 'ingen',
+    'pingis.event_type': c.eventType, 'pingis.nation_state': c.nationState,
+    'pingis.streak': c.streakCount, 'pingis.previous_streak': c.previousStreakCount,
+    'pingis.first_win': c.isFirstWin, 'pingis.friday_final': c.isFridayFinal,
+    'pingis.beat_rival': c.beatRival, 'pingis.season': c.season.slug,
+    'pingis.theme': c.season.theme, 'pingis.actor': opts.actor ?? 'web',
+  });
+  if (c.daysSinceLastWin !== null) span?.setAttribute('pingis.days_since_last_win', c.daysSinceLastWin);
+  if (standings.length) span?.setAttribute('pingis.participants', standings.length);
+  if (c.runnerUpName) span?.setAttribute('pingis.runner_up', c.runnerUpName);
+  return saved.result;
+}
 
 // Utan säsong: oförändrat all-time-beteende (används av testerna). Med säsong: spelarens
 // vinster filtreras och regeringar klampas mot fönstret, och "nu" fryses vid säsongsslutet
@@ -166,14 +207,14 @@ export function buildPlayerStats(player: any, currentKingId?: string | null, sea
   return { ...base, previousSeasonWins, lastWinAt: scoped.wins?.[0]?.occurredAt ?? null };
 }
 
-export async function getLeaderboard(season?: SeasonWindow) {
+export async function getLeaderboard(season?: SeasonWindow, db: ReadClient = prisma) {
   const s = season ?? (await resolveSeason());
   const now = new Date();
   // Hela historiken hämtas och skalas ner i minnet: regeringsklampning kan ändå inte
   // uttryckas i en Prisma-query, och datamängden är i storleksordningen tiotal rader.
-  const players = await prisma.player.findMany({ include: { wins: { orderBy: { occurredAt: 'desc' } }, reigns: true, afkPeriods: true } });
-  const current = await getCurrentKing(s);
-  const previous = await getPreviousSeason(s);
+  const players = await db.player.findMany({ include: { wins: { orderBy: { occurredAt: 'desc' } }, reigns: true, afkPeriods: true } });
+  const current = await getCurrentKing(s, db);
+  const previous = previousSeasonOf(await db.season.findMany(), s);
   // AFK avgörs vid säsongens "nu": en arkiverad säsong visas som den såg ut när den tog slut.
   const afkPeriods = Object.fromEntries(players.map((p) => [p.id, p.afkPeriods]));
   const afkAt = (playerId: string, at: Date) => isAfkAt(afkPeriods[playerId] ?? [], at);
@@ -250,9 +291,9 @@ export async function getPlayerStats(playerId: string, season?: SeasonWindow) {
 
 // Ärkefiende: spelaren man bytt kronan med mest — summan av krona snott + krona snodd ifrån.
 // Returnerar null tills minst 2 sådana händelser finns med samma motståndare (annars för tunt underlag).
-export async function getPlayerNemesis(playerId: string, season?: SeasonWindow) {
+export async function getPlayerNemesis(playerId: string, season?: SeasonWindow, db: ReadClient = prisma) {
   const s = season ?? (await resolveSeason());
-  const events = await prisma.winEvent.findMany({
+  const events = await db.winEvent.findMany({
     where: { OR: [{ winnerId: playerId }, { previousKingId: playerId }], occurredAt: winOccurredAtFilter(s) },
     select: { winnerId: true, previousKingId: true },
   });
@@ -277,7 +318,7 @@ export async function getPlayerNemesis(playerId: string, season?: SeasonWindow) 
     if (total > bestTotal) { bestTotal = total; bestId = id; best = t; }
   }
   if (!bestId || bestTotal < 2) return null;
-  const rival = await prisma.player.findUnique({ where: { id: bestId }, select: { id: true, name: true } });
+  const rival = await db.player.findUnique({ where: { id: bestId }, select: { id: true, name: true } });
   if (!rival) return null;
   return { rival, stolenFrom: best.stolenFrom, stolenBy: best.stolenBy, total: bestTotal };
 }

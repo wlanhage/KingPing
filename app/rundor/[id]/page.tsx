@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ShareRound } from '@/components/stage/ShareRound';
 import { notFound } from 'next/navigation';
 import { getRound } from '@/lib/domain/round';
 import { formatDateTime } from '@/lib/format';
@@ -10,7 +11,7 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const round = await getRound((await params).id);
-  return { title: round?.standings[0] ? `Rundan i repris · ${round.standings[0].name}` : 'Rundan i repris' };
+  return { title: round ? `Rundan i repris · ${round.winner.name}` : 'Rundan i repris' };
 }
 
 /** En runda i repris: placeringen som lista, och 3D-reprisen i Jeditemplet bakom en knapp. */
@@ -28,6 +29,7 @@ export default async function RoundPage({ params }: { params: Promise<{ id: stri
       </section>
       {players.length < 2 ? (
         <section className='card'>
+          <p><strong>{round.winner.name}</strong> vann rundan.</p>
           <p style={{ margin: 0 }}>Den här rundan spelades in utan placering, så det finns inget att spela upp.</p>
         </section>
       ) : (
@@ -45,6 +47,7 @@ export default async function RoundPage({ params }: { params: Promise<{ id: stri
           <RoundReplay roundId={round.id} players={players} crowningWord={theme.verbs.crowning} hour={round.hour} merits={round.merits} />
         </section>
       )}
+      <ShareRound roundId={round.id} winnerName={round.winner.name} standings={players.map((p) => p.name)} />
       <Link href='/history' className='replay-back'>← Till krönikan</Link>
     </main>
   );
