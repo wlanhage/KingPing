@@ -31,6 +31,13 @@ MCP-server med rikets data som verktyg (`scripts/mcp.ts`), för Claude Code/Desk
 - Verktyg: `pingis_current_king`, `pingis_players`, `pingis_leaderboard`, `pingis_player`, `pingis_history`, `pingis_record_win`. Spelare anges med namn eller id.
 - Test utan app och databas: `npx vitest run tests/mcp.test.ts` — startar servern precis som `.mcp.json` gör.
 
+## Rundor, form och rivaler
+- Registreringen visar hur många som är kvar, bekräftar hela placeringen och länkar till det sparade resultatet. Vid ett osäkert nätverkssvar sparas den bekräftade rundan i flikens sessionslagring; återförsök använder samma `requestId` och skapar inte en extra runda. API-klienter kan skicka en valfri UUID som `requestId`; samma nyckel med ett annat resultat ger 409. Klienter utan nyckel behåller sitt tidigare beteende.
+- Profiler visar vinstprocent, snittplacering, senaste tio rundor, vinstsviter och de vanligaste rivalerna inom vald säsong. Bara kompletta, giltiga placeringar ingår. Frånvaro räknas inte som förlust; äldre rundor med bara vinnare visas separat.
+- Arkivet går att söka på spelare och text, med 20 rundor per sida. Resultatsidan kan dela eller kopiera en länk. Den galaktiska krönikan finns kvar som alternativ vy.
+- Migreringen `20261011220000_add_win_request_id` lägger till en nullable unik nyckel; historiska resultat och rankingregler ändras inte.
+- Databastester för registrering är opt-in: `KINGPING_WIN_INTEGRATION=1 npx vitest run tests/wins-integration.test.ts --exclude '.claude/**'`. De kräver en separat lokal databas på `127.0.0.1` med namnet `kingping_quality` och tillämpade migreringar.
+
 ## Förbättringar
 - Modal för `/pingis win`
 - Slack signaturverifiering

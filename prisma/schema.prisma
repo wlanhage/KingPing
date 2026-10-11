@@ -75,6 +75,8 @@ model Reign {
 }
 
 model WinEvent {
+  /// Durable submission identity; NULL preserves all historical and legacy client events.
+  requestId           String?       @unique
   id                  String        @id @default(cuid())
   winnerId            String
   winner              Player        @relation("Winner", fields: [winnerId], references: [id])
