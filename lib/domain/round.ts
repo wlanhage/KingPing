@@ -7,7 +7,7 @@ import { isWinInSeason, listSeasons, resolveSeason } from './season';
  * spelades i — en gammal runda visas i sin egen säsongs ord. null om id:t inte finns.
  */
 export async function getRound(id: string) {
-  const win = await prisma.winEvent.findUnique({ where: { id }, select: { id: true, occurredAt: true, standings: true, winner: { select: { id: true, name: true } } } });
+  const win = await prisma.winEvent.findUnique({ where: { id }, select: { id: true, occurredAt: true, standings: true, finalWinnerPoints: true, finalRunnerUpPoints: true, winner: { select: { id: true, name: true } } } });
   if (!win) return null;
   const players = await prisma.player.findMany({ where: { id: { in: win.standings } }, select: { id: true, name: true, createdAt: true } });
   const byId = new Map(players.map((p) => [p.id, p]));
@@ -16,6 +16,7 @@ export async function getRound(id: string) {
     id: win.id,
     winner: win.winner,
     occurredAt: win.occurredAt,
+    finalScore: win.finalWinnerPoints !== null && win.finalRunnerUpPoints !== null ? [win.finalWinnerPoints, win.finalRunnerUpPoints] as const : null,
     // svensk tid med minuter som decimaler: reprisens Coruscant följer dygnet rundan spelades i
     hour: hourOfDay(win.occurredAt) + win.occurredAt.getUTCMinutes() / 60,
     merits: await meritsAt(win.standings, win.occurredAt),

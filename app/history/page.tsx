@@ -22,7 +22,7 @@ export default async function History({ searchParams }: { searchParams: Promise<
   const events = await prisma.winEvent.findMany({
     where, orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }],
     skip: (filters.page - 1) * HISTORY_PAGE_SIZE, take: HISTORY_PAGE_SIZE,
-    select: { id: true, occurredAt: true, winnerId: true, standings: true, note: true, announcementText: true },
+    select: { id: true, occurredAt: true, winnerId: true, standings: true, note: true, announcementText: true, finalWinnerPoints: true, finalRunnerUpPoints: true },
   });
   const names = new Map(players.map((p) => [p.id, p.name]));
   const linkState = { ...filters, season: input.season };

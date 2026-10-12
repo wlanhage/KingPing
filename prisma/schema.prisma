@@ -44,14 +44,16 @@ model Season {
 }
 
 model Player {
-  id          String    @id @default(cuid())
-  name        String    @unique
+  id          String      @id @default(cuid())
+  name        String      @unique
   slackUserId String?
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  wins        WinEvent[] @relation("Winner")
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  wins        WinEvent[]  @relation("Winner")
   reigns      Reign[]
   afkPeriods  AfkPeriod[]
+  duelWins    Duel[]      @relation("DuelWinner")
+  duelLosses  Duel[]      @relation("DuelLoser")
 }
 
 /// En period då spelaren varit AFK. `Player.isActive` är nu-läget; perioderna är historiken,
@@ -65,9 +67,9 @@ model AfkPeriod {
 }
 
 model Reign {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   playerId     String
-  player       Player   @relation(fields: [playerId], references: [id])
+  player       Player    @relation(fields: [playerId], references: [id])
   startedAt    DateTime
   endedAt      DateTime?
   createdBy    String?
@@ -93,7 +95,25 @@ model WinEvent {
   /// som för alla rundor innan placeringar spelades in. En lista i stället för en egen tabell:
   /// placeringen skrivs och läses alltid hel, tillsammans med sin vinst, och spelare raderas aldrig.
   standings           String[]      @default([])
+  /// Poängen i sista duellen, mellan vinnaren och tvåan (standings[1]). Båda null = inte inspelad.
+  finalWinnerPoints   Int?
+  finalRunnerUpPoints Int?
   announcement        Announcement?
+}
+
+/// En 1 mot 1 utanför kronan: rör varken tronen, sviten eller cooldownen. En KronMatch sparas i
+/// stället som en vanlig runda med två spelare i placeringen, och räknas ändå med i duell-ratingen.
+model Duel {
+  id           String   @id @default(cuid())
+  /// Samma skydd mot dubbelsparning som WinEvent.requestId.
+  requestId    String?  @unique
+  winnerId     String
+  winner       Player   @relation("DuelWinner", fields: [winnerId], references: [id])
+  loserId      String
+  loser        Player   @relation("DuelLoser", fields: [loserId], references: [id])
+  winnerPoints Int?
+  loserPoints  Int?
+  occurredAt   DateTime @default(now())
 }
 
 model Announcement {

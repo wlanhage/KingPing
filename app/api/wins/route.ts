@@ -7,13 +7,15 @@ const schema = z.object({
   note: z.string().trim().max(500, 'Anteckningen får vara högst 500 tecken.').optional(),
   standings: z.array(z.string().min(1)).max(100).optional(),
   requestId: z.string().uuid().optional(),
+  finalWinnerPoints: z.number().int().nullable().optional(),
+  finalRunnerUpPoints: z.number().int().nullable().optional(),
 });
 
 export async function POST(req: Request) {
   try {
     const body = schema.parse(await req.json());
     // Retry lookup and cooldown both belong inside the throne lock, in that order.
-    return Response.json(await recordWin(body.winnerId, body.note, { actor: 'web', standings: body.standings, requestId: body.requestId }));
+    return Response.json(await recordWin(body.winnerId, body.note, { actor: 'web', standings: body.standings, requestId: body.requestId, finalScore: [body.finalWinnerPoints ?? null, body.finalRunnerUpPoints ?? null] }));
   } catch (error) {
     if (error instanceof WinError) {
       return Response.json({ error: error.message, ...(error.status === 429 ? { cooldown: true, remainingMs: error.remainingMs } : {}) }, {

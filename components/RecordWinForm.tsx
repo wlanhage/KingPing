@@ -5,6 +5,7 @@ import { parseWinDraft, WIN_DRAFT_KEY, type WinDraft } from '@/lib/domain/win-dr
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Coronation, type CoronationCopy, type CoronationEvent, type LaneWords } from './Coronation';
 import { knockoutPlace, standingsFromKnockouts } from '@/lib/domain/standings';
+import { scoreError } from '@/lib/domain/duel';
 
 export type WinFormCopy = { crown: string; crowning: string; crowningNow: string; coronation: CoronationCopy; lane: LaneWords };
 
@@ -34,11 +35,25 @@ export function RecordWinForm({ players, startingAbsent, lastWinAt, cooldownMs, 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [coronation, setCoronation] = useState<CoronationEvent | null>(null);
+  // 'duel' = 1 mot 1. Som KronMatch går den samma väg som en runda med två spelare och kan ta kronan;
+  // annars sparas den som en duell utanför kronan.
+  const [mode, setMode] = useState<'round' | 'duel'>('round');
+  const [kronMatch, setKronMatch] = useState(false);
+  const [duelists, setDuelists] = useState<[string, string]>(['', '']);
+  const [duelWinner, setDuelWinner] = useState<string | null>(null);
+  const [score, setScore] = useState<[string, string]>(['', '']);
+  const [savedDuel, setSavedDuel] = useState<string | null>(null);
   // null fram till mount → identisk render på server och klient (ingen hydration-mismatch).
   const [now, setNow] = useState<number | null>(null);
 
   const participantIds = useMemo(() => players.filter((p) => !absent.includes(p.id)).map((p) => p.id), [players, absent]);
-  const standings = useMemo(() => standingsFromKnockouts(participantIds, out), [participantIds, out]);
+  const roundStandings = useMemo(() => standingsFromKnockouts(participantIds, out), [participantIds, out]);
+  const duelLoser = duelWinner ? duelists.find((id) => id !== duelWinner) ?? null : null;
+  const duelStandings = duelWinner && duelLoser && duelists[0] !== duelists[1] ? [duelWinner, duelLoser] : null;
+  const standings = mode === 'duel' ? duelStandings : roundStandings;
+  const finalScore = score.map((s) => (s.trim() === '' ? null : Number(s))) as [number | null, number | null];
+  const scoreProblem = scoreError(...finalScore);
+  const crownsSomeone = mode === 'round' || kronMatch;
   const winnerId = standings?.[0] ?? null;
   const nameOf = (id: string | null) => players.find((p) => p.id === id)?.name;
   const winnerName = nameOf(winnerId);
@@ -108,7 +123,7 @@ export function RecordWinForm({ players, startingAbsent, lastWinAt, cooldownMs, 
 
   async function submit() {
     if (inFlight.current || (!pending && (!winnerId || !standings))) return;
-    const draft = pending ?? { requestId: crypto.randomUUID(), winnerId: winnerId!, standings: standings!, note };
+    const draft = pending ?? { requestId: crypto.randomUUID(), winnerId: winnerId!, standings: standings!, note, finalWinnerPoints: finalScore[0], finalRunnerUpPoints: finalScore[1] };
     inFlight.current = true;
     setSubmitting(true);
     setError(null);
@@ -152,8 +167,44 @@ export function RecordWinForm({ players, startingAbsent, lastWinAt, cooldownMs, 
     }
   }
 
+  async function saveDuel() {
+    if (inFlight.current || !duelStandings || scoreProblem) return;
+    inFlight.current = true;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/duels', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId: crypto.randomUUID(), winnerId: duelStandings[0], loserId: duelStandings[1], winnerPoints: finalScore[0], loserPoints: finalScore[1] }),
+        signal: AbortSignal.timeout(15000),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error ?? 'Kunde inte spara duellen.'); return; }
+      setSavedDuel(`${nameOf(duelStandings[0])} slog ${nameOf(duelStandings[1])}${finalScore[0] !== null ? ` ${finalScore[0]}–${finalScore[1]}` : ''}`);
+      setDuelWinner(null);
+      setScore(['', '']);
+      router.refresh();
+    } catch {
+      setError('Svaret kom inte fram. Kontrollera i Elo Lab om duellen sparades innan du försöker igen.');
+    } finally {
+      setSubmitting(false);
+      inFlight.current = false;
+    }
+  }
+
+  const scoreFields = standings && (
+    <fieldset className='final-score' disabled={crownsSomeone && onCooldown}>
+      <legend className='crown-label'>{mode === 'duel' ? 'Poäng' : 'Finalen'} <em>(valfritt)</em></legend>
+      <label><span>{nameOf(standings[0])}</span><input className='crown-input' inputMode='numeric' value={score[0]} onChange={(e) => setScore([e.target.value.replace(/\D/g, '').slice(0, 2), score[1]])} aria-label={`Poäng för ${nameOf(standings[0])}`} /></label>
+      <span aria-hidden>–</span>
+      <label><input className='crown-input' inputMode='numeric' value={score[1]} onChange={(e) => setScore([score[0], e.target.value.replace(/\D/g, '').slice(0, 2)])} aria-label={`Poäng för ${nameOf(standings[1])}`} /><span>{nameOf(standings[1])}</span></label>
+      {scoreProblem && <p className='crown-error'>{scoreProblem}</p>}
+    </fieldset>
+  );
+
   return (
     <>
+      {savedDuel && <div className='round-saved' role='status'><strong>✓ Duell sparad: {savedDuel}</strong><Link href='/elo'>Se duell-ratingen →</Link></div>}
       {savedRound && <div className='round-saved' role='status'><strong>✓ {savedRound.name}s runda är sparad</strong><Link ref={savedLinkRef} href={`/rundor/${savedRound.id}`}>Visa resultat & dela →</Link></div>}
       {pending && !confirming && <section className='round-recovery' aria-live='polite'>
         <strong>En runda väntar på bekräftelse</strong>
@@ -168,6 +219,8 @@ export function RecordWinForm({ players, startingAbsent, lastWinAt, cooldownMs, 
         inert={confirming || !!pending || submitting || !!coronation}
         onSubmit={(e) => {
           e.preventDefault();
+          if (scoreProblem) return;
+          if (!crownsSomeone) { saveDuel(); return; }
           if (!onCooldown && winnerId) {
             setError(null);
             returnFocus.current = submitRef.current;
@@ -175,6 +228,33 @@ export function RecordWinForm({ players, startingAbsent, lastWinAt, cooldownMs, 
           }
         }}
       >
+        <div className='mode-switch' role='group' aria-label='Typ av match'>
+          <button type='button' aria-pressed={mode === 'round'} onClick={() => { setMode('round'); setScore(['', '']); }}>Runda</button>
+          <button type='button' aria-pressed={mode === 'duel'} onClick={() => { setMode('duel'); setScore(['', '']); }}>1 mot 1</button>
+        </div>
+
+        {mode === 'duel' ? (
+          <fieldset className='duel-picker'>
+            <legend className='crown-label'>Duell</legend>
+            <div className='duel-players'>
+              {[0, 1].map((i) => (
+                <select key={i} className='crown-select' aria-label={`Spelare ${i + 1}`} value={duelists[i]} onChange={(e) => { const next = [...duelists] as [string, string]; next[i] = e.target.value; setDuelists(next); setDuelWinner(null); }}>
+                  <option value=''>Välj spelare…</option>
+                  {players.filter((p) => p.id === duelists[i] || p.id !== duelists[1 - i]).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              ))}
+            </div>
+            {duelists[0] && duelists[1] && <div className='duel-winner' role='group' aria-label='Vem vann?'>
+              <span className='crown-label'>Vem vann?</span>
+              {duelists.map((id) => <button key={id} type='button' className='btn-ghost' aria-pressed={duelWinner === id} onClick={() => setDuelWinner(id)}>{nameOf(id)}</button>)}
+            </div>}
+            <label className='kron-match'>
+              <input type='checkbox' checked={kronMatch} onChange={(e) => setKronMatch(e.target.checked)} />
+              <span><strong>KronMatch</strong> — vinnaren tar kronan, precis som efter en runda.</span>
+            </label>
+            {kronMatch && onCooldown && <p className='crown-hint'>Kronan kan bytas igen om {formatCountdown(remainingMs)}. En duell utan KronMatch kan sparas nu.</p>}
+          </fieldset>
+        ) : (
         <fieldset className='standings' disabled={onCooldown}>
           <legend className='crown-label'>Placering</legend>
           <p className='standings-prompt' aria-live='polite'>
@@ -231,17 +311,21 @@ export function RecordWinForm({ players, startingAbsent, lastWinAt, cooldownMs, 
           {/* Alltid monterad: försvann knappen när man tryckte på den tappade tangentbordet fokus. */}
           <button type='button' className='btn-ghost standings-reset' aria-disabled={pristine} onClick={() => { setOut([]); setAbsent(startingAbsent); }}>Börja om</button>
         </fieldset>
+        )}
 
-        <label className='crown-field'>
+        {scoreFields}
+
+        {crownsSomeone && <label className='crown-field'>
           <span className='crown-label'>Anteckning <em>(valfritt)</em></span>
           <input className='crown-input' placeholder='Vad hände? Ett ord eller en hel saga' maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} disabled={onCooldown} />
-        </label>
+        </label>}
 
-        <button ref={submitRef} className='crown-btn' disabled={!winnerId || onCooldown}>
-          {onCooldown ? `Ny vinnare om ${formatCountdown(remainingMs)}` : `${copy.crown} ${winnerName ?? 'vinnaren'}`}
+        <button ref={submitRef} className='crown-btn' disabled={!winnerId || !!scoreProblem || (crownsSomeone && onCooldown) || submitting}>
+          {!crownsSomeone ? (submitting ? 'Sparar duellen…' : 'Spara duellen')
+            : onCooldown ? `Ny vinnare om ${formatCountdown(remainingMs)}` : `${copy.crown} ${winnerName ?? 'vinnaren'}`}
         </button>
 
-        {onCooldown && (
+        {onCooldown && mode === 'round' && (
           <p className='crown-hint'>En vinnare sattes nyss. För att undvika dubbelsättningar kan nästa {copy.crowning} ske om {formatCountdown(remainingMs)}.</p>
         )}
         {error && !pending && <p ref={errorRef} tabIndex={-1} className='crown-error' role='alert'>{error}</p>}
@@ -261,6 +345,7 @@ export function RecordWinForm({ players, startingAbsent, lastWinAt, cooldownMs, 
             <ol className='standing-summary' aria-label='Placering'>
               {standings?.map((id) => <li key={id}>{nameOf(id)}</li>)}
             </ol>
+            {finalScore[0] !== null && <p className='modal-body'>{mode === 'duel' ? 'Poäng' : 'Finalen'}: {finalScore[0]}–{finalScore[1]}</p>}
             <div className='modal-actions'>
               <button type='button' className='btn-ghost' onClick={() => setConfirming(false)} disabled={submitting}>Avbryt</button>
               <button type='button' className='crown-btn' onClick={submit} disabled={submitting || !winnerId}>
@@ -271,7 +356,7 @@ export function RecordWinForm({ players, startingAbsent, lastWinAt, cooldownMs, 
         </div>
       )}
 
-      {coronation && <Coronation event={coronation} copy={copy.coronation} words={copy.lane} onDone={() => { setCoronation(null); setOut([]); setNote(''); router.refresh(); }} />}
+      {coronation && <Coronation event={coronation} copy={copy.coronation} words={copy.lane} onDone={() => { setCoronation(null); setOut([]); setNote(''); setScore(['', '']); setDuelWinner(null); router.refresh(); }} />}
     </>
   );
 }

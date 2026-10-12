@@ -1,4 +1,5 @@
-import { WinError, sameWinRequest } from './win-request';
+import { WinError, sameWinRequest, type FinalScore } from './win-request';
+import { scoreError } from './duel';
 import { countByWeekday } from './local-time';
 import { dominance, stolenReign } from '../badges/player-stats';
 import { EventType, NationState, type Prisma } from '@prisma/client';
@@ -106,8 +107,12 @@ async function loadSeasonEcho(season: SeasonWindow, winnerId: string, previousKi
   return describeSeasonEcho(previous, (await getLeaderboard(previous, db)).filter(isRanked), winnerId, previousKingId);
 }
 
-export async function recordWin(winnerId: string, note?: string, opts: { ignoreCooldown?: boolean; actor?: Actor; standings?: string[]; requestId?: string } = {}) {
+export async function recordWin(winnerId: string, note?: string, opts: { ignoreCooldown?: boolean; actor?: Actor; standings?: string[]; requestId?: string; finalScore?: FinalScore } = {}) {
   const standings = opts.standings ?? [];
+  const finalScore: FinalScore = opts.finalScore ?? [null, null];
+  const scoreProblem = scoreError(...finalScore);
+  if (scoreProblem) throw new WinError(scoreProblem, 400);
+  if (finalScore[0] !== null && standings.length < 2) throw new WinError('Finalens poäng kräver att placeringen är inspelad.', 400);
   const cleanNote = note?.trim() || undefined;
   if (cleanNote && cleanNote.length > 500) throw new WinError('Anteckningen får vara högst 500 tecken.', 400);
   if (standings.length) {
@@ -120,7 +125,7 @@ export async function recordWin(winnerId: string, note?: string, opts: { ignoreC
     if (opts.requestId) {
       const existing = await tx.winEvent.findUnique({ where: { requestId: opts.requestId }, include: { announcement: true } });
       if (existing) {
-        if (!sameWinRequest(existing, winnerId, standings, cleanNote)) {
+        if (!sameWinRequest(existing, winnerId, standings, cleanNote, finalScore)) {
           throw new WinError('Den här rundan är redan sparad med ett annat resultat. Öppna krönikan för att kontrollera.', 409);
         }
         const { announcement, ...win } = existing;
@@ -168,7 +173,7 @@ export async function recordWin(winnerId: string, note?: string, opts: { ignoreC
     } else if (!current) {
       await tx.reign.create({ data: { playerId: winnerId, startedAt: now } });
     }
-    const win = await tx.winEvent.create({ data: { winnerId, previousKingId: current?.playerId, occurredAt: now, eventType, streakCount, previousStreakCount, note: cleanNote, announcementText: ann.text, nationState, isFridayFinal: isFriday(now), standings, requestId: opts.requestId } });
+    const win = await tx.winEvent.create({ data: { winnerId, previousKingId: current?.playerId, occurredAt: now, eventType, streakCount, previousStreakCount, note: cleanNote, announcementText: ann.text, nationState, isFridayFinal: isFriday(now), standings, requestId: opts.requestId, finalWinnerPoints: finalScore[0], finalRunnerUpPoints: finalScore[1] } });
     const a = await tx.announcement.create({ data: { winEventId: win.id, text: ann.text, layout: ann.layout, persona: ann.persona } });
     return {
       result: { win, a, stage: { returningStreak, beatRival }, replayed: false as boolean },

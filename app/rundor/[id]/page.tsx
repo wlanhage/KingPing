@@ -44,6 +44,7 @@ export default async function RoundPage({ params }: { params: Promise<{ id: stri
               </li>
             ))}
           </ol>
+          {round.finalScore && <p className='replay-final'>{players.length === 2 ? 'Matchen' : 'Finalen'} slutade {round.finalScore[0]}–{round.finalScore[1]}.</p>}
           <RoundReplay roundId={round.id} players={players} crowningWord={theme.verbs.crowning} hour={round.hour} merits={round.merits} />
         </section>
       )}
