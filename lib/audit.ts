@@ -1,6 +1,6 @@
 import { prisma } from './prisma';
 
-export type AuditAction = 'WIN_RECORDED' | 'PLAYER_CREATED' | 'SEASON_CREATED' | 'SEASON_ROLLED' | 'SEASON_THEME_CHANGED';
+export type AuditAction = 'WIN_RECORDED' | 'DUEL_RECORDED' | 'PLAYER_CREATED' | 'SEASON_CREATED' | 'SEASON_ROLLED' | 'SEASON_THEME_CHANGED';
 
 /**
  * Riket har ingen inloggning. Aktören är därför YTAN handlingen kom ifrån, inte en person:

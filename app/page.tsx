@@ -27,7 +27,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ d
   const king = kingdom.currentKing;
   const players = await prisma.player.findMany({ where: { isActive: true }, orderBy: { name: 'asc' }, select: { id: true, name: true } });
   const lastEvent = await prisma.winEvent.findFirst({ orderBy: { occurredAt: 'desc' }, select: { occurredAt: true } });
-  const lastRound = await prisma.winEvent.findFirst({ where: { standings: { isEmpty: false } }, orderBy: { occurredAt: 'desc' }, select: { standings: true } });
+  // En KronMatch är en runda med två spelare; nästa runda ska ändå börja med gruppen från förra riktiga rundan.
+  const recentRounds = await prisma.winEvent.findMany({ where: { standings: { isEmpty: false } }, orderBy: { occurredAt: 'desc' }, select: { standings: true }, take: 10 });
+  const lastRound = recentRounds.find((r) => r.standings.length > 2) ?? recentRounds[0];
   const latestInSeason = await prisma.winEvent.findFirst({ where: { occurredAt: winOccurredAtFilter(await resolveSeason()) }, orderBy: { occurredAt: 'desc' }, select: { nationState: true } });
   // Figuren tilldelas mot hela truppen (även frånvarande), som på spelarsidorna.
   const roster = await prisma.player.findMany({ select: { id: true, name: true, createdAt: true } });

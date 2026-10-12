@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { prisma } from '../lib/prisma';
 import { recordWin } from '../lib/domain/riket';
 import { POST } from '../app/api/wins/route';
+import { recordDuel } from '../lib/duel/server';
 
 describe.runIf(process.env.KINGPING_WIN_INTEGRATION === '1')('durable round recording on disposable PostgreSQL', () => {
   const prefix = crypto.randomUUID();
@@ -14,6 +15,17 @@ describe.runIf(process.env.KINGPING_WIN_INTEGRATION === '1')('durable round reco
     await prisma.player.createMany({ data: [{ id: a, name: `Quality A ${prefix}` }, { id: b, name: `Quality B ${prefix}` }] });
   });
   afterAll(async () => { await prisma.$disconnect(); });
+  it('saves the final score with the round, and a plain duel without touching the throne', async () => {
+    const { win } = await recordWin(a, undefined, { requestId: crypto.randomUUID(), standings: [a, b], ignoreCooldown: true, finalScore: [11, 7] });
+    expect([win.finalWinnerPoints, win.finalRunnerUpPoints]).toEqual([11, 7]);
+    const reignsBefore = await prisma.reign.count();
+    const requestId = crypto.randomUUID();
+    const duel = await recordDuel({ winnerId: b, loserId: a, winnerPoints: 11, loserPoints: 9, requestId });
+    expect(await recordDuel({ winnerId: b, loserId: a, winnerPoints: 11, loserPoints: 9, requestId })).toEqual(duel);
+    await expect(recordDuel({ winnerId: a, loserId: b, requestId })).rejects.toMatchObject({ status: 409 });
+    expect(await prisma.reign.count()).toBe(reignsBefore);
+    expect(await prisma.duel.count({ where: { requestId } })).toBe(1);
+  });
   it('replays a concurrent duplicate exactly once including the announcement and audit', async () => {
     const requestId = crypto.randomUUID();
     const before = await prisma.auditLog.count({ where: { action: 'WIN_RECORDED' } });

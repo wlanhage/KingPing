@@ -3,7 +3,7 @@ import { formatDateTime } from '@/lib/format';
 import { historyHref, type HistoryFilters } from '@/lib/domain/history';
 import { standingsError } from '@/lib/domain/standings';
 
-type HistoryEvent = { id: string; occurredAt: string; winnerId: string; standings: string[]; note: string | null; announcementText: string };
+type HistoryEvent = { id: string; occurredAt: string; winnerId: string; standings: string[]; note: string | null; announcementText: string; finalWinnerPoints?: number | null; finalRunnerUpPoints?: number | null };
 export function RoundHistory({ players, events, filters, seasonSlug, total, pageSize }: {
   players: { id: string; name: string }[]; events: HistoryEvent[]; filters: HistoryFilters; seasonSlug?: string; total: number; pageSize: number;
 }) {
@@ -26,6 +26,7 @@ export function RoundHistory({ players, events, filters, seasonSlug, total, page
         return <li key={e.id} className='history-round'>
           <div className='history-round-head'><span className='history-winner-mark' aria-hidden>👑</span><div><h2><Link href={`/players/${e.winnerId}${suffix}`}>{names.get(e.winnerId) ?? 'Okänd spelare'}</Link><span> vann rundan</span></h2><time dateTime={e.occurredAt}>{formatDateTime(new Date(e.occurredAt))}{known ? ` · ${e.standings.length} spelare` : ''}</time></div></div>
           {known ? <ol className='history-places' aria-label='Placering'>{e.standings.map((id, i) => <li key={id}><span className='history-place-number'>{i + 1}</span><Link href={`/players/${id}${suffix}`}>{names.get(id)}</Link></li>)}</ol> : <p className='history-unknown'>Placeringen spelades inte in. Bara vinnaren är känd.</p>}
+          {known && e.finalWinnerPoints != null && <p className='history-final'>{e.standings.length === 2 ? 'Matchen' : 'Finalen'} {e.finalWinnerPoints}–{e.finalRunnerUpPoints} mot {names.get(e.standings[1])}</p>}
           {e.note && <p className='history-note'>”{e.note}”</p>}
           <details className='history-announcement'><summary>Häroldens ord</summary><p>{e.announcementText}</p></details>
           <Link href={`/rundor/${e.id}`} className='history-round-link'>{known ? 'Resultat, repris & delning →' : 'Visa & dela resultat →'}</Link>

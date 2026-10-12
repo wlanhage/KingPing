@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import type { DuelMatch, DuelRating } from '@/lib/domain/duel';
 import { lineupOdds, type ForecastCheck, type HeadToHead, type PlacementRating, type SurvivalCurve } from '@/lib/domain/placement-models';
 import { Figure } from './EloReport';
 
@@ -21,8 +22,10 @@ export type PlacementData = {
   lastLineup: string[];
 };
 
+export type DuelData = { ratings: DuelRating[]; recent: (DuelMatch & { occurredAt: string })[] };
+
 /** Modellerna som bara går att räkna när hela placeringen är känd. Ligger som avsnitt 04 i Elo Lab. */
-export function PlacementModels({ data }: { data: PlacementData }) {
+export function PlacementModels({ data, duel }: { data: PlacementData; duel: DuelData }) {
   const name = (id: string) => data.players.find((p) => p.id === id)?.name ?? '?';
   const color = (id: string) => COLORS[Math.max(0, data.players.findIndex((p) => p.id === id)) % COLORS.length];
   const rated = data.ratings.map((r) => r.id);
@@ -30,7 +33,10 @@ export function PlacementModels({ data }: { data: PlacementData }) {
   const odds = useMemo(() => (lineup.length >= 2 ? lineupOdds(data.strengths, lineup) : null), [data.strengths, lineup]);
 
   if (!data.placedRounds) {
-    return <section className='elo-empty'><span className='elo-section-label'>04 / PLACERINGSMODELLER</span><h2>Inga hela placeringar den här säsongen.</h2><p>Modellerna nedan räknar på hela utslagsordningen. Registrera rundor med alla deltagare så fylls avsnittet i.</p></section>;
+    return <>
+      <section className='elo-empty'><span className='elo-section-label'>04 / PLACERINGSMODELLER</span><h2>Inga hela placeringar den här säsongen.</h2><p>Modellerna räknar på hela utslagsordningen. Registrera rundor med alla deltagare så fylls avsnittet i.</p></section>
+      <div className='elo-figures'><DuelFigure duel={duel} name={name} /></div>
+    </>;
   }
 
   const lo = Math.floor((Math.min(...data.ratings.map((r) => r.low)) - 20) / 50) * 50;
@@ -98,6 +104,24 @@ export function PlacementModels({ data }: { data: PlacementData }) {
           })}</tr>)}</tbody>
         </table></div>
       </Figure>
+
+      <DuelFigure duel={duel} name={name} />
     </div>
   </>;
+}
+
+/** 1 mot 1 har eget underlag: den visas även när säsongen saknar hela placeringar. */
+function DuelFigure({ duel, name }: { duel: DuelData; name: (id: string) => string }) {
+  return (
+    <Figure n='11' title='Duell-rating' description='1 mot 1: både vanliga dueller och KronMatcher.' wide caption='Vanlig Elo, i tidsordning, från 1000 och med samma K-faktor som kronratingen. Här finns ingen rundpingis-anpassning: två spelare, en vinnare. En KronMatch är en runda med exakt två spelare och räknas också i kronratingen.'>
+      {!duel.ratings.length ? <p className='elo-chart-empty'>Inga dueller den här säsongen. Välj ”1 mot 1” när du registrerar.</p> : <div className='elo-scroll'><table className='elo-stats'>
+        <thead><tr><th>Spelare</th><th>Rating</th><th>Vinster</th><th>Förluster</th></tr></thead>
+        <tbody>{duel.ratings.map((r) => <tr key={r.id}><th>{name(r.id)}</th><td>{number(r.rating)}</td><td>{r.wins}</td><td>{r.losses}</td></tr>)}</tbody>
+      </table></div>}
+      {duel.recent.length > 0 && <ul className='elo-duel-list'>{duel.recent.map((m) => <li key={m.id}>
+        <time dateTime={m.occurredAt}>{new Date(m.occurredAt).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', timeZone: 'Europe/Stockholm' })}</time>
+        <span><strong>{name(m.winnerId)}</strong> slog {name(m.loserId)}</span>{m.crown && <em>KronMatch</em>}
+      </li>)}</ul>}
+    </Figure>
+  );
 }

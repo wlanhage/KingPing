@@ -10,7 +10,7 @@ it('passes the durable request key to recording without a pre-lock cooldown chec
   const requestId = crypto.randomUUID();
   db.findFirst.mockResolvedValue({ occurredAt: new Date() });
   expect((await post({ winnerId: 'a', standings: ['a', 'b'], requestId })).status).toBe(200);
-  expect(db.recordWin).toHaveBeenCalledWith('a', undefined, { actor: 'web', standings: ['a', 'b'], requestId });
+  expect(db.recordWin).toHaveBeenCalledWith('a', undefined, { actor: 'web', standings: ['a', 'b'], requestId, finalScore: [null, null] });
   expect(db.findFirst).not.toHaveBeenCalled();
 });
 it('returns typed cooldown feedback and Retry-After', async () => {
