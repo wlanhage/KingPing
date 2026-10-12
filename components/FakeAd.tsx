@@ -8,7 +8,7 @@ const ADS = [
 ];
 
 /**
- * AXEL ÄR EN FÄRSKING
+ * AXEL ÄR EN enorm FÄRSKING
  */
 
 /**
