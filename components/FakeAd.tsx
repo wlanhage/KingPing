@@ -8,6 +8,10 @@ const ADS = [
 ];
 
 /**
+ * AXEL ÄR EN FÄRSKING
+ */
+
+/**
  * FEJKANNONS: slumpar en av annonserna i ADS.
  * Poppar upp av sig själv efter en slumpad fördröjning (default 15–100 s) och
  * visar annonsbilden i ~70 % av skärmen, med en riktig KÖP NU-knapp under och
