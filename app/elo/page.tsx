@@ -4,6 +4,8 @@ import { isAfkAt } from '@/lib/domain/afk';
 import { crownRatingHistory } from '@/lib/domain/crown-rating';
 import { listSeasons, resolveSeason, winOccurredAtFilter } from '@/lib/domain/season';
 import { EloReport } from '@/components/elo/EloReport';
+import { PlacementModels } from '@/components/elo/PlacementModels';
+import { fitPlackettLuce, forecastCheck, headToHead, placedRounds, placementRatings, survivalCurves } from '@/lib/domain/placement-models';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Elo Lab', description: 'Kronrating över tid: utveckling, form, volatilitet och jämförelse mellan ratingmodeller.' };
@@ -18,7 +20,21 @@ export default async function EloPage({ searchParams }: { searchParams: Promise<
   ]);
   const afk = new Map(players.map((p) => [p.id, p.afkPeriods]));
   const history = crownRatingHistory(wins, (id, at) => isAfkAt(afk.get(id) ?? [], at));
+  const placed = placedRounds(wins);
+  const placement = {
+    players: players.map(({ id, name }) => ({ id, name })),
+    placedRounds: placed.length,
+    totalRounds: wins.length,
+    ratings: placementRatings(placed),
+    strengths: fitPlackettLuce(placed),
+    headToHead: headToHead(placed),
+    check: forecastCheck(placed),
+    survival: survivalCurves(placed),
+    lastLineup: placed.at(-1)?.standings ?? [],
+  };
   return <EloReport key={season.slug} players={players.map(({ id, name }) => ({ id, name }))} history={history}
     season={{ slug: season.slug, name: season.name, ended: Boolean(season.endedAt), start: (season.id === 'implicit' ? wins[0]?.occurredAt ?? new Date() : season.startedAt).toISOString() }}
-    seasons={seasons.map((s) => ({ slug: s.slug, name: s.name, ended: Boolean(s.endedAt) }))} />;
+    seasons={seasons.map((s) => ({ slug: s.slug, name: s.name, ended: Boolean(s.endedAt) }))}>
+    <PlacementModels data={placement} />
+  </EloReport>;
 }
