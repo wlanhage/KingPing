@@ -269,3 +269,21 @@ describe('AFK', () => {
     expect(res).not.toContain('cold');
   });
 });
+
+describe('1 mot 1', () => {
+  it('Duellisten: flest matcher bland de rankade, minst tre', () => {
+    const c = ctx([p('a', { duelMatches: 4 }), p('b', { duelMatches: 2 })]);
+    c.globalStats.maxDuelMatches = 4;
+    expect(ids(getPlayerBadges('a', c))).toContain('duelist');
+    expect(ids(getPlayerBadges('b', c))).not.toContain('duelist');
+    const few = ctx([p('a', { duelMatches: 2 })]);
+    few.globalStats.maxDuelMatches = 2;
+    expect(ids(getPlayerBadges('a', few))).not.toContain('duelist');
+  });
+
+  it('Obesegrad vid fem raka och Jättedräparen vid första jättedrapet', () => {
+    const res = ids(getPlayerBadges('a', ctx([p('a', { duelLongestWinStreak: 5, duelGiantKills: 1 })])));
+    expect(res).toEqual(expect.arrayContaining(['unbeaten', 'giant_slayer']));
+    expect(ids(getPlayerBadges('a', ctx([p('a', { duelLongestWinStreak: 4 })])))).not.toContain('unbeaten');
+  });
+});

@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { PlayerPerformance } from '@/components/player/PlayerPerformance';
 import { getPlayerPerformance } from '@/lib/performance/server';
+import { PlayerDuels } from '@/components/player/PlayerDuels';
+import { duelTable, playerDuelSummary } from '@/lib/domain/duel';
+import { seasonDuels } from '@/lib/duel/server';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { PlayerHero } from '@/components/player/PlayerHero';
@@ -39,6 +42,8 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
   // Säsongens eget tema, så att en arkiverad säsong behåller sina namn (Kejsaren, inte Darth Vader).
   const theme = getTheme(season.theme);
   const performance = await getPlayerPerformance(playerId, season);
+  const duels = await seasonDuels(season);
+  const duelSummary = playerDuelSummary(duelTable(duels), duels, playerId);
   const weekdayWins = await getPlayerWeekdayWins(playerId, profile.season);
   // Figuren tilldelas mot hela truppen, så samma spelare får samma figur överallt.
   const roster = await prisma.player.findMany({ select: { id: true, name: true, createdAt: true } });
@@ -64,6 +69,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
       )}
       <PlayerHero player={profile.player} stats={s} theme={theme} characterIndex={characterIndex} />
       <PlayerPerformance stats={performance} playerName={profile.player.name} seasonSlug={season.endedAt ? season.slug : undefined} />
+      <PlayerDuels summary={duelSummary} names={Object.fromEntries(roster.map((p) => [p.id, p.name]))} playerName={profile.player.name} seasonSlug={season.endedAt ? season.slug : undefined} />
       <BadgeStrip badges={s.badges ?? []} />
       <StatsGrid stats={[
         { label: 'Total tid på tronen', value: formatDuration(s.totalReignMs) },

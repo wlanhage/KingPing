@@ -99,21 +99,30 @@ model WinEvent {
   finalWinnerPoints   Int?
   finalRunnerUpPoints Int?
   announcement        Announcement?
+  /// Satt när rundan var en KronMatch: 1 mot 1 som också tog kronan.
+  duel                Duel?
 }
 
-/// En 1 mot 1 utanför kronan: rör varken tronen, sviten eller cooldownen. En KronMatch sparas i
-/// stället som en vanlig runda med två spelare i placeringen, och räknas ändå med i duell-ratingen.
+/// En 1 mot 1. Allt 1 mot 1-spår (Elo, inbördes, badges) läser bara den här tabellen.
+/// En vanlig duell rör varken tronen, sviten eller cooldownen. En KronMatch sparas dessutom som en
+/// runda med två spelare (winEventId), och det är rundan som flyttar kronan.
 model Duel {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   /// Samma skydd mot dubbelsparning som WinEvent.requestId.
-  requestId    String?  @unique
+  requestId    String?   @unique
   winnerId     String
-  winner       Player   @relation("DuelWinner", fields: [winnerId], references: [id])
+  winner       Player    @relation("DuelWinner", fields: [winnerId], references: [id])
   loserId      String
-  loser        Player   @relation("DuelLoser", fields: [loserId], references: [id])
+  loser        Player    @relation("DuelLoser", fields: [loserId], references: [id])
+  /// Poäng när matchen var ett set.
   winnerPoints Int?
   loserPoints  Int?
-  occurredAt   DateTime @default(now())
+  /// Vunna set när matchen var flera set. Poäng och set fylls aldrig i samtidigt.
+  winnerSets   Int?
+  loserSets    Int?
+  occurredAt   DateTime  @default(now())
+  winEventId   String?   @unique
+  winEvent     WinEvent? @relation(fields: [winEventId], references: [id])
 }
 
 model Announcement {

@@ -73,6 +73,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   {theme.nav[key]}
                 </Link>
               ))}
+              <Link href='/duell' className='nav-pill'>1 mot 1</Link>
               <Link href='/elo' className='nav-pill'>Elo Lab</Link>
               <Link href='/lab' className='nav-pill'>Season Lab</Link>
               <Link href='/lab/experimental' className='nav-pill'>Experimental Lab</Link>

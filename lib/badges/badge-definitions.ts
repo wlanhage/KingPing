@@ -61,6 +61,10 @@ export const BADGES = [
   { id: 'overlord', name: 'Överherren', emoji: '🗡️', description: 'Har tagit kronan från en och samma spelare minst fem gånger fler än tvärtom.', rarity: 'epic', category: 'combat', tone: 'dramatic' },
   { id: 'never_defended', name: 'Dagsländan', emoji: '🪰', description: 'Fem kronor, aldrig ett försvar. Lever en runda i taget.', rarity: 'rare', category: 'shame', tone: 'roast' },
   { id: 'usurper', name: 'Usurpatorn', emoji: '🗡️', description: 'Har tagit kronan från minst fem olika kungar.', rarity: 'epic', category: 'combat', tone: 'dramatic' },
+  // 1 mot 1.
+  { id: 'duelist', name: 'Duellisten', emoji: '🤺', description: 'Flest 1 mot 1 den här säsongen.', rarity: 'rare', category: 'combat', tone: 'prestige', comparative: true },
+  { id: 'unbeaten', name: 'Obesegrad', emoji: '🛡️', description: 'Fem raka vinster i 1 mot 1.', rarity: 'epic', category: 'combat', tone: 'dramatic' },
+  { id: 'giant_slayer', name: 'Jättedräparen', emoji: '🪨', description: 'Vann en 1 mot 1 mot någon med minst 100 högre duell-Elo.', rarity: 'epic', category: 'combat', tone: 'dramatic' },
 ] as const satisfies readonly BadgeDefinition[];
 
 export const BADGE_BY_ID = Object.fromEntries(BADGES.map((b) => [b.id, b]));

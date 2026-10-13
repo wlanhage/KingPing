@@ -20,11 +20,25 @@ describe.runIf(process.env.KINGPING_WIN_INTEGRATION === '1')('durable round reco
     expect([win.finalWinnerPoints, win.finalRunnerUpPoints]).toEqual([11, 7]);
     const reignsBefore = await prisma.reign.count();
     const requestId = crypto.randomUUID();
-    const duel = await recordDuel({ winnerId: b, loserId: a, winnerPoints: 11, loserPoints: 9, requestId });
-    expect(await recordDuel({ winnerId: b, loserId: a, winnerPoints: 11, loserPoints: 9, requestId })).toEqual(duel);
+    const first = await recordDuel({ winnerId: b, loserId: a, winnerSets: 3, loserSets: 1, requestId });
+    expect(await recordDuel({ winnerId: b, loserId: a, winnerSets: 3, loserSets: 1, requestId })).toEqual(first);
     await expect(recordDuel({ winnerId: a, loserId: b, requestId })).rejects.toMatchObject({ status: 409 });
     expect(await prisma.reign.count()).toBe(reignsBefore);
     expect(await prisma.duel.count({ where: { requestId } })).toBe(1);
+  });
+  it('a KronMatch takes the crown and lands in the duel track exactly once', async () => {
+    const requestId = crypto.randomUUID();
+    const input = { winnerId: b, loserId: a, winnerPoints: 11, loserPoints: 9, kronMatch: true, requestId };
+    // A KronMatch goes through the real cooldown: move earlier rounds out of its window.
+    await prisma.winEvent.updateMany({ data: { occurredAt: new Date(Date.now() - 24 * 3_600_000) } });
+    const results = await Promise.all([recordDuel(input), recordDuel(input)]);
+    const wins = results.map((r) => ('win' in r ? r.win.id : null));
+    expect(wins[0]).toBe(wins[1]);
+    const king = await prisma.reign.findFirst({ where: { endedAt: null }, orderBy: { startedAt: 'desc' } });
+    expect(king?.playerId).toBe(b);
+    const duel = await prisma.duel.findUnique({ where: { winEventId: wins[0]! } });
+    expect(duel).toMatchObject({ winnerId: b, loserId: a, winnerPoints: 11, loserPoints: 9 });
+    expect(await prisma.duel.count({ where: { winEventId: wins[0]! } })).toBe(1);
   });
   it('replays a concurrent duplicate exactly once including the announcement and audit', async () => {
     const requestId = crypto.randomUUID();

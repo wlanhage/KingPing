@@ -98,10 +98,6 @@
 .elo-chart-empty { min-height:100px; display:grid; place-items:center; }
 .elo-table-title { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:20px; }
 .elo-stats { width:100%; }
-.elo-duel-list { list-style:none; margin:14px 0 0; padding:0; display:grid; gap:6px; font-size:13px; }
-.elo-duel-list li { display:flex; gap:12px; align-items:baseline; border-top:1px solid var(--border); padding-top:6px; }
-.elo-duel-list time { color:var(--muted); min-width:56px; }
-.elo-duel-list em { margin-left:auto; color:var(--gold); font-style:normal; font-size:11px; letter-spacing:.08em; text-transform:uppercase; }
 .elo-stats td { font-variant-numeric:tabular-nums; text-align:right; }
 .elo-stats thead th:not(:first-child) { text-align:right; }
 .elo-stats th a { display:flex; align-items:center; gap:8px; }

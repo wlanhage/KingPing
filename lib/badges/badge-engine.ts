@@ -108,6 +108,10 @@ export function getPlayerBadges(playerId: string, context: PlayerBadgeContext): 
   if (s.distinctVictims >= 5) push(res, 'usurper', 'Har störtat fem olika kungar.', s.distinctVictims);
   if (s.maxNetTakeovers >= 5) push(res, 'overlord', 'Fem kronor i övertag mot en och samma rival.', s.maxNetTakeovers);
   if (s.totalWins >= 5 && s.longestStreak <= 1) push(res, 'never_defended', 'Fem vinster utan ett enda försvar.');
+  // 1 mot 1. Duellisten kräver några matcher, annars blir en enda duell en badge.
+  if ((s.duelMatches ?? 0) >= 3 && s.duelMatches === context.globalStats.maxDuelMatches) push(res, 'duelist', 'Flest 1 mot 1 den här säsongen.', s.duelMatches);
+  if ((s.duelLongestWinStreak ?? 0) >= 5) push(res, 'unbeaten', 'Fem raka vinster i 1 mot 1.', s.duelLongestWinStreak);
+  if ((s.duelGiantKills ?? 0) > 0) push(res, 'giant_slayer', 'Slog någon med minst 100 högre duell-Elo.', s.duelGiantKills);
   // TODO: eagle_has_landed kräver särskilt event/trigger i datamodell eller manuell/persisted tilldelning.
   // TODO: merge persisted earned badges here when historical badge table exists.
 

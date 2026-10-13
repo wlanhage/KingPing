@@ -1,5 +1,5 @@
 import { WinError, sameWinRequest, type FinalScore } from './win-request';
-import { scoreError } from './duel';
+import { duelTable, resultError, scoreError } from './duel';
 import { countByWeekday } from './local-time';
 import { dominance, stolenReign } from '../badges/player-stats';
 import { EventType, NationState, type Prisma } from '@prisma/client';
@@ -20,7 +20,7 @@ import { getTheme } from '../theme';
 
 
 // Read helpers accept the held transaction so nested reads never need an extra pool connection.
-type ReadClient = Pick<Prisma.TransactionClient, 'player' | 'winEvent' | 'reign' | 'season'>;
+type ReadClient = Pick<Prisma.TransactionClient, 'player' | 'winEvent' | 'reign' | 'season' | 'duel'>;
 
 // Hur länge efter en kröning man måste vänta innan en ny vinnare kan sättas (skydd mot dubbelsättningar).
 const DEFAULT_COOLDOWN_MS = 20 * 60 * 1000;
@@ -107,12 +107,16 @@ async function loadSeasonEcho(season: SeasonWindow, winnerId: string, previousKi
   return describeSeasonEcho(previous, (await getLeaderboard(previous, db)).filter(isRanked), winnerId, previousKingId);
 }
 
-export async function recordWin(winnerId: string, note?: string, opts: { ignoreCooldown?: boolean; actor?: Actor; standings?: string[]; requestId?: string; finalScore?: FinalScore } = {}) {
+export async function recordWin(winnerId: string, note?: string, opts: { ignoreCooldown?: boolean; actor?: Actor; standings?: string[]; requestId?: string; finalScore?: FinalScore; duel?: { winnerSets: number | null; loserSets: number | null } } = {}) {
   const standings = opts.standings ?? [];
   const finalScore: FinalScore = opts.finalScore ?? [null, null];
   const scoreProblem = scoreError(...finalScore);
   if (scoreProblem) throw new WinError(scoreProblem, 400);
   if (finalScore[0] !== null && standings.length < 2) throw new WinError('Finalens poäng kräver att placeringen är inspelad.', 400);
+  // En KronMatch är en runda med exakt två spelare som också sparas som duell i 1 mot 1-spåret.
+  if (opts.duel && standings.length !== 2) throw new WinError('En KronMatch har exakt två spelare.', 400);
+  const duelProblem = opts.duel && resultError({ winnerPoints: finalScore[0], loserPoints: finalScore[1], ...opts.duel });
+  if (duelProblem) throw new WinError(duelProblem, 400);
   const cleanNote = note?.trim() || undefined;
   if (cleanNote && cleanNote.length > 500) throw new WinError('Anteckningen får vara högst 500 tecken.', 400);
   if (standings.length) {
@@ -175,6 +179,7 @@ export async function recordWin(winnerId: string, note?: string, opts: { ignoreC
     }
     const win = await tx.winEvent.create({ data: { winnerId, previousKingId: current?.playerId, occurredAt: now, eventType, streakCount, previousStreakCount, note: cleanNote, announcementText: ann.text, nationState, isFridayFinal: isFriday(now), standings, requestId: opts.requestId, finalWinnerPoints: finalScore[0], finalRunnerUpPoints: finalScore[1] } });
     const a = await tx.announcement.create({ data: { winEventId: win.id, text: ann.text, layout: ann.layout, persona: ann.persona } });
+    if (opts.duel) await tx.duel.create({ data: { winnerId, loserId: standings[1], winnerPoints: finalScore[0], loserPoints: finalScore[1], winnerSets: opts.duel.winnerSets, loserSets: opts.duel.loserSets, occurredAt: now, winEventId: win.id } });
     return {
       result: { win, a, stage: { returningStreak, beatRival }, replayed: false as boolean },
       context: { winnerName: winner.name, previousKingName: current?.player.name ?? null, eventType, nationState, streakCount, previousStreakCount, isFirstWin, isFridayFinal: isFriday(now), beatRival, season, daysSinceLastWin, runnerUpName },
@@ -234,7 +239,10 @@ export async function getLeaderboard(season?: SeasonWindow, db: ReadClient = pri
   const classicRatings = classicCrownRatings(seasonWins, afkAt);
   const seasonReigns = players.flatMap((p) => p.reigns.flatMap((r) => { const c = clampReignToSeason(r, s, now); return c ? [{ playerId: p.id, startedAt: c.startedAt, endedAt: c.endedAt }] : []; }));
   const stolen = stolenReign(seasonWins, seasonReigns);
-  const rawRows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId, s, now, previous), maxNetTakeovers: dom[p.id]?.net ?? 0, dominatedRivalId: dom[p.id]?.rivalId ?? null, stolenReignMs: stolen[p.id] ?? 0, crownRating: ratings[p.id]?.rating ?? START_RATING, ratedRounds: ratings[p.id]?.played ?? 0, classicCrownRating: classicRatings[p.id]?.rating ?? START_RATING, classicRatedRounds: classicRatings[p.id]?.played ?? 0, isAfk: afkAt(p.id, asOf) })).sort((a,b)=>Number(a.isAfk)-Number(b.isAfk) || b.totalReignMs-a.totalReignMs);
+  // 1 mot 1 för badgesen. AFK-spelare tas bort i badge-motorn, inte här.
+  const duels = duelTable((await db.duel.findMany({ where: { occurredAt: winOccurredAtFilter(s) } })).map((d) => ({ ...d, crown: d.winEventId !== null })));
+  const duelOf = Object.fromEntries(duels.players.map((p) => [p.id, p]));
+  const rawRows = players.map((p) => ({ id: p.id, name: p.name, ...buildPlayerStats(p, current?.playerId, s, now, previous), maxNetTakeovers: dom[p.id]?.net ?? 0, dominatedRivalId: dom[p.id]?.rivalId ?? null, stolenReignMs: stolen[p.id] ?? 0, crownRating: ratings[p.id]?.rating ?? START_RATING, ratedRounds: ratings[p.id]?.played ?? 0, classicCrownRating: classicRatings[p.id]?.rating ?? START_RATING, classicRatedRounds: classicRatings[p.id]?.played ?? 0, duelMatches: (duelOf[p.id]?.wins ?? 0) + (duelOf[p.id]?.losses ?? 0), duelLongestWinStreak: duelOf[p.id]?.longestWinStreak ?? 0, duelGiantKills: duelOf[p.id]?.giantKills ?? 0, isAfk: afkAt(p.id, asOf) })).sort((a,b)=>Number(a.isAfk)-Number(b.isAfk) || b.totalReignMs-a.totalReignMs);
   // AFK-spelare står sist utan placering, så att ingen av dem kan bli "sist i tabellen".
   const ranked = rawRows.map((row, i) => ({ ...row, rank: row.isAfk ? null : i + 1 }));
   const statMap = Object.fromEntries(ranked.map((r) => [r.id, r]));

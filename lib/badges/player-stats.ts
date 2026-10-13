@@ -67,6 +67,7 @@ export function calculateGlobalStats(stats: PlayerStats[], currentKingId: string
     winlessCount: stats.filter((s) => s.totalWins === 0).length,
     minTotalReignMs: stats.length ? Math.min(...stats.map((s) => s.totalReignMs)) : 0,
     maxStolenReignMs: Math.max(0, ...stats.map((s) => s.stolenReignMs)),
+    maxDuelMatches: Math.max(0, ...stats.map((s) => s.duelMatches ?? 0)),
   };
 }
 

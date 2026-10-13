@@ -52,7 +52,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ d
         </div>
         <h2 className='dash-king-name'>{king?.name ?? `Ingen ${theme.verbs.crowning} ännu`}</h2>
 
-        {king ? (
+        {king ? (<>
           <dl className='dash-king-stats'>
             <div>
               <dt>Regeringstid</dt>
@@ -67,7 +67,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ d
               <dd>{king.currentStreak}</dd>
             </div>
           </dl>
-        ) : (
+          <Link href={`/duell?mot=${king.playerId}`} className='dash-challenge'>⚔️ Utmana {king.name} i en KronMatch</Link>
+        </>) : (
           <p className='dash-empty'>{`${theme.verbs.crown} den första vinnaren nedan för att starta riket.`}</p>
         )}
       </section>
