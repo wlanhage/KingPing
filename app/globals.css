@@ -1083,6 +1083,8 @@ thead th { border-top:none; color:var(--muted); font-weight:600; background: rgb
 }
 
 .dash-king-avatar {
+  /* Hologrammets skanlinjer ritas med ::after och inset: 0, så rutan måste vara positionerad. */
+  position: relative;
   display: grid;
   width: 132px;
   height: 132px;
