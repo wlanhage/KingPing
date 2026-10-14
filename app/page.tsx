@@ -12,7 +12,7 @@ import { NationSeal } from '@/components/NationSeal';
 import { StageDemo } from '@/components/stage/StageDemo';
 import { startingAbsent } from '@/lib/domain/standings';
 import { playerPortrait } from '@/lib/og/sigil';
-import { assignCharacters } from '@/lib/domain/heraldry';
+import { assignCharacters, holoTiming } from '@/lib/domain/heraldry';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +46,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ d
       <section className='dash-throne'>
         <span className='dash-eyebrow'>Nuvarande {theme.roles.monarchLower}</span>
         <div className='dash-crown' aria-hidden>👑</div>
-        <div className='dash-king-avatar'>
+        <div className='dash-king-avatar holo' style={holoTiming(`${king?.playerId ?? 'tom-tron'}:dash`)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {portrait ? <img src={portrait.src} alt={portrait.alt} /> : <span>–</span>}
         </div>
