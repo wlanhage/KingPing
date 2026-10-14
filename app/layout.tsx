@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Cinzel, Cinzel_Decorative, EB_Garamond } from 'next/font/google';
 import { RealmLogo } from '@/components/RealmLogo';
 import { FakeAd } from '@/components/FakeAd';
+import { TopNav } from '@/components/TopNav';
 import { KonamiBalls } from '@/components/KonamiBalls';
 import { Starfield } from '@/components/Starfield';
 import { StarfieldShips } from '@/components/StarfieldShips';
@@ -32,10 +33,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const navOrder: [PageKey, string][] = [
+const navPrimary: [PageKey, string][] = [
   ['home', '/'],
   ['leaderboard', '/leaderboard'],
   ['history', '/history'],
+];
+const navMore: [PageKey, string][] = [
   ['players', '/players'],
   ['badges', '/badges'],
   ['archive', '/seasons'],
@@ -67,17 +70,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <span className='realm-crest-mark' aria-hidden><RealmLogo themeKey={theme.key} /></span>
               <span className='realm-crest-name'>{theme.appName}</span>
             </Link>
-            <nav className='top-nav'>
-              {navOrder.map(([key, href]) => (
-                <Link key={href} href={href} className='nav-pill'>
-                  {theme.nav[key]}
-                </Link>
-              ))}
-              <Link href='/duell' className='nav-pill'>1 mot 1</Link>
-              <Link href='/elo' className='nav-pill'>Elo Lab</Link>
-              <Link href='/lab' className='nav-pill'>Season Lab</Link>
-              <Link href='/lab/experimental' className='nav-pill'>Experimental Lab</Link>
-            </nav>
+            <TopNav
+              links={[...navPrimary.slice(0, 2).map(([key, href]) => ({ href, label: theme.nav[key] })), { href: '/duell', label: '1 mot 1' }, ...navPrimary.slice(2).map(([key, href]) => ({ href, label: theme.nav[key] }))]}
+              groups={[
+                { label: 'Mer', links: navMore.map(([key, href]) => ({ href, label: theme.nav[key] })) },
+                { label: 'Lab', links: [{ href: '/elo', label: 'Elo Lab' }, { href: '/lab', label: 'Season Lab' }, { href: '/lab/experimental', label: 'Experimental Lab' }] },
+              ]}
+            />
           </header>
           {children}
         </div>
